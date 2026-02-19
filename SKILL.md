@@ -1,5 +1,6 @@
 ---
 name: last30days
+command: /last30days
 description: Research a topic from the last 30 days on Reddit + X + Web, become an expert, and write copy-paste-ready prompts for the user's target tool.
 argument-hint: "[topic] for [tool]" or "[topic]"
 context: fork
@@ -89,6 +90,10 @@ echo "Edit to add your API keys for enhanced research."
 **IMPORTANT: The script handles API key detection automatically.** Run it and check the output to determine mode.
 
 **Step 1: Run the research script**
+
+**IMPORTANT: Run this FOREGROUND (not background).** The script takes 30-60 seconds. Use timeout: 120000.
+Background execution causes stdout capture failures. Do NOT use run_in_background.
+
 ```bash
 python3 ~/.claude/skills/last30days/scripts/last30days.py "$ARGUMENTS" --emit=compact 2>&1
 ```
@@ -98,6 +103,9 @@ The script will automatically:
 - Show a promo banner if keys are missing (this is intentional marketing)
 - Run Reddit/X searches if keys exist
 - Signal if WebSearch is needed
+- **Save full results to `~/.local/share/last30days/out/`** (report.md, report.json, raw data)
+
+**Fallback:** If stdout is empty or truncated for any reason, ALWAYS check `~/.local/share/last30days/out/report.md` for the full results. The script writes there independently of stdout.
 
 **Step 2: Check the output mode**
 
@@ -105,7 +113,9 @@ The script output will indicate the mode:
 - **"Mode: both"** or **"Mode: reddit-only"** or **"Mode: x-only"**: Script found results, WebSearch is supplementary
 - **"Mode: web-only"**: No API keys, Claude must do ALL research via WebSearch
 
-**Step 3: Do WebSearch**
+**Step 3: Do WebSearch (run in parallel with Step 1)**
+
+Launch WebSearch calls at the same time as the script. They're independent and this saves 30-60 seconds.
 
 For **ALL modes**, do WebSearch to supplement (or provide all data in web-only mode).
 
@@ -141,8 +151,7 @@ For ALL query types:
 - INCLUDE: blogs, tutorials, docs, news, GitHub repos
 - **DO NOT output "Sources:" list** - this is noise, we'll show stats at the end
 
-**Step 3: Wait for background script to complete**
-Use TaskOutput to get the script results before proceeding to synthesis.
+**Step 4: If script ran foreground, proceed. If stdout was lost, read `~/.local/share/last30days/out/report.md`.**
 
 **Depth options** (passed through from user's command):
 - `--quick` → Faster, fewer sources (8-12 each)
