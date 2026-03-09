@@ -1,6 +1,5 @@
 """Terminal UI utilities for last30days skill."""
 
-import os
 import sys
 import time
 import threading
@@ -64,6 +63,40 @@ ENRICHING_MESSAGES = [
     "Analyzing discussions...",
 ]
 
+YOUTUBE_MESSAGES = [
+    "Searching YouTube for videos...",
+    "Finding relevant video content...",
+    "Scanning YouTube channels...",
+    "Discovering video discussions...",
+    "Fetching transcripts...",
+]
+
+TIKTOK_MESSAGES = [
+    "Searching TikTok for trending videos...",
+    "Finding what's viral on TikTok...",
+    "Scanning TikTok for relevant content...",
+]
+
+INSTAGRAM_MESSAGES = [
+    "Searching Instagram Reels...",
+    "Finding what's trending on Instagram...",
+    "Scanning Instagram for relevant reels...",
+]
+
+HN_MESSAGES = [
+    "Searching Hacker News...",
+    "Scanning HN front page stories...",
+    "Finding technical discussions...",
+    "Discovering developer conversations...",
+]
+
+POLYMARKET_MESSAGES = [
+    "Checking prediction markets...",
+    "Finding what people are betting on...",
+    "Scanning Polymarket for odds...",
+    "Discovering prediction markets...",
+]
+
 PROCESSING_MESSAGES = [
     "Crunching the data...",
     "Scoring and ranking...",
@@ -79,53 +112,56 @@ WEB_ONLY_MESSAGES = [
     "Discovering tutorials...",
 ]
 
-# Promo message for users without API keys
-PROMO_MESSAGE = f"""
-{Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.RESET}
-{Colors.YELLOW}⚡ UNLOCK THE FULL POWER OF /last30days{Colors.RESET}
+def _build_nux_message(diag: dict = None) -> str:
+    """Build conversational NUX message with dynamic source status."""
+    if diag:
+        reddit = "✓" if diag.get("openai") else "✗"
+        x = "✓" if diag.get("x_source") else "✗"
+        youtube = "✓" if diag.get("youtube") else "✗"
+        web = "✓" if diag.get("web_search_backend") else "✗"
+        status_line = f"Reddit {reddit}, X {x}, YouTube {youtube}, Web {web}"
+    else:
+        status_line = "YouTube ✓, Web ✓, Reddit ✗, X ✗"
 
-{Colors.DIM}Right now you're using web search only. Add API keys to unlock:{Colors.RESET}
+    return f"""
+I just researched that for you. Here's what I've got right now:
 
-  {Colors.YELLOW}🟠 Reddit{Colors.RESET} - Real upvotes, comments, and community insights
-     └─ Add OPENAI_API_KEY (uses OpenAI's web_search for Reddit)
+{status_line}
 
-  {Colors.CYAN}🔵 X (Twitter){Colors.RESET} - Real-time posts, likes, reposts from creators
-     └─ Add XAI_API_KEY (uses xAI's live X search)
+You can unlock more sources with API keys or by signing in to Codex — just ask me how and I'll walk you through it. More sources means better research, but it works fine as-is.
 
-{Colors.DIM}Setup:{Colors.RESET} Edit {Colors.BOLD}~/.config/last30days/.env{Colors.RESET}
-{Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.RESET}
-"""
+Some examples of what you can do:
+- "last30 what are people saying about Figma"
+- "last30 watch my biggest competitor every week"
+- "last30 watch Peter Steinberger every 30 days"
+- "last30 watch AI video tools monthly"
+- "last30 what have you found about AI video?"
 
-PROMO_MESSAGE_PLAIN = """
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡ UNLOCK THE FULL POWER OF /last30days
-
-Right now you're using web search only. Add API keys to unlock:
-
-  🟠 Reddit - Real upvotes, comments, and community insights
-     └─ Add OPENAI_API_KEY (uses OpenAI's web_search for Reddit)
-
-  🔵 X (Twitter) - Real-time posts, likes, reposts from creators
-     └─ Add XAI_API_KEY (uses xAI's live X search)
-
-Setup: Edit ~/.config/last30days/.env
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Just start with "last30" and talk to me like normal.
 """
 
 # Shorter promo for single missing key
 PROMO_SINGLE_KEY = {
-    "reddit": f"""
-{Colors.DIM}💡 Tip: Add {Colors.YELLOW}OPENAI_API_KEY{Colors.RESET}{Colors.DIM} to ~/.config/last30days/.env for Reddit data with real engagement metrics!{Colors.RESET}
-""",
-    "x": f"""
-{Colors.DIM}💡 Tip: Add {Colors.CYAN}XAI_API_KEY{Colors.RESET}{Colors.DIM} to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!{Colors.RESET}
-""",
+    "reddit": "\n💡 You can unlock Reddit with an OpenAI API key or by running `codex login` — just ask me how.\n",
+    "x": "\n💡 You can unlock X with an xAI API key — just ask me how.\n",
 }
 
-PROMO_SINGLE_KEY_PLAIN = {
-    "reddit": "\n💡 Tip: Add OPENAI_API_KEY to ~/.config/last30days/.env for Reddit data with real engagement metrics!\n",
-    "x": "\n💡 Tip: Add XAI_API_KEY to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!\n",
-}
+# Bird auth help (for local users with vendored Bird CLI)
+BIRD_AUTH_HELP = f"""
+{Colors.YELLOW}Bird authentication failed.{Colors.RESET}
+
+To fix this:
+1. Log into X (twitter.com) in Safari, Chrome, or Firefox
+2. Try again — Bird reads your browser cookies automatically.
+"""
+
+BIRD_AUTH_HELP_PLAIN = """
+Bird authentication failed.
+
+To fix this:
+1. Log into X (twitter.com) in Safari, Chrome, or Firefox
+2. Try again — Bird reads your browser cookies automatically.
+"""
 
 # Spinner frames
 SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
@@ -135,13 +171,14 @@ DOTS_FRAMES = ['   ', '.  ', '.. ', '...']
 class Spinner:
     """Animated spinner for long-running operations."""
 
-    def __init__(self, message: str = "Working", color: str = Colors.CYAN):
+    def __init__(self, message: str = "Working", color: str = Colors.CYAN, quiet: bool = False):
         self.message = message
         self.color = color
         self.running = False
         self.thread: Optional[threading.Thread] = None
         self.frame_idx = 0
         self.shown_static = False
+        self.quiet = quiet  # Suppress non-TTY start message (still shows ✓ completion)
 
     def _spin(self):
         while self.running:
@@ -159,7 +196,7 @@ class Spinner:
             self.thread.start()
         else:
             # Not a TTY (Claude Code) - just print once
-            if not self.shown_static:
+            if not self.shown_static and not self.quiet:
                 sys.stderr.write(f"⏳ {self.message}\n")
                 sys.stderr.flush()
                 self.shown_static = True
@@ -237,6 +274,51 @@ class ProgressDisplay:
         if self.spinner:
             self.spinner.stop(f"{Colors.CYAN}X{Colors.RESET} Found {count} posts")
 
+    def start_youtube(self):
+        msg = random.choice(YOUTUBE_MESSAGES)
+        self.spinner = Spinner(f"{Colors.RED}YouTube{Colors.RESET} {msg}", Colors.RED)
+        self.spinner.start()
+
+    def end_youtube(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.RED}YouTube{Colors.RESET} Found {count} videos")
+
+    def start_tiktok(self):
+        msg = random.choice(TIKTOK_MESSAGES)
+        self.spinner = Spinner(f"{Colors.PURPLE}TikTok{Colors.RESET} {msg}", Colors.PURPLE)
+        self.spinner.start()
+
+    def end_tiktok(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.PURPLE}TikTok{Colors.RESET} Found {count} videos")
+
+    def start_instagram(self):
+        msg = random.choice(INSTAGRAM_MESSAGES)
+        self.spinner = Spinner(f"{Colors.PURPLE}Instagram{Colors.RESET} {msg}", Colors.PURPLE)
+        self.spinner.start()
+
+    def end_instagram(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.PURPLE}Instagram{Colors.RESET} Found {count} reels")
+
+    def start_hackernews(self):
+        msg = random.choice(HN_MESSAGES)
+        self.spinner = Spinner(f"{Colors.YELLOW}HN{Colors.RESET} {msg}", Colors.YELLOW, quiet=True)
+        self.spinner.start()
+
+    def end_hackernews(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.YELLOW}HN{Colors.RESET} Found {count} stories")
+
+    def start_polymarket(self):
+        msg = random.choice(POLYMARKET_MESSAGES)
+        self.spinner = Spinner(f"{Colors.GREEN}Polymarket{Colors.RESET} {msg}", Colors.GREEN, quiet=True)
+        self.spinner.start()
+
+    def end_polymarket(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.GREEN}Polymarket{Colors.RESET} Found {count} markets")
+
     def start_processing(self):
         msg = random.choice(PROCESSING_MESSAGES)
         self.spinner = Spinner(f"{Colors.PURPLE}Processing{Colors.RESET} {msg}", Colors.PURPLE)
@@ -246,15 +328,37 @@ class ProgressDisplay:
         if self.spinner:
             self.spinner.stop()
 
-    def show_complete(self, reddit_count: int, x_count: int):
+    def show_complete(self, reddit_count: int, x_count: int, youtube_count: int = 0, hn_count: int = 0, pm_count: int = 0, tiktok_count: int = 0, ig_count: int = 0):
         elapsed = time.time() - self.start_time
         if IS_TTY:
             sys.stderr.write(f"\n{Colors.GREEN}{Colors.BOLD}✓ Research complete{Colors.RESET} ")
             sys.stderr.write(f"{Colors.DIM}({elapsed:.1f}s){Colors.RESET}\n")
             sys.stderr.write(f"  {Colors.YELLOW}Reddit:{Colors.RESET} {reddit_count} threads  ")
-            sys.stderr.write(f"{Colors.CYAN}X:{Colors.RESET} {x_count} posts\n\n")
+            sys.stderr.write(f"{Colors.CYAN}X:{Colors.RESET} {x_count} posts")
+            if youtube_count:
+                sys.stderr.write(f"  {Colors.RED}YouTube:{Colors.RESET} {youtube_count} videos")
+            if tiktok_count:
+                sys.stderr.write(f"  {Colors.PURPLE}TikTok:{Colors.RESET} {tiktok_count} videos")
+            if ig_count:
+                sys.stderr.write(f"  {Colors.PURPLE}Instagram:{Colors.RESET} {ig_count} reels")
+            if hn_count:
+                sys.stderr.write(f"  {Colors.YELLOW}HN:{Colors.RESET} {hn_count} stories")
+            if pm_count:
+                sys.stderr.write(f"  {Colors.GREEN}Polymarket:{Colors.RESET} {pm_count} markets")
+            sys.stderr.write("\n\n")
         else:
-            sys.stderr.write(f"✓ Research complete ({elapsed:.1f}s) - Reddit: {reddit_count} threads, X: {x_count} posts\n")
+            parts = [f"Reddit: {reddit_count} threads", f"X: {x_count} posts"]
+            if youtube_count:
+                parts.append(f"YouTube: {youtube_count} videos")
+            if tiktok_count:
+                parts.append(f"TikTok: {tiktok_count} videos")
+            if ig_count:
+                parts.append(f"Instagram: {ig_count} reels")
+            if hn_count:
+                parts.append(f"HN: {hn_count} stories")
+            if pm_count:
+                parts.append(f"Polymarket: {pm_count} markets")
+            sys.stderr.write(f"✓ Research complete ({elapsed:.1f}s) - {', '.join(parts)}\n")
         sys.stderr.flush()
 
     def show_cached(self, age_hours: float = None):
@@ -278,7 +382,7 @@ class ProgressDisplay:
     def end_web_only(self):
         """End web-only spinner."""
         if self.spinner:
-            self.spinner.stop(f"{Colors.GREEN}Web{Colors.RESET} Claude will search the web")
+            self.spinner.stop(f"{Colors.GREEN}Web{Colors.RESET} assistant will search the web")
 
     def show_web_only_complete(self):
         """Show completion for web-only mode."""
@@ -286,28 +390,151 @@ class ProgressDisplay:
         if IS_TTY:
             sys.stderr.write(f"\n{Colors.GREEN}{Colors.BOLD}✓ Ready for web search{Colors.RESET} ")
             sys.stderr.write(f"{Colors.DIM}({elapsed:.1f}s){Colors.RESET}\n")
-            sys.stderr.write(f"  {Colors.GREEN}Web:{Colors.RESET} Claude will search blogs, docs & news\n\n")
+            sys.stderr.write(f"  {Colors.GREEN}Web:{Colors.RESET} assistant will search blogs, docs & news\n\n")
         else:
             sys.stderr.write(f"✓ Ready for web search ({elapsed:.1f}s)\n")
         sys.stderr.flush()
 
-    def show_promo(self, missing: str = "both"):
-        """Show promotional message for missing API keys.
+    def show_promo(self, missing: str = "both", diag: dict = None):
+        """Show NUX / promotional message for missing API keys.
 
         Args:
-            missing: 'both', 'reddit', or 'x' - which keys are missing
+            missing: 'both', 'all', 'reddit', or 'x' - which keys are missing
+            diag: Optional diagnostics dict for dynamic source status
         """
-        if missing == "both":
-            if IS_TTY:
-                sys.stderr.write(PROMO_MESSAGE)
-            else:
-                sys.stderr.write(PROMO_MESSAGE_PLAIN)
+        if missing in ("both", "all"):
+            sys.stderr.write(_build_nux_message(diag))
         elif missing in PROMO_SINGLE_KEY:
-            if IS_TTY:
-                sys.stderr.write(PROMO_SINGLE_KEY[missing])
-            else:
-                sys.stderr.write(PROMO_SINGLE_KEY_PLAIN[missing])
+            sys.stderr.write(PROMO_SINGLE_KEY[missing])
         sys.stderr.flush()
+
+    def show_bird_auth_help(self):
+        """Show Bird authentication help."""
+        if IS_TTY:
+            sys.stderr.write(BIRD_AUTH_HELP)
+        else:
+            sys.stderr.write(BIRD_AUTH_HELP_PLAIN)
+        sys.stderr.flush()
+
+
+def show_diagnostic_banner(diag: dict):
+    """Show pre-flight source status banner when sources are missing.
+
+    Args:
+        diag: Dict from env diagnostics with keys:
+            openai, xai, x_source, bird_installed, bird_authenticated,
+            bird_username, youtube, web_search_backend
+    """
+    has_openai = diag.get("openai", False)
+    has_reddit_public = diag.get("reddit_public", False)
+    has_reddit = has_openai or has_reddit_public
+    has_x = diag.get("x_source") is not None
+    has_youtube = diag.get("youtube", False)
+    has_xiaohongshu = diag.get("xiaohongshu", False)
+    has_web = diag.get("web_search_backend") is not None
+
+    # If everything is available, no banner needed
+    if has_reddit and has_x and has_youtube and has_web:
+        return
+
+    lines = []
+
+    if IS_TTY:
+        lines.append(f"{Colors.DIM}┌─────────────────────────────────────────────────────┐{Colors.RESET}")
+        lines.append(f"{Colors.DIM}│{Colors.RESET} {Colors.BOLD}/last30days v2.1 — Source Status{Colors.RESET}                    {Colors.DIM}│{Colors.RESET}")
+        lines.append(f"{Colors.DIM}│{Colors.RESET}                                                     {Colors.DIM}│{Colors.RESET}")
+
+        # Reddit
+        if has_openai:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ Reddit{Colors.RESET}    — OpenAI/Codex auth found             {Colors.DIM}│{Colors.RESET}")
+        elif has_reddit_public:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ Reddit{Colors.RESET}    — Public Reddit search (no key)       {Colors.DIM}│{Colors.RESET}")
+        else:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ Reddit{Colors.RESET}    — No OPENAI_API_KEY                    {Colors.DIM}│{Colors.RESET}")
+            lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Add to ~/.config/last30days/.env            {Colors.DIM}│{Colors.RESET}")
+
+        # X/Twitter
+        if has_x:
+            source = diag.get("x_source", "")
+            username = diag.get("bird_username", "")
+            label = f"Bird ({username})" if source == "bird" and username else source.upper()
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ X/Twitter{Colors.RESET} — {label}                          {Colors.DIM}│{Colors.RESET}")
+        else:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ X/Twitter{Colors.RESET} — No Bird CLI or XAI_API_KEY          {Colors.DIM}│{Colors.RESET}")
+            if diag.get("bird_installed"):
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Bird installed but not authenticated         {Colors.DIM}│{Colors.RESET}")
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Log into x.com in your browser, then retry   {Colors.DIM}│{Colors.RESET}")
+            else:
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Needs Node.js 22+ (Bird is bundled)           {Colors.DIM}│{Colors.RESET}")
+
+        # YouTube
+        if has_youtube:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ YouTube{Colors.RESET}   — yt-dlp found                      {Colors.DIM}│{Colors.RESET}")
+        else:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ YouTube{Colors.RESET}   — yt-dlp not installed                {Colors.DIM}│{Colors.RESET}")
+            lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Fix: brew install yt-dlp (free)                {Colors.DIM}│{Colors.RESET}")
+
+        # Xiaohongshu
+        if has_xiaohongshu:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ Xiaohongshu{Colors.RESET} — API connected + logged in         {Colors.DIM}│{Colors.RESET}")
+        else:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.YELLOW}⚡ Xiaohongshu{Colors.RESET} — API not connected/logged in      {Colors.DIM}│{Colors.RESET}")
+
+        # Web
+        if has_web:
+            backend = diag.get("web_search_backend", "")
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ Web{Colors.RESET}       — {backend} API                       {Colors.DIM}│{Colors.RESET}")
+        else:
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.YELLOW}⚡ Web{Colors.RESET}       — Using assistant's search tool       {Colors.DIM}│{Colors.RESET}")
+
+        lines.append(f"{Colors.DIM}│{Colors.RESET}                                                     {Colors.DIM}│{Colors.RESET}")
+        lines.append(f"{Colors.DIM}│{Colors.RESET}  Config: {Colors.BOLD}~/.config/last30days/.env{Colors.RESET}                  {Colors.DIM}│{Colors.RESET}")
+        lines.append(f"{Colors.DIM}└─────────────────────────────────────────────────────┘{Colors.RESET}")
+    else:
+        # Plain text for non-TTY (Claude Code / Codex)
+        lines.append("┌─────────────────────────────────────────────────────┐")
+        lines.append("│ /last30days v2.1 — Source Status                    │")
+        lines.append("│                                                     │")
+
+        if has_openai:
+            lines.append("│  ✅ Reddit    — OpenAI/Codex auth found             │")
+        elif has_reddit_public:
+            lines.append("│  ✅ Reddit    — Public Reddit search (no key)       │")
+        else:
+            lines.append("│  ❌ Reddit    — No OPENAI_API_KEY                    │")
+            lines.append("│     └─ Add to ~/.config/last30days/.env            │")
+
+        if has_x:
+            lines.append("│  ✅ X/Twitter — available                            │")
+        else:
+            lines.append("│  ❌ X/Twitter — No Bird CLI or XAI_API_KEY          │")
+            if diag.get("bird_installed"):
+                lines.append("│     └─ Log into x.com in your browser, then retry   │")
+            else:
+                lines.append("│     └─ Needs Node.js 22+ (Bird is bundled)           │")
+
+        if has_youtube:
+            lines.append("│  ✅ YouTube   — yt-dlp found                        │")
+        else:
+            lines.append("│  ❌ YouTube   — yt-dlp not installed                │")
+            lines.append("│     └─ Fix: brew install yt-dlp (free)                │")
+
+        if has_xiaohongshu:
+            lines.append("│  ✅ Xiaohongshu — API connected + logged in         │")
+        else:
+            lines.append("│  ⚡ Xiaohongshu — API not connected/logged in       │")
+
+        if has_web:
+            lines.append("│  ✅ Web       — API search available                │")
+        else:
+            lines.append("│  ⚡ Web       — Using assistant's search tool       │")
+
+        lines.append("│                                                     │")
+        lines.append("│  Config: ~/.config/last30days/.env                  │")
+        lines.append("└─────────────────────────────────────────────────────┘")
+
+    sys.stderr.write("\n".join(lines) + "\n\n")
+    sys.stderr.flush()
 
 
 def print_phase(phase: str, message: str):

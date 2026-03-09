@@ -1,4 +1,9 @@
-"""Reddit thread enrichment with real engagement metrics."""
+"""Reddit thread enrichment with real engagement metrics.
+
+Supports two backends:
+1. ScrapeCreators API (preferred) - no rate limits, 1 credit/call
+2. reddit.com/.json (fallback) - free but 429-prone
+"""
 
 import re
 from typing import Any, Dict, List, Optional
@@ -25,15 +30,30 @@ def extract_reddit_path(url: str) -> Optional[str]:
         return None
 
 
-def fetch_thread_data(url: str, mock_data: Optional[Dict] = None) -> Optional[Dict[str, Any]]:
+class RedditRateLimitError(Exception):
+    """Raised when Reddit returns HTTP 429 (rate limited)."""
+    pass
+
+
+def fetch_thread_data(
+    url: str,
+    mock_data: Optional[Dict] = None,
+    timeout: int = 30,
+    retries: int = 3,
+) -> Optional[Dict[str, Any]]:
     """Fetch Reddit thread JSON data.
 
     Args:
         url: Reddit thread URL
         mock_data: Mock data for testing
+        timeout: HTTP timeout per attempt in seconds
+        retries: Number of retries on failure
 
     Returns:
         Thread data dict or None on failure
+
+    Raises:
+        RedditRateLimitError: When Reddit returns 429 (caller should bail)
     """
     if mock_data is not None:
         return mock_data
@@ -43,9 +63,11 @@ def fetch_thread_data(url: str, mock_data: Optional[Dict] = None) -> Optional[Di
         return None
 
     try:
-        data = http.get_reddit_json(path)
+        data = http.get_reddit_json(path, timeout=timeout, retries=retries)
         return data
-    except http.HTTPError:
+    except http.HTTPError as e:
+        if e.status_code == 429:
+            raise RedditRateLimitError(f"Reddit rate limited (429) fetching {url}") from e
         return None
 
 
@@ -178,20 +200,27 @@ def extract_comment_insights(comments: List[Dict], limit: int = 7) -> List[str]:
 def enrich_reddit_item(
     item: Dict[str, Any],
     mock_thread_data: Optional[Dict] = None,
+    timeout: int = 10,
+    retries: int = 1,
 ) -> Dict[str, Any]:
     """Enrich a Reddit item with real engagement data.
 
     Args:
         item: Reddit item dict
         mock_thread_data: Mock data for testing
+        timeout: HTTP timeout per attempt (default 10s for enrichment)
+        retries: Number of retries (default 1 — fail fast for enrichment)
 
     Returns:
         Enriched item dict
+
+    Raises:
+        RedditRateLimitError: Propagated so caller can bail on remaining items
     """
     url = item.get("url", "")
 
-    # Fetch thread data
-    thread_data = fetch_thread_data(url, mock_thread_data)
+    # Fetch thread data (RedditRateLimitError propagates to caller)
+    thread_data = fetch_thread_data(url, mock_thread_data, timeout=timeout, retries=retries)
     if not thread_data:
         return item
 
@@ -227,6 +256,70 @@ def enrich_reddit_item(
         })
 
     # Extract insights
+    item["comment_insights"] = extract_comment_insights(top_comments)
+
+    return item
+
+
+def enrich_reddit_item_sc(
+    item: Dict[str, Any],
+    token: str,
+    timeout: int = 30,
+) -> Dict[str, Any]:
+    """Enrich a Reddit item using ScrapeCreators comment API.
+
+    No rate limit risk. Uses 1 credit per call.
+
+    Args:
+        item: Reddit item dict (already has engagement from search)
+        token: ScrapeCreators API key
+        timeout: HTTP timeout
+
+    Returns:
+        Enriched item with top_comments and comment_insights
+    """
+    from . import reddit as reddit_mod
+
+    url = item.get("url", "")
+    if not url:
+        return item
+
+    raw_comments = reddit_mod.fetch_post_comments(url, token)
+    if not raw_comments:
+        return item
+
+    top_comments = []
+    for c in raw_comments[:10]:
+        body = c.get("body", "")
+        if not body or body in ("[deleted]", "[removed]"):
+            continue
+
+        score = c.get("ups") or c.get("score", 0)
+        author = c.get("author", "[deleted]")
+        permalink = c.get("permalink", "")
+        comment_url = f"https://reddit.com{permalink}" if permalink else ""
+
+        top_comments.append({
+            "score": score,
+            "date": dates.timestamp_to_date(c.get("created_utc")) if c.get("created_utc") else None,
+            "author": author,
+            "body": body[:300],
+            "excerpt": body[:200],
+            "url": comment_url,
+        })
+
+    top_comments.sort(key=lambda c: c.get("score", 0), reverse=True)
+
+    item["top_comments"] = []
+    for c in top_comments:
+        item["top_comments"].append({
+            "score": c.get("score", 0),
+            "date": c.get("date"),
+            "author": c.get("author", ""),
+            "excerpt": c.get("excerpt", ""),
+            "url": c.get("url", ""),
+        })
+
     item["comment_insights"] = extract_comment_insights(top_comments)
 
     return item

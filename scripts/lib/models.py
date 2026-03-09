@@ -3,11 +3,12 @@
 import re
 from typing import Dict, List, Optional, Tuple
 
-from . import cache, http
+from . import cache, http, env
 
 # OpenAI API
 OPENAI_MODELS_URL = "https://api.openai.com/v1/models"
-OPENAI_FALLBACK_MODELS = ["gpt-5.2", "gpt-5.1", "gpt-5", "gpt-4o"]
+OPENAI_FALLBACK_MODELS = ["gpt-5.2", "gpt-5.1", "gpt-5", "gpt-4.1", "gpt-4o"]
+CODEX_FALLBACK_MODELS = ["gpt-5.1-codex-mini", "gpt-5.2"]
 
 # xAI API - Agent Tools API requires grok-4 family
 XAI_MODELS_URL = "https://api.x.ai/v1/models"
@@ -35,8 +36,8 @@ def is_mainline_openai_model(model_id: str) -> bool:
     """Check if model is a mainline GPT model (not mini/nano/chat/codex/pro)."""
     model_lower = model_id.lower()
 
-    # Must be gpt-5 series
-    if not re.match(r'^gpt-5(\.\d+)*$', model_lower):
+    # Must be gpt-4o, gpt-4.1+, or gpt-5+ series (mainline, not mini/nano/etc)
+    if not re.match(r'^gpt-(?:4o|4\.1|5)(\.\d+)*$', model_lower):
         return False
 
     # Exclude variants
@@ -157,12 +158,21 @@ def get_models(
     result = {"openai": None, "xai": None}
 
     if config.get("OPENAI_API_KEY"):
-        result["openai"] = select_openai_model(
-            config["OPENAI_API_KEY"],
-            config.get("OPENAI_MODEL_POLICY", "auto"),
-            config.get("OPENAI_MODEL_PIN"),
-            mock_openai_models,
-        )
+        if config.get("OPENAI_AUTH_SOURCE") == env.AUTH_SOURCE_CODEX:
+            # Codex auth doesn't use the OpenAI models list endpoint
+            policy = config.get("OPENAI_MODEL_POLICY", "auto")
+            pin = config.get("OPENAI_MODEL_PIN")
+            if policy == "pinned" and pin:
+                result["openai"] = pin
+            else:
+                result["openai"] = CODEX_FALLBACK_MODELS[0]
+        else:
+            result["openai"] = select_openai_model(
+                config["OPENAI_API_KEY"],
+                config.get("OPENAI_MODEL_POLICY", "auto"),
+                config.get("OPENAI_MODEL_PIN"),
+                mock_openai_models,
+            )
 
     if config.get("XAI_API_KEY"):
         result["xai"] = select_xai_model(

@@ -1,25 +1,142 @@
-# /last30days
+# /last30days v2.9.1
 
-**The AI world reinvents itself every month. This Claude Code skill keeps you current.** /last30days researches your topic across Reddit, X, and the web from the last 30 days, finds what the community is actually upvoting and sharing, and writes you a prompt that works today, not six months ago. Whether it's Ralph Wiggum loops, Suno music prompts, or the latest Midjourney techniques, you'll prompt like someone who's been paying attention.
+[![ClawHub](https://img.shields.io/badge/ClawHub-last30days--official-blue)](https://clawhub.ai/skills/last30days-official)
 
-**Best for prompt research**: discover what prompting techniques actually work for any tool (ChatGPT, Midjourney, Claude, Figma AI, etc.) by learning from real community discussions and best practices.
+```bash
+clawhub install last30days-official
+```
+
+**The AI world reinvents itself every month. This skill keeps you current.** /last30days researches your topic across Reddit, X, YouTube, TikTok, Instagram, Hacker News, Polymarket, and the web from the last 30 days, finds what the community is actually upvoting, sharing, betting on, and saying on camera, and writes you a grounded narrative with real citations. Whether it's Seedance 2.0 access, paper.design prompts, or the latest Nano Banana Pro techniques, you'll know what people who are paying attention already know.
+
+**New in v2.9.1 — Auto-save to ~/Documents/Last30Days/:** Every run now saves the complete briefing as a topic-named `.md` file to your Documents folder. Build a personal research library automatically. Inspired by [@devin_explores](https://x.com/devin_explores).
+
+**New in v2.9 — ScrapeCreators Reddit + Top Comments + Smart Discovery:**
+
+Reddit now runs on [ScrapeCreators](https://scrapecreators.com) by default — one `SCRAPECREATORS_API_KEY` covers Reddit, TikTok, and Instagram (3 sources, 1 key). Smart subreddit discovery finds the right communities automatically, and top comments are elevated with a 10% scoring weight and `💬` display with upvote counts. [Details below.](#whats-new-in-v29)
+
+**New in v2.8 — Instagram Reels + ScrapeCreators:**
+
+Instagram Reels is now the 8th signal source. TikTok and Instagram both run on ScrapeCreators — one API key covers both. [Details below.](#whats-new-in-v28)
+
+**New in V2.5 - dramatically better results:**
+
+1. **Polymarket prediction markets and Hacker News.** See what people are betting real money on and what the technical community is actually discussing. Search "Arizona Basketball" and get NCAA Tournament championship odds (Arizona: 12%), #1 seed probability (88%), and Big 12 title race (69%) - pulled from 50+ open markets across 10 events, not just Reddit opinions. Search "Iran War" and get 15 live prediction markets with strike probabilities, regime change bets, and war declaration odds. Two-pass query expansion with tag-based domain bridging discovers markets where your topic is an outcome buried inside a broader event, not just a title keyword match. HN stories, Show HN posts, and comment insights are scored by points + comments and participate in cross-source convergence detection.
+2. **Multi-signal quality-ranked relevance scoring.** Every result across all six sources runs through a composite scoring pipeline: bidirectional text similarity with synonym expansion and token overlap, engagement velocity normalization, source authority weighting, cross-platform convergence detection via hybrid trigram-token Jaccard similarity, and temporal recency decay. Polymarket markets are ranked on a 5-factor weighted composite - text relevance (30%), 24-hour volume (30%), liquidity depth (15%), price movement velocity (15%), and outcome competitiveness (10%) - with outcome-aware scoring that matches your topic against individual market positions, not just event titles. A blinded evaluation scored v2.5 at 4.38/5.0 vs 3.73/5.0 for v1 across 5 test topics.
+3. **X handle resolution.** Search "Dor Brothers" and the skill resolves their handle (@thedorbrothers), then searches their posts directly - finding their 5,600-like viral tweet that keyword search missed entirely. Works for people, brands, products, and tools.
+
+**New in V2.1:** Open-class skill with watchlists, YouTube transcripts as a source, works in OpenAI Codex CLI. [Full changelog below.](#whats-new-in-v21)
+
+**New in V2:** Smarter query construction, two-phase supplemental search, free X search via bundled Bird client, `--days=N` flag, automatic model fallback. [Full changelog below.](#whats-new-in-v2)
+
+**The tradeoff:** /last30days finds a lot of content but takes 2-8 minutes depending on how niche your topic is. Six sources searched in parallel, results scored, deduplicated, and synthesized. We think the depth is worth the wait, but `--quick` mode is there if you need speed over thoroughness.
+
+**Best for prompt research**: discover what prompting techniques actually work for any tool (ChatGPT, Midjourney, Claude, Paper, etc.) by learning from real community discussions and best practices.
 
 **But also great for anything trending**: music, culture, news, product recommendations, viral trends, or any question where "what are people saying right now?" matters.
 
 ## Installation
 
+### Claude Code Plugin (recommended)
+```
+/plugin marketplace add mvanhorn/last30days-skill
+/plugin install last30days@last30days-skill
+```
+
+### Gemini CLI
+```bash
+gemini extensions install https://github.com/mvanhorn/last30days-skill.git
+```
+
+### Manual Install (Claude Code / Codex)
 ```bash
 # Clone the repo
 git clone https://github.com/mvanhorn/last30days-skill.git ~/.claude/skills/last30days
 
-# Add your API keys
+# Add your API keys (optional if signed in to Codex)
 mkdir -p ~/.config/last30days
 cat > ~/.config/last30days/.env << 'EOF'
-OPENAI_API_KEY=sk-...
-XAI_API_KEY=xai-...
+SCRAPECREATORS_API_KEY=... # Reddit + TikTok + Instagram (one key, all three) — scrapecreators.com
+OPENAI_API_KEY=sk-...      # optional — legacy Reddit fallback if using `codex login`
+XAI_API_KEY=xai-...        # optional — cookie auth is default for X search
 EOF
 chmod 600 ~/.config/last30days/.env
 ```
+
+If you're signed in to Codex (`codex login`), the skill will use your Codex credentials for the OpenAI Responses API and you can omit `OPENAI_API_KEY`. If you're not signed in, run `codex login` first.
+
+### X Search Authentication
+
+X search reads your existing browser cookies  - no API keys or login commands needed.
+
+**Safari (recommended on Mac):** Just be logged into x.com. No setup needed.
+
+**Chrome:** Works, but macOS will prompt you to allow Keychain access the first time. Click "Allow" (or "Always Allow" to stop future prompts).
+
+**Firefox:** Just be logged into x.com. No setup needed.
+
+**Manual fallback:** If cookie auto-detection doesn't work, set these env vars (grab them from your browser's dev tools → Application → Cookies → x.com):
+```bash
+export AUTH_TOKEN=your_auth_token
+export CT0=your_ct0_token
+```
+
+**Verify it's working:**
+```bash
+node ~/.claude/skills/last30days/scripts/lib/vendor/bird-search/bird-search.mjs --whoami
+```
+
+**Requirements:** Node.js 22+ (for the vendored Twitter GraphQL client).
+
+### Codex CLI
+
+This skill also works in OpenAI Codex CLI. Install to the Codex skills directory instead:
+
+```bash
+git clone https://github.com/mvanhorn/last30days-skill.git ~/.agents/skills/last30days
+```
+
+Same SKILL.md, same Python engine, same scripts. The `agents/openai.yaml` provides Codex-specific discovery metadata. Invoke with `$last30days` or through the `/skills` menu.
+
+### Open Variant (Watchlist + Briefings)  - For Always-On Bots
+
+**Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on AI environments.** Add your competitors, specific people, or any topic to a watchlist. When paired with a cron job or always-on bot, /last30days re-researches them on a schedule and accumulates findings in a local SQLite database. Ask for a briefing anytime.
+
+**Important:** The watchlist stores schedules as metadata, but nothing triggers runs automatically. You need an external scheduler (cron, launchd, or an always-on bot like Open Claw) to call `watchlist.py run-all` on a timer. In plain Claude Code, you can run `watch run-one` and `watch run-all` manually, but there's no background scheduling.
+
+```bash
+# Enable the open variant
+cp variants/open/SKILL.md ~/.claude/skills/last30days/SKILL.md
+
+# Add topics to your watchlist
+last30 watch my biggest competitor every week
+last30 watch Peter Steinberger every 30 days
+last30 watch AI video tools monthly
+last30 Y Combinator hot companies end of April and end of September
+
+# Run research manually (or let your bot's cron handle it)
+last30 run all my watched topics
+
+# Search accumulated knowledge
+last30 what have you found about AI video?
+```
+
+The open variant adds four modes on top of one-shot research:
+
+- **Watchlist**  - Track topics with `watch add "topic"`, run manually or via cron
+- **Briefings**  - Daily/weekly digests synthesized from accumulated findings
+- **History**  - Query and search your research database with full-text search
+- **Native web search**  - Built-in web search backends (Parallel AI, Brave, OpenRouter) run alongside Reddit/X/YouTube
+
+Both variants use the same Python engine and scripts directory. The open variant adds command routing (`watch`, `briefing`, `history`) and references mode-specific instruction files.
+
+**Optional web search API keys** (add to `~/.config/last30days/.env`):
+```bash
+PARALLEL_API_KEY=...    # Parallel AI (preferred  - LLM-optimized results)
+BRAVE_API_KEY=...       # Brave Search (free tier: 2,000 queries/month)
+OPENROUTER_API_KEY=...  # OpenRouter/Perplexity Sonar Pro
+```
+
+Check source availability: `python3 scripts/last30days.py --diagnose`
 
 ## Usage
 
@@ -36,7 +153,7 @@ Examples:
 
 ## What It Does
 
-1. **Researches** - Scans Reddit and X for discussions from the last 30 days
+1. **Researches** - Scans Reddit, X, YouTube, TikTok, Instagram, Hacker News, Polymarket, and the web for discussions from the last 30 days
 2. **Synthesizes** - Identifies patterns, best practices, and what actually works
 3. **Delivers** - Either writes copy-paste-ready prompts for your target tool, or gives you a curated expert-level answer
 
@@ -46,6 +163,160 @@ Examples:
 - **Trend discovery** - "What are the best rap songs right now?"
 - **Product research** - "What do people think of the new M4 MacBook?"
 - **Viral content** - "What's the dog-as-human trend on ChatGPT?"
+
+---
+
+## Example: Nano Banana Pro Prompting (Image Generation)
+
+**Query:** `/last30days nano banana pro prompting`
+
+**Research Output:**
+> JSON prompting is the dominant technique  - The X community overwhelmingly uses structured JSON prompts rather than plain text. Creators like @Xmira_belle, @Cicily_aura, @RubenSalvo_, and @mahivisuals all share prompts in JSON format with nested objects for metadata, subject descriptions, lighting, camera specs, and scene composition. @realdigitaldao made a static ad "in less than 5 min" using a simple JSON prompt.
+>
+> Prompt adherence is Nano Banana Pro's killer advantage  - JSON prompts hit 92% precision for color accuracy, lighting ratios, and composition vs ~68% for natural language prompts, per fofr.ai. @artingent directly compared it to GPT Image 1.5 and noted Nano Banana Pro has higher prompt adherence  - "GPT image 1.5 ignored the Top Down instruction."
+>
+> Stop writing "tag soup"  - act like a Creative Director  - The biggest shift is away from comma-separated keyword lists toward natural language descriptions with clear structure. The ICS Framework (Image type, Content, Style) and the 5-element formula (subject, composition, action, setting, style) are the two dominant approaches, per r/nanobanana2pro.
+
+**Key patterns discovered:**
+1. JSON > plain text  - Structure prompts as JSON objects with keys for subject, composition, lighting, camera, style  - per @Xmira_belle, @Cicily_aura
+2. The 5-element formula  - Subject + Composition + Action + Setting + Style  - per r/nanobanana2pro
+3. Separate subjects into distinct objects  - Multi-character scenes need each person in their own JSON block to prevent "concept bleeding"  - per fofr.ai
+4. Use camera/lens metadata  - Aperture, focal length, ISO, film stock as JSON keys for hidden photorealism control
+5. 14 reference images max  - Feed up to 14 reference images for brand/character consistency  - per Google DeepMind
+
+**Research Stats:** 8 Reddit threads (455 upvotes) + 31 X posts (183 likes, 68 reposts) from r/nanobanana2pro, r/promptingmagic, @Xmira_belle (106 likes), @Cicily_aura (45 likes)
+
+**Then asked:** "make a mock-up of an app for moms who swim"
+
+**Generated Prompt:**
+
+```json
+{
+  "image_type": "UI mockup",
+  "device": {
+    "frame": "iPhone 16 Pro",
+    "display": "realistic screen with subtle reflection",
+    "orientation": "portrait"
+  },
+  "app_concept": "SwimMom - fitness and community app for mothers who swim",
+  "screen": "home dashboard",
+  "design_system": {
+    "style": "iOS 18 native",
+    "corners": "rounded, 16px radius",
+    "shadows": "soft drop shadows, subtle depth",
+    "spacing": "8pt grid, generous whitespace"
+  },
+  "color_palette": {
+    "primary": "calming aqua blue (#4ECDC4)",
+    "secondary": "warm coral (#FF6B6B)",
+    "background": "clean white with soft blue gradient header"
+  },
+  "layout": {
+    "header": "greeting 'Good morning, Sarah' with wave icon, profile avatar top right",
+    "hero_card": "today's swim stats - laps, calories, time - with circular progress ring",
+    "section_2": "horizontal scroll of upcoming mom swim meetups with location pills",
+    "section_3": "two cards - 'My Goals' with streak counter, 'Find a Pool' with map pin",
+    "bottom_nav": "5 icons - Home (active), Workouts, Community, Schedule, Profile"
+  },
+  "visual_details": {
+    "illustrations": "friendly, minimal line art of swimming figure",
+    "typography": "SF Pro Display, clean hierarchy",
+    "mood": "energizing yet calm, supportive community feel"
+  }
+}
+```
+
+**The Result:**
+
+<p align="center">
+  <img src="assets/swimmom-mockup.jpeg" width="400" alt="SwimMom iOS app mockup"/>
+</p>
+
+This example shows /last30days learning that **JSON prompts dominate** the Nano Banana Pro community (not plain text), then applying that format to generate an iOS mockup in one shot. The research came from real X creators and Reddit threads  - techniques you wouldn't find in official docs.
+
+---
+
+## Example: Kanye West (Current Events)
+
+**Query:** `/last30days kanye west`
+
+**Research Output:**
+> **The Apology Arc**  - On January 26, Ye published a full-page letter in The Wall Street Journal titled "To Those I've Hurt," apologizing for antisemitic comments and attributing it to a four-month manic episode, an undiagnosed brain injury from his 2002 car crash, and bipolar type-1 disorder. The ADL called it "long overdue" but said it "doesn't automatically undo his long history of antisemitism." Then on February 9, he posted "I love Hitler now what"  - blowing up the goodwill almost immediately, per The Mirror. Fans on X are split on whether the apology was genuine or just pre-album PR, per @dekreationz's viral post (8.6K likes).
+>
+> **BULLY Album**  - Twelfth studio album set for March 20 via YZY and Gamma. 13 tracks with Peso Pluma, Playboi Carti, and Ty Dolla Sign features. Sonically it leans toward 808s/MBDTF territory  - more singing than rapping. Ye has reportedly removed all deepfaked/AI-generated vocals from the final version, per Rolling Stone.
+>
+> **Bianca Censori Breaks Silence**  - In a Vanity Fair tell-all, Bianca spoke publicly for the first time about their marriage, saying "This year was a lot like doing CPR for months." She confirmed her outfits are her own choice and revealed their relationship started when she was head of architecture at Yeezy, per TMZ.
+>
+> **Kim/Instagram Drama**  - A screenshot of Ye allegedly commenting on Kim's Complex magazine post went mega-viral on X. Multiple Grok fact-checks confirmed it's likely fabricated, but @dekreationz's post racked up nearly 9K likes regardless  - showing the Ye/Kim narrative still drives massive engagement.
+
+**Key patterns from the research:**
+1. Apology-then-relapse cycle  - The WSJ letter was immediately undercut by new inflammatory posts, making sincerity the dominant debate, per Washington Post
+2. Album as PR vehicle  - Skeptics across X tie the apology's timing directly to BULLY's March 20 release, per @trustGod_007
+3. Bianca as her own story  - Transitioning from "Kanye's wife" to individual public figure through Vanity Fair
+4. Fake screenshot virality  - Fabricated Ye content still goes massively viral before debunking, per @dekreationz
+
+**Research Stats:** 3 Reddit threads (193 upvotes, 192 comments) + 33 X posts (9,295 likes, 279 reposts) from r/Kanye, r/hiphopheads, @dekreationz (8,684 likes), @trustGod_007
+
+**Follow-up suggestions offered:**
+> I'm now an expert on Kanye West. Some things I can help with:
+> - What's the real story behind the apology letter  - genuine accountability or pre-album PR?
+> - Deep dive on BULLY: tracklist, Gamma deal, and removal of AI vocals
+> - The Bianca Censori Vanity Fair interview  - what she actually said vs. the tabloid headlines
+
+This example shows /last30days as a **current events research tool**  - no prompting, no target tool, just "what's happening with Kanye?" and you get a synthesized expert briefing pulled from 33 X posts and 3 Reddit threads with real engagement data.
+
+---
+
+## Example: Anthropic Odds (Prediction Markets)
+
+**Query:** `/last30days anthropic odds`
+
+**Research Output:**
+> **Pentagon standoff is THE story right now** - Defense Secretary Hegseth gave Anthropic a Friday deadline to drop AI guardrails for military use or face blacklisting via the Defense Production Act, per CBS, CNN, Bloomberg, and a wave of X posts from @The__GDD, @trendy_tech_, and @jimkaskade. The trigger was Claude's use during the Maduro capture operation in January. Anthropic CEO Dario Amodei insists AI-controlled weapons and mass surveillance are lines the company won't cross. Polymarket traders put the ban odds at just 22%, signaling they think it's posturing, per @Lolipeterh.
+>
+> **Prediction markets love Anthropic's tech, skeptical on IPO** - Polymarket gives Anthropic a 98% chance of having the best AI model at end of February and 61% for March (Google at 22%, OpenAI at 10%). Claude 4.6 is dominating. But the IPO picture is murkier: @predictheory flagged that Anthropic IPO-first odds on Kalshi "fell through the floor, ~70% down to the low teens in one move." Polymarket has Anthropic at 64% to IPO before OpenAI, but 95% NO on an IPO by June 2026. Meanwhile, 87% odds Anthropic hits $500B+ valuation this year - current valuation is $380B after a $30B raise led by GIC and Coatue, per Fortune.
+>
+> **Claude FrontierMath odds surging** - Polymarket's "Will Claude score 50% on FrontierMath?" market jumped 28% today to 48% YES. This is a live bet on whether Claude can crack elite-level math benchmarks by June 30.
+
+**Key patterns from the research:**
+1. Pentagon standoff as posturing - Polymarket gives only 22% chance of actual ban, money says it's negotiation theater
+2. Model dominance vs IPO uncertainty - 98% best model, but IPO timing is wide open
+3. FrontierMath as a live benchmark bet - real money tracking Claude's capability trajectory
+4. Big money piling in - Dan Sundheim's D1 Capital, Amazon's quiet bet, $380B valuation
+
+**Research Stats:** 25 X posts (218 likes) + 13 YouTube videos (719K views) + 6 HN stories (48 points) + 11 Polymarket markets (Best model Feb: 98%, March: 61%, IPO first: 64%, $500B+ val: 87%, FrontierMath 50%: 48%)
+
+This example shows /last30days as a **prediction market intelligence tool** - two words ("anthropic odds") and you get 11 live Polymarket positions spanning model benchmarks, IPO timing, valuation milestones, and the Pentagon standoff, all synthesized with X commentary, YouTube analysis, and HN discussion. The two-pass query expansion found markets where "Anthropic" is an outcome inside broader "best AI model" and "AI company IPO" events.
+
+---
+
+## Example: Vibe Motion (Brand New AI Tool)
+
+**Query:** `/last30days higgsfield motion vibe motion prompting`
+
+**Research Output:**
+> **Vibe Motion just launched (Feb 5-6, 2026) and it's blowing up**  - Higgsfield dropped a Claude-powered motion design tool that generates editable motion graphics from plain-English prompts. It's the first AI video tool with actual reasoning, per @Hartdrawss, and @rezkhere called it out as something "no other AI can do." Linus Ekenstam said it "broke his brain"  - work that took hours in After Effects now takes minutes.
+>
+> **It generates code, not pixels**  - Unlike other AI video tools, Vibe Motion produces actual animation code (via Remotion under the hood), not hallucinated video. Text never breaks, edits stay consistent, and you get a controllable, editable asset, per @Totinhiiio.
+>
+> **Honest reviews: promising but not polished yet**  - Chase Jarvis found results "okay" but noted 5+ minute render times, credit burn on iteration (8-60 credits per gen, $9 plan = ~150 credits), and that basic results are achievable faster with Canva. His verdict: "not quite ready for prime time" but the underlying tech shows significant potential.
+
+**Key patterns discovered:**
+1. Describe structure, not effects  - Focus on timing, hierarchy, typography, and flow rather than expressive visual storytelling, per Higgsfield's official guide
+2. Upload your actual assets first  - Brand logos, product images, PDFs give the AI context to build around YOUR files, not generic placeholders
+3. Use presets as starting points  - Select a format (Infographics, Text Animation, Posters) before writing your prompt
+4. Keep prompts conversational and direct  - Short commands > long descriptions. "Create a kinetic typography intro" beats a paragraph of specs, per Segmind
+5. Budget for iteration  - Each generation burns credits, so get your prompt right before hitting generate, per Chase Jarvis
+
+**Research Stats:** 10 Reddit threads + 30 X posts from @rezkhere, @Hartdrawss, @Totinhiiio + 14 web pages (Higgsfield blog, Chase Jarvis, SiliconANGLE, Segmind)
+
+**Follow-up suggestions offered:**
+> I'm now an expert on Higgsfield Vibe Motion prompting. What do you want to make?
+> - A branded infographic animation with your company metrics animating in
+> - A kinetic typography intro/bumper for a YouTube series
+> - A logo reveal animation with particle effects and custom brand colors
+
+This example shows /last30days researching **a tool that launched 2 days ago**. No blog roundups existed yet  - the research came from X creators and Reddit threads reacting in real-time. You get prompting advice from the people actually using it, not SEO articles written after the fact.
 
 ---
 
@@ -187,75 +458,6 @@ docker compose up -d
 **Research Stats:** 8 Reddit threads (128 upvotes) + 22 X posts (24,000+ likes) from r/selfhosted, r/LocalLLaMA, @dreetje, @steipete
 
 This example shows /last30days as a **setup guide aggregator** - pulling together scattered installation advice, gotchas, and best practices from real users who've already solved the problems you're about to encounter.
-
----
-
-## Example: iOS App Mockup (Nano Banana Pro)
-
-**Query:** `/last30days prompting tips for nano banana pro for ios designs`
-
-**Research Output:**
-> The community has converged on JSON-structured prompts for UI work - multiple viral posts from @brindleyai, @bananababydoll, and @fofrAI use detailed JSON with nested objects for subject, scene, and style. The key workflow from @fofrAI: take an existing image, have Gemini generate a JSON prompt from it, then iterate. For iOS specifically, @paji_a and @chongdashu both documented using Nano Banana Pro for iOS app mockup designs in "vibe coding" workflows.
->
-> The web guides emphasize thinking in layers: define the window frame first, then UI layout (sidebars, nav bars, cards), then text on buttons/headings. Google's official prompting guide says to drop the "4k masterpiece trending on artstation" spam - Nano Banana Pro understands natural language. For tight layouts, use an 8pt grid and limit screens to 6-8 elements.
-
-**Key patterns discovered:**
-1. JSON prompt format with nested sections (subject, scene, style, device)
-2. Layer-based structure - frame -> layout regions -> content -> text labels
-3. iOS 18 / Material Design 3 references - rounded corners, soft shadows, vibrant primary
-4. iPhone frame specification - "inside realistic iPhone 16 Pro frame"
-5. Wireframe-to-mockup workflow - upload sketch, request high-fidelity conversion
-6. 8pt grid + 6-8 elements max per screen for clean density
-7. Iterative editing - don't re-roll, ask for specific changes if 80% correct
-
-**Then asked:** "make a mock-up of an app for moms who swim"
-
-**Generated Prompt:**
-
-```json
-{
-  "image_type": "UI mockup",
-  "device": {
-    "frame": "iPhone 16 Pro",
-    "display": "realistic screen with subtle reflection",
-    "orientation": "portrait"
-  },
-  "app_concept": "SwimMom - fitness and community app for mothers who swim",
-  "screen": "home dashboard",
-  "design_system": {
-    "style": "iOS 18 native",
-    "corners": "rounded, 16px radius",
-    "shadows": "soft drop shadows, subtle depth",
-    "spacing": "8pt grid, generous whitespace"
-  },
-  "color_palette": {
-    "primary": "calming aqua blue (#4ECDC4)",
-    "secondary": "warm coral (#FF6B6B)",
-    "background": "clean white with soft blue gradient header",
-    "accents": "pool water ripple patterns, subtle"
-  },
-  "layout": {
-    "header": "greeting 'Good morning, Sarah' with small wave icon, profile avatar top right",
-    "hero_card": "today's swim stats - laps completed, calories burned, time in pool - with circular progress ring",
-    "section_2": "horizontal scroll of upcoming mom swim meetups with location pills and participant avatars",
-    "section_3": "two cards side by side - 'My Goals' with streak counter, 'Find a Pool' with map pin icon",
-    "bottom_nav": "5 icons - Home (active), Workouts, Community, Schedule, Profile"
-  },
-  "visual_details": {
-    "illustrations": "friendly, minimal line art of swimming figure",
-    "typography": "SF Pro Display, clean hierarchy",
-    "mood": "energizing yet calm, supportive community feel"
-  }
-}
-```
-
-**The Result:**
-
-<p align="center">
-  <img src="assets/swimmom-mockup.jpeg" width="400" alt="SwimMom iOS app mockup"/>
-</p>
-
-This example shows /last30days learning **AI image generation prompting patterns** (JSON structure, layer-based thinking, iOS design system references) and applying them to create a production-quality app mockup in one shot.
 
 ---
 
@@ -693,29 +895,300 @@ This example shows /last30days discovering **emerging developer workflows** - re
 
 | Flag | Description |
 |------|-------------|
-| `--quick` | Faster research, fewer sources (8-12 each) |
-| `--deep` | Comprehensive research (50-70 Reddit, 40-60 X) |
+| `--days=N` | Look back N days instead of 30 (e.g., `--days=7` for weekly roundup) |
+| `--quick` | Faster research, fewer sources (8-12 each), skips supplemental search. YouTube: 10 videos, 3 transcripts |
+| `--deep` | Comprehensive research (50-70 Reddit, 40-60 X) with extended supplemental. YouTube: 40 videos, 8 transcripts |
 | `--debug` | Verbose logging for troubleshooting |
 | `--sources=reddit` | Reddit only |
 | `--sources=x` | X only |
+| `--include-web` | Add native web search alongside Reddit/X (requires web search API key) |
+| `--store` | Persist findings to SQLite database for watchlist/briefing integration |
+| `--diagnose` | Show source availability diagnostics (API keys, Bird, YouTube, web backends) and exit |
 
 ## Requirements
 
-- **OpenAI API key** - For Reddit research (uses web search)
-- **xAI API key** - For X research (optional but recommended)
+- **OpenAI API key** - For Reddit research (uses web search via Responses API)
+- **Node.js 22+** - For X search (bundled Twitter GraphQL client)
+- **X session** - Be logged into x.com in your browser, or set `AUTH_TOKEN`/`CT0` env vars
+- **xAI API key** (optional fallback) - If the bundled search can't authenticate, falls back to xAI's Grok API
+- **yt-dlp** (optional) - For YouTube search + transcript extraction. Install via `brew install yt-dlp` or `pip install yt-dlp`. When present, automatically searches YouTube and extracts video transcripts as an additional source.
 
-At least one key is required.
+At least one API key is required. X search works automatically if you're logged into x.com in your browser. YouTube search activates automatically when yt-dlp is in your PATH.
+
+## Troubleshooting
+
+### macOS: SSL Certificate Verify Failed
+
+If you see `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate`, your Python installation is missing SSL root certificates. This only affects Python installed from python.org — **Homebrew users are not affected**.
+
+```bash
+# Check which Python you have
+which python3
+# Homebrew: /opt/homebrew/bin/python3 or /usr/local/bin/python3
+# Python.org: /Library/Frameworks/Python.framework/...
+
+# Fix: run the certificate installer (adjust version as needed)
+sudo "/Applications/Python 3.12/Install Certificates.command"
+```
 
 ## How It Works
 
-The skill uses:
-- OpenAI's Responses API with web search to find Reddit discussions
-- xAI's API with live X search to find posts
-- Real Reddit thread enrichment for engagement metrics
-- Scoring algorithm that weighs recency, relevance, and engagement
+### Two-Phase Search Architecture
+
+**Phase 1: Broad discovery**
+- OpenAI Responses API with `web_search` tool scoped to reddit.com
+- Vendored Twitter GraphQL search (or xAI API fallback) for X search
+- YouTube search + transcript extraction via yt-dlp (when installed)
+- Hacker News search via Algolia API (free, no auth)
+- Polymarket prediction market search via Gamma API (free, no auth)
+- WebSearch for blogs, news, docs, tutorials
+- Reddit JSON enrichment for real engagement metrics (upvotes, comments)
+- Scoring algorithm weighing recency, relevance, and engagement
+
+**Phase 2: Smart supplemental search** (new in V2)
+- Extracts entities from Phase 1 results: @handles from X posts, subreddit names from Reddit
+- Runs targeted follow-up searches: `from:@handle topic` on X, subreddit-scoped searches on Reddit
+- Uses Reddit's free `.json` search endpoint (no API key needed for supplemental)
+- Merges and deduplicates with Phase 1 results
+- Skipped on `--quick` for speed; extended on `--deep`
+
+### Model Fallback Chain
+
+Reddit search (via OpenAI) automatically falls back through available models:
+gpt-4.1 -> gpt-4o -> gpt-4o-mini
+
+If your OpenAI org doesn't have access to a model (e.g., unverified for gpt-4.1), it tries the next one.
 
 ---
 
-*30 days of research. 30 seconds of work.*
+## What's New in v2.9
 
-*Prompt research. Trend discovery. Expert answers.*
+### ScrapeCreators Reddit as default
+
+Reddit now runs on [ScrapeCreators](https://scrapecreators.com) by default. One `SCRAPECREATORS_API_KEY` powers Reddit, TikTok, and Instagram — three sources, one key. No more `OPENAI_API_KEY` required for Reddit search.
+
+```bash
+echo 'SCRAPECREATORS_API_KEY=your_key_here' >> ~/.config/last30days/.env
+```
+
+### Smart subreddit discovery
+
+Subreddit discovery now uses relevance-weighted scoring instead of pure frequency count. Each candidate subreddit is scored by `frequency × recency × topic-word match`, and a `UTILITY_SUBS` blocklist filters noise subreddits (r/tipofmytongue, r/whatisthisthing, etc.).
+
+| Topic | Before (v2.8) | After (v2.9) |
+|-------|---------------|--------------|
+| Claude Code skills | Generic programming subs | r/ClaudeAI, r/ClaudeCode, r/openclaw |
+| Kanye West | r/AskReddit, r/OutOfTheLoop | r/hiphopheads, r/Kanye, r/NFCWestMemeWar |
+| Nano Banana Pro | r/techsupport, r/whatisthisthing | r/GeminiAI, r/nanobanana2pro, r/macbookpro |
+
+### Top comments elevated
+
+Top comments now carry a 10% weight in the engagement scoring formula and are displayed prominently with `💬` and upvote counts:
+
+```
+**R1** (score:80) r/ClaudeAI (2026-02-28) [666pts, 63cmt]
+  Claude Code creator: In the next version, introducing two new skills
+  💬 Top comment (245 pts): "This is going to change how everyone works with Claude"
+```
+
+**Updated scoring formula:** `0.50 × log1p(score) + 0.35 × log1p(comments) + 0.05 × (ratio×10) + 0.10 × log1p(top_comment_score)` (was 0.55/0.40/0.05).
+
+### Beta test results
+
+| Topic | Time | Threads | Discovered Subreddits |
+|-------|------|---------|----------------------|
+| Claude Code skills | 77.1s | 99 | r/ClaudeAI, r/ClaudeCode, r/openclaw |
+| Kanye West | 71.7s | 84 | r/hiphopheads, r/NFCWestMemeWar, r/Kanye |
+| Anthropic odds | 68.0s | 65 | r/Anthropic, r/ClaudeAI, r/OpenAI |
+| Best rap songs lately | 68.9s | 114 | r/BestofRedditorUpdates, r/rap, r/TeenageRapFans |
+| Nano Banana Pro | 66.6s | 99 | r/GeminiAI, r/nanobanana2pro, r/macbookpro |
+
+---
+
+## What's New in v2.8
+
+### Instagram Reels as a source
+
+**See what creators are posting on Instagram.** Search any topic and get trending Reels with views, likes, spoken-word transcripts, and hashtags — scored and ranked alongside all other sources.
+
+Search "AI tools" and you get:
+- 📸 Instagram: 5 reels │ 1.4M views │ 30K likes │ 3 with transcripts
+- @danmartell: 803K views — "AI tools from 2025 vs 2026"
+- @karimehta05: 112K views — "5 AI Tools I Swear By"
+
+### TikTok + Instagram on ScrapeCreators
+
+Both TikTok and Instagram are powered by [ScrapeCreators](https://scrapecreators.com) — one API key covers both sources. 100 free credits, then pay-as-you-go.
+
+```bash
+echo 'SCRAPECREATORS_API_KEY=your_key_here' >> ~/.config/last30days/.env
+```
+
+**Migrating from Apify?** Replace `APIFY_API_TOKEN` with `SCRAPECREATORS_API_KEY` in your config. The old key is no longer used.
+---
+
+## What's New in V2.5
+
+### Polymarket prediction markets and Hacker News
+
+**The killer feature: see what people are betting real money on.** Polymarket prediction markets are searched for any topic, surfacing live odds, 24-hour volume, liquidity, and price movements alongside what people are saying on Reddit/X/YouTube/HN.
+
+Search "Arizona Basketball" and you get:
+- NCAA Tournament Winner - Arizona: 12% (30 open markets, $1.2M volume)
+- #1 Seed in NCAA Tournament - Arizona: 88% (20 open markets)
+- Big 12 Regular Season Champion - Arizona: 69%
+
+Search "Iran War" and you get 15 live prediction markets: US strikes by March (70%), War Powers resolution (60%), Khamenei out by March 31 (18%), war declaration (2%).
+
+**Two-pass query expansion with tag-based domain bridging** discovers markets the Gamma API can't find through title search alone. When your topic is an *outcome* buried inside a broader market (e.g., "Arizona" is a betting option inside "NCAA Tournament Winner"), the first pass searches all individual topic words in parallel, extracts structured category tags from the results (like "NCAA CBB", "Geopolitics"), then runs a second-pass search on those domain indicators. The result: markets that are invisible to keyword search become discoverable through domain context.
+
+**Neg-risk binary market synthesis** handles Polymarket's multi-outcome events (where each team/entity is a separate Yes/No market). The engine detects the binary sub-market pattern, extracts entity names from market questions, and synthesizes a unified outcome display - showing "Arizona: 12%, Duke: 18%, Houston: 15%" instead of raw "Yes: 12%, No: 88%" for each sub-market.
+
+**Hacker News as a source** - HN stories, Show HN posts, and Ask HN threads are searched via the Algolia API, scored by points + comments, and synthesized alongside all other sources. Comment insights are extracted from top threads to surface the technical community's actual take. HN items participate in cross-source convergence detection - when the same topic trends on HN AND Reddit AND YouTube, that signal gets flagged.
+
+No API keys required for either source. Inspired by community PRs from [@ARJ999](https://github.com/ARJ999) ([#12](https://github.com/mvanhorn/last30days-skill/pull/12)) and [@wkbaran](https://github.com/wkbaran) ([#26](https://github.com/mvanhorn/last30days-skill/pull/26)), with [@gbessoni](https://github.com/gbessoni) endorsing HN as the right addition.
+
+### Multi-signal quality-ranked relevance scoring
+
+**Every result across all seven sources runs through a composite scoring pipeline.** V2.5 doesn't just find more content - it ranks it with significantly higher precision.
+
+**Text similarity engine** - Bidirectional substring matching with synonym expansion ("hip hop" matches "rap", "MacBook" matches "Mac", "AI video" matches "text to video") and token-level overlap scoring. A rap music mix titled "Lit Hip Hop Mix 2026" went from relevance 0.33 (almost filtered out) to 0.71. Title + transcript matching catches videos that discuss your topic without mentioning it in the title.
+
+**Polymarket 5-factor weighted composite** - Markets are ranked by text relevance (30%), 24-hour trading volume (30%), liquidity depth (15%), price movement velocity (15%), and outcome competitiveness (10%). Outcome-aware scoring matches your topic against individual market positions using bidirectional substring matching and token overlap - not just event titles. A market with your topic at 88% probability ranks higher than one where it's at 2%.
+
+**Cross-platform convergence detection** - When the same story appears on multiple platforms, the skill flags it with `[also on: Reddit, HN]` or `[also on: X, YouTube]`. Uses hybrid similarity (character trigram Jaccard + token Jaccard) to detect matches even when titles differ across platforms. These cross-platform signals are the strongest evidence that something actually matters.
+
+**Channel authority weighting** - Boosts results from established creators. Source-specific engagement normalization ensures a 500-upvote Reddit thread and a 5,000-like X post are compared on equal footing.
+
+### Blinded quality comparison
+
+Ran a 15-way blinded comparison across 5 topics (Claude Code, Seedance, MacBook Pro, rap songs, React vs Svelte). Three versions, labels stripped, randomized as A/B/C:
+
+| Version | Score |
+|---------|-------|
+| v2.5 (Polymarket + HN + scoring) | 4.38/5.0 |
+| v2 (with HN) | 4.10/5.0 |
+| v1 (original) | 3.73/5.0 |
+
+Scored on groundedness (30%), specificity (25%), coverage (20%), actionability (15%), format (10%). The relative ranking is meaningful; absolute numbers are LLM-grading-LLM and shouldn't be taken as objective quality scores. The biggest gains came from prediction market data and detecting where sources agree.
+
+### X handle resolution
+
+Search "Dor Brothers" and the skill resolves their handle (@thedorbrothers), then searches their posts directly with no topic filter. Their viral tweet - "We made a $300M movie starring @LoganPaul with AI in less than 7 days" (5,600+ likes) - never says "Dor Brothers" in the text. Keyword search can't find it. Handle resolution can. Result: 40 X posts (6,900+ likes) instead of 30 (161 likes). Works for people, brands, products, and tools. [Details below.](#x-handle-resolution-details)
+
+### X handle resolution details
+
+The problem: when you search a topic on X, you find posts *about* it. But the topic's own account often doesn't mention its own name in tweets. Keyword search can't find those posts.
+
+The solution: before running the search, the skill does one WebSearch to resolve the topic's X handle. It finds the handle, then searches their posts directly with no topic filter - catching viral posts keyword search misses entirely.
+
+Works for people, brands, products, and tools - anything that might have an X account. The skill verifies handles aren't parody or fan accounts before using them. If no official account exists (like Seedance, which doesn't have one), it skips gracefully.
+
+**How it works:**
+
+```
+1. Agent WebSearches "{topic} X twitter handle site:x.com"
+2. Extracts and verifies the handle from results
+3. Passes --x-handle={handle} to the search engine
+4. Engine searches from:{handle} with no topic keywords (unfiltered)
+5. Results merged with keyword search, deduplicated, scored
+```
+
+No extra API keys needed - uses the agent's built-in WebSearch (available to 100% of users).
+
+---
+
+## What's New in V2.1
+
+### Open-class skill with watchlists (v2.1)
+
+**The biggest feature in v2.1 isn't a new source  - it's what happens when you pair /last30days with an always-on bot.** The open variant adds a watchlist, briefings, and history. Add `"Competitor X"` to your watchlist, set it to weekly, and when your bot's cron job fires every Monday, you get a research briefing  - what they shipped, what people said about it, what Reddit and X are discussing. The research accumulates in a local SQLite database, and you can query it anytime with natural language.
+
+**Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on environments.** The watchlist stores schedules as metadata  - you need cron, launchd, or a persistent bot to actually trigger runs. In Claude Code you can still use `run-one` and `run-all` manually.
+
+### YouTube search with transcripts (v2.1)
+
+**YouTube is now a 4th research source.** When yt-dlp is installed (`brew install yt-dlp`), /last30days automatically searches YouTube for your topic, fetches view counts and engagement data, and extracts auto-generated transcripts from the top videos. Transcripts give the synthesis engine actual content to work with  - not just titles.
+
+YouTube items go through the same scoring pipeline (relevance + recency + engagement) and are deduped, scored, and rendered alongside Reddit and X results. Views dominate YouTube's engagement formula since they're the primary discovery signal.
+
+Inspired by [Peter Steinberger](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain. Peter's approach of combining yt-dlp for search/metadata with transcript extraction for content analysis was the direct inspiration for this feature.
+
+### Works in OpenAI Codex CLI (v2.1)
+
+**Same skill, different host.** Install to `~/.agents/skills/last30days` and invoke with `$last30days` inside Codex. The `agents/openai.yaml` provides Codex-specific discovery metadata. Same SKILL.md, same Python engine, same four sources.
+
+### Bundled X search (v2.1)
+
+**X search is fully self-contained** - No external `bird` CLI or xAI API key needed. /last30days bundles a vendored subset of Bird's Twitter GraphQL client (MIT licensed, by Peter Steinberger). Just be logged into x.com in your browser and it auto-detects your session. Falls back to xAI API if bundled search can't authenticate.
+
+### Everything else (v2.1)
+
+**`--days=N` flag** - Configurable lookback window. `/last30days topic --days=7` for a weekly roundup, `--days=14` for two weeks.
+
+**Model fallback chain** - If your OpenAI org can't access gpt-4.1, automatically falls back to gpt-4o, then gpt-4o-mini. No config needed.
+
+**Context-aware invitations** - After research, the skill generates specific follow-up suggestions based on what it actually learned (not generic templates). For example, after researching Nano Banana Pro it might suggest "Photorealistic product shots with natural lighting" rather than a generic "describe what you want."
+
+**Citation priority** - Cites @handles from X and r/subreddits over web sources, because the skill's value is surfacing what *people* are saying, not what journalists wrote.
+
+**Marketplace plugin support** - Ships with `.claude-plugin/plugin.json` for Claude Code marketplace compatibility. (Inspired by [@galligan](https://github.com/galligan)'s PR)
+
+---
+
+## What's New in V2
+
+### Way better X and Reddit results
+
+V2 finds significantly more content than V1. Two major improvements:
+
+**Smarter query construction** - V1 sent overly specific queries to X search (literal keyword AND matching), causing 0 results on topics that were actively trending. V2 aggressively strips research/meta words ("best", "prompt", "techniques", "tips") and question prefixes ("what are people saying about") to extract just the core topic. Example: `"vibe motion best prompt techniques"` now searches for `"vibe motion"` instead of `"vibe motion prompt techniques"` - going from 0 posts to 12+. Automatically retries with fewer keywords if the first attempt returns nothing.
+
+**Smart supplemental search (Phase 2)** - After the initial broad search, extracts key @handles and subreddits from the results, then runs targeted follow-up searches to find content that keyword search alone misses. Example: researching "Open Claw" automatically discovers @openclaw, @steipete and drills into their posts. For Reddit, it hits the free `.json` search endpoint scoped to discovered subreddits - no extra API keys needed.
+
+**Reddit JSON enrichment** - Fetches real upvote and comment counts from Reddit's free API for every thread, giving you actual engagement signals instead of estimates.
+
+### Community contributions
+
+Thanks to the contributors who helped shape V2:
+
+- [@JosephOIbrahim](https://github.com/JosephOIbrahim) - Windows Unicode fix
+- [@levineam](https://github.com/levineam) - Model fallback for unverified orgs
+- [@jonthebeef](https://github.com/jonthebeef) - `--days=N` configurable lookback
+
+---
+
+## Security & Privacy
+
+### Data that leaves your machine
+
+| Destination | Data Sent | API Key Required |
+|------------|-----------|-----------------|
+| `api.scrapecreators.com` | Search query (Reddit + TikTok + Instagram) | SCRAPECREATORS_API_KEY |
+| `api.openai.com` | Search query (legacy Reddit fallback) | OPENAI_API_KEY |
+| `reddit.com` | Thread URLs for enrichment | None (public JSON) |
+| Twitter GraphQL / `api.x.ai` | Search query | Browser cookies or XAI_API_KEY |
+| `youtube.com` (via yt-dlp) | Search query | None (public search) |
+| `hn.algolia.com` | Search query | None (public API) |
+| `gamma-api.polymarket.com` | Search query | None (public API) |
+| `api.search.brave.com` | Search query (optional) | BRAVE_API_KEY |
+| `api.parallel.ai` | Search query (optional) | PARALLEL_API_KEY |
+| `openrouter.ai` | Search query (optional) | OPENROUTER_API_KEY |
+
+Your research topic is included in all outbound API requests. If you research sensitive topics, be aware that query strings are transmitted to the API providers listed above.
+
+### Data stored locally
+
+- API keys: `~/.config/last30days/.env` (chmod 600 recommended)
+- Watchlist database: `~/.local/share/last30days/research.db` (SQLite)
+- Briefings: `~/.local/share/last30days/briefs/`
+
+### API key isolation
+
+Each API key is transmitted only to its respective endpoint. Your OpenAI key is never sent to xAI, Brave, or any other provider. Browser cookies for X are read locally and used only for Twitter GraphQL requests.
+
+---
+
+*30 days of research. 30 seconds of work. Eight sources. Zero stale prompts.*
+
+*Pair with [Open Claw](https://github.com/openclaw/openclaw) for automated watchlists and briefings. Reddit. X. YouTube. TikTok. Instagram. Web. — All synthesized into expert answers and copy-paste prompts.*

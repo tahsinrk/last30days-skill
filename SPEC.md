@@ -2,7 +2,7 @@
 
 ## Overview
 
-`last30days` is a Claude Code skill that researches a given topic across Reddit and X (Twitter) using the OpenAI Responses API and xAI Responses API respectively. It enforces a strict 30-day recency window, popularity-aware ranking, and produces actionable outputs including best practices, a prompt pack, and a reusable context snippet.
+`last30days` is a Claude Code skill that researches a given topic across Reddit and X (Twitter) using the OpenAI Responses API and xAI Responses API respectively. It enforces a strict 30-day recency window, popularity-aware ranking, and produces actionable outputs including best practices, a prompt pack, and a reusable context snippet. OpenAI auth can come from `OPENAI_API_KEY` or Codex login credentials.
 
 The skill operates in three modes depending on available API keys: **reddit-only** (OpenAI key), **x-only** (xAI key), or **both** (full cross-validation). It uses automatic model selection to stay current with the latest models from both providers, with optional pinning for stability.
 
@@ -10,7 +10,7 @@ The skill operates in three modes depending on available API keys: **reddit-only
 
 The orchestrator (`last30days.py`) coordinates discovery, enrichment, normalization, scoring, deduplication, and rendering. Each concern is isolated in `scripts/lib/`:
 
-- **env.py**: Load and validate API keys from `~/.config/last30days/.env`
+- **env.py**: Load API keys from `~/.config/last30days/.env` and Codex auth from `~/.codex/auth.json`
 - **dates.py**: Date range calculation and confidence scoring
 - **cache.py**: 24-hour TTL caching keyed by topic + date range
 - **http.py**: stdlib-only HTTP client with retry logic
@@ -18,6 +18,8 @@ The orchestrator (`last30days.py`) coordinates discovery, enrichment, normalizat
 - **openai_reddit.py**: OpenAI Responses API + web_search for Reddit
 - **xai_x.py**: xAI Responses API + x_search for X
 - **reddit_enrich.py**: Fetch Reddit thread JSON for real engagement metrics
+- **hackernews.py**: Hacker News search via Algolia API (free, no auth)
+- **polymarket.py**: Polymarket prediction market search via Gamma API (free, no auth)
 - **normalize.py**: Convert raw API responses to canonical schema
 - **score.py**: Compute popularity-aware scores (relevance + recency + engagement)
 - **dedupe.py**: Near-duplicate detection via text similarity

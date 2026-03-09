@@ -18,9 +18,9 @@ def log(msg: str):
     if DEBUG:
         sys.stderr.write(f"[DEBUG] {msg}\n")
         sys.stderr.flush()
-MAX_RETRIES = 3
-RETRY_DELAY = 1.0
-USER_AGENT = "last30days-skill/1.0 (Claude Code Skill)"
+MAX_RETRIES = 5
+RETRY_DELAY = 2.0
+USER_AGENT = "last30days-skill/2.1 (Assistant Skill)"
 
 
 class HTTPError(Exception):
@@ -38,6 +38,7 @@ def request(
     json_data: Optional[Dict[str, Any]] = None,
     timeout: int = DEFAULT_TIMEOUT,
     retries: int = MAX_RETRIES,
+    raw: bool = False,
 ) -> Dict[str, Any]:
     """Make an HTTP request and return JSON response.
 
@@ -50,7 +51,7 @@ def request(
         retries: Number of retries on failure
 
     Returns:
-        Parsed JSON response
+        Parsed JSON response (or raw text if raw=True)
 
     Raises:
         HTTPError: On request failure
@@ -66,8 +67,6 @@ def request(
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
 
     log(f"{method} {url}")
-    if json_data:
-        log(f"Payload keys: {list(json_data.keys())}")
 
     last_error = None
     for attempt in range(retries):
@@ -75,6 +74,8 @@ def request(
             with urllib.request.urlopen(req, timeout=timeout) as response:
                 body = response.read().decode('utf-8')
                 log(f"Response: {response.status} ({len(body)} bytes)")
+                if raw:
+                    return body
                 return json.loads(body) if body else {}
         except urllib.error.HTTPError as e:
             body = None
@@ -84,7 +85,8 @@ def request(
                 pass
             log(f"HTTP Error {e.code}: {e.reason}")
             if body:
-                log(f"Error body: {body[:500]}")
+                snippet = " ".join(body.split())
+                log(f"Error body: {snippet[:200]}")
             last_error = HTTPError(f"HTTP {e.code}: {e.reason}", e.code, body)
 
             # Don't retry client errors (4xx) except rate limits
@@ -92,7 +94,20 @@ def request(
                 raise last_error
 
             if attempt < retries - 1:
-                time.sleep(RETRY_DELAY * (attempt + 1))
+                if e.code == 429:
+                    # Respect Retry-After header, fall back to exponential backoff
+                    retry_after = e.headers.get("Retry-After") if hasattr(e, 'headers') else None
+                    if retry_after:
+                        try:
+                            delay = float(retry_after)
+                        except ValueError:
+                            delay = RETRY_DELAY * (2 ** attempt) + 1
+                    else:
+                        delay = RETRY_DELAY * (2 ** attempt) + 1  # 2s, 5s, 9s...
+                    log(f"Rate limited (429). Waiting {delay:.1f}s before retry {attempt + 2}/{retries}")
+                else:
+                    delay = RETRY_DELAY * (2 ** attempt)
+                time.sleep(delay)
         except urllib.error.URLError as e:
             log(f"URL Error: {e.reason}")
             last_error = HTTPError(f"URL Error: {e.reason}")
@@ -124,11 +139,18 @@ def post(url: str, json_data: Dict[str, Any], headers: Optional[Dict[str, str]] 
     return request("POST", url, headers=headers, json_data=json_data, **kwargs)
 
 
-def get_reddit_json(path: str) -> Dict[str, Any]:
+def post_raw(url: str, json_data: Dict[str, Any], headers: Optional[Dict[str, str]] = None, **kwargs) -> str:
+    """Make a POST request with JSON body and return raw text."""
+    return request("POST", url, headers=headers, json_data=json_data, raw=True, **kwargs)
+
+
+def get_reddit_json(path: str, timeout: int = DEFAULT_TIMEOUT, retries: int = MAX_RETRIES) -> Dict[str, Any]:
     """Fetch Reddit thread JSON.
 
     Args:
         path: Reddit path (e.g., /r/subreddit/comments/id/title)
+        timeout: HTTP timeout per attempt in seconds
+        retries: Number of retries on failure
 
     Returns:
         Parsed JSON response
@@ -149,4 +171,4 @@ def get_reddit_json(path: str) -> Dict[str, Any]:
         "Accept": "application/json",
     }
 
-    return get(url, headers=headers)
+    return get(url, headers=headers, timeout=timeout, retries=retries)
