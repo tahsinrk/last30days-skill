@@ -91,11 +91,11 @@ def search_x(
     # Adjust timeout based on depth (generous for API response time)
     timeout = 90 if depth == "quick" else 120 if depth == "default" else 180
 
-    # Use Agent Tools API with x_search tool
+    # Use Agent Tools API with x_search tool (native date filtering)
     payload = {
         "model": model,
         "tools": [
-            {"type": "x_search"}
+            {"type": "x_search", "from_date": from_date, "to_date": to_date}
         ],
         "input": [
             {

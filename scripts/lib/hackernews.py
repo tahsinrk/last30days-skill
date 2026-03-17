@@ -12,6 +12,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional
 
 from . import http
+from .query import extract_core_subject
+from .relevance import token_overlap_relevance
 
 ALGOLIA_SEARCH_URL = "https://hn.algolia.com/api/v1/search"
 ALGOLIA_SEARCH_BY_DATE_URL = "https://hn.algolia.com/api/v1/search_by_date"
@@ -84,13 +86,17 @@ def search_hackernews(
     from_ts = _date_to_unix(from_date)
     to_ts = _date_to_unix(to_date) + 86400  # Include the end date
 
-    _log(f"Searching for '{topic}' (since {from_date}, count={count})")
+    # Use extracted core subject instead of raw topic for cleaner Algolia matching
+    core = extract_core_subject(topic)
+    _log(f"Searching for '{core}' (raw: '{topic}', since {from_date}, count={count})")
 
-    # Use relevance-sorted search (better for topic matching)
+    # Use relevance-sorted search with minimum engagement filter.
+    # NOTE: restrictSearchableAttributes=title omitted intentionally — it would
+    # miss Ask HN/Show HN threads where the topic appears in the body.
     params = {
-        "query": topic,
+        "query": core,
         "tags": "story",
-        "numericFilters": f"created_at_i>{from_ts},created_at_i<{to_ts}",
+        "numericFilters": f"created_at_i>{from_ts},created_at_i<{to_ts},points>2",
         "hitsPerPage": str(count),
     }
 
@@ -111,8 +117,12 @@ def search_hackernews(
     return response
 
 
-def parse_hackernews_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
+def parse_hackernews_response(response: Dict[str, Any], query: str = "") -> List[Dict[str, Any]]:
     """Parse Algolia response into normalized item dicts.
+
+    Args:
+        response: Algolia search response
+        query: Original search query for token-overlap relevance scoring
 
     Returns:
         List of item dicts ready for normalization.
@@ -134,11 +144,14 @@ def parse_hackernews_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
         article_url = hit.get("url") or ""
         hn_url = f"https://news.ycombinator.com/item?id={object_id}"
 
-        # Relevance: Algolia rank position gives a base, engagement boosts it
-        # Position 0 = most relevant from Algolia
+        # Relevance: blend Algolia rank with token-overlap content matching
         rank_score = max(0.3, 1.0 - (i * 0.02))  # 1.0 -> 0.3 over 35 items
         engagement_boost = min(0.2, math.log1p(points) / 40)
-        relevance = min(1.0, rank_score * 0.7 + engagement_boost + 0.1)
+        if query:
+            content_score = token_overlap_relevance(query, hit.get("title", ""))
+            relevance = min(1.0, 0.6 * rank_score + 0.4 * content_score + engagement_boost)
+        else:
+            relevance = min(1.0, rank_score * 0.7 + engagement_boost + 0.1)
 
         items.append({
             "object_id": object_id,

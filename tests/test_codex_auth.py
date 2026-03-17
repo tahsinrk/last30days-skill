@@ -140,7 +140,8 @@ class TestGetAvailableSourcesWithAuth(unittest.TestCase):
             "XAI_API_KEY": None,
         }
         result = env.get_available_sources(config)
-        self.assertEqual(result, "web")
+        # Reddit is available via public JSON fallback even without OpenAI auth
+        self.assertEqual(result, "reddit")
 
 
 class TestParseCodexStream(unittest.TestCase):

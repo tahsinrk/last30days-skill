@@ -30,6 +30,10 @@ def _xref_tag(item) -> str:
             source_names.add('Instagram')
         elif ref_id.startswith('HN'):
             source_names.add('HN')
+        elif ref_id.startswith('BS'):
+            source_names.add('Bluesky')
+        elif ref_id.startswith('TS'):
+            source_names.add('Truth Social')
         elif ref_id.startswith('PM'):
             source_names.add('Polymarket')
         elif ref_id.startswith('W'):
@@ -59,13 +63,15 @@ def _assess_data_freshness(report: schema.Report) -> dict:
     x_recent = sum(1 for x in report.x if x.date and x.date >= report.range_from)
     web_recent = sum(1 for w in report.web if w.date and w.date >= report.range_from)
     hn_recent = sum(1 for h in report.hackernews if h.date and h.date >= report.range_from)
+    bsky_recent = sum(1 for b in report.bluesky if b.date and b.date >= report.range_from)
+    ts_recent = sum(1 for ts in report.truthsocial if ts.date and ts.date >= report.range_from)
     pm_recent = sum(1 for p in report.polymarket if p.date and p.date >= report.range_from)
 
     tiktok_recent = sum(1 for t in report.tiktok if t.date and t.date >= report.range_from)
     ig_recent = sum(1 for ig in report.instagram if ig.date and ig.date >= report.range_from)
 
-    total_recent = reddit_recent + x_recent + web_recent + hn_recent + pm_recent + tiktok_recent + ig_recent
-    total_items = len(report.reddit) + len(report.x) + len(report.web) + len(report.hackernews) + len(report.polymarket) + len(report.tiktok) + len(report.instagram)
+    total_recent = reddit_recent + x_recent + web_recent + hn_recent + bsky_recent + ts_recent + pm_recent + tiktok_recent + ig_recent
+    total_items = len(report.reddit) + len(report.x) + len(report.web) + len(report.hackernews) + len(report.bluesky) + len(report.truthsocial) + len(report.polymarket) + len(report.tiktok) + len(report.instagram)
 
     return {
         "reddit_recent": reddit_recent,
@@ -367,6 +373,78 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
 
             lines.append("")
 
+    # Bluesky items
+    if report.bluesky_error:
+        lines.append("### Bluesky Posts")
+        lines.append("")
+        lines.append(f"**ERROR:** {report.bluesky_error}")
+        lines.append("")
+    elif report.bluesky:
+        lines.append("### Bluesky Posts")
+        lines.append("")
+        for item in report.bluesky[:limit]:
+            eng_str = ""
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.likes is not None:
+                    parts.append(f"{eng.likes}lk")
+                if eng.reposts is not None:
+                    parts.append(f"{eng.reposts}rp")
+                if eng.replies is not None:
+                    parts.append(f"{eng.replies}re")
+                if parts:
+                    eng_str = f" [{', '.join(parts)}]"
+
+            date_str = f" ({item.date})" if item.date else ""
+
+            lines.append(f"**{item.id}** (score:{item.score}) @{item.author_handle}{date_str}{eng_str}{_xref_tag(item)}")
+            if item.text:
+                snippet = item.text[:200]
+                if len(item.text) > 200:
+                    snippet += "..."
+                lines.append(f"  {snippet}")
+            if item.url:
+                lines.append(f"  {item.url}")
+            lines.append(f"  *{item.why_relevant}*")
+            lines.append("")
+
+    # Truth Social items
+    if report.truthsocial_error:
+        lines.append("### Truth Social Posts")
+        lines.append("")
+        lines.append(f"**ERROR:** {report.truthsocial_error}")
+        lines.append("")
+    elif report.truthsocial:
+        lines.append("### Truth Social Posts")
+        lines.append("")
+        for item in report.truthsocial[:limit]:
+            eng_str = ""
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.likes is not None:
+                    parts.append(f"{eng.likes}lk")
+                if eng.reposts is not None:
+                    parts.append(f"{eng.reposts}rp")
+                if eng.replies is not None:
+                    parts.append(f"{eng.replies}re")
+                if parts:
+                    eng_str = f" [{', '.join(parts)}]"
+
+            date_str = f" ({item.date})" if item.date else ""
+
+            lines.append(f"**{item.id}** (score:{item.score}) @{item.author_handle}{date_str}{eng_str}{_xref_tag(item)}")
+            if item.text:
+                snippet = item.text[:200]
+                if len(item.text) > 200:
+                    snippet += "..."
+                lines.append(f"  {snippet}")
+            if item.url:
+                lines.append(f"  {item.url}")
+            lines.append(f"  *{item.why_relevant}*")
+            lines.append("")
+
     # Polymarket items
     if report.polymarket_error:
         lines.append("### Prediction Markets (Polymarket)")
@@ -531,6 +609,20 @@ def render_source_status(report: schema.Report, source_info: dict = None) -> str
         lines.append(f"  ✅ HN: {len(report.hackernews)} stories")
     # Hide when zero results
 
+    # Bluesky
+    if report.bluesky_error:
+        lines.append(f"  ❌ Bluesky: error - {report.bluesky_error}")
+    elif report.bluesky:
+        lines.append(f"  ✅ Bluesky: {len(report.bluesky)} posts")
+    # Hide when zero results
+
+    # Truth Social
+    if report.truthsocial_error:
+        lines.append(f"  ❌ Truth Social: error - {report.truthsocial_error}")
+    elif report.truthsocial:
+        lines.append(f"  ✅ Truth Social: {len(report.truthsocial)} posts")
+    # Hide when zero results
+
     # Polymarket
     if report.polymarket_error:
         lines.append(f"  ❌ Polymarket: error - {report.polymarket_error}")
@@ -581,6 +673,10 @@ def render_context_snippet(report: schema.Report) -> str:
         all_items.append((item.score, "Instagram", item.text[:50] + "...", item.url))
     for item in report.hackernews[:5]:
         all_items.append((item.score, "HN", item.title[:50] + "...", item.hn_url))
+    for item in report.bluesky[:5]:
+        all_items.append((item.score, "Bluesky", item.text[:50] + "...", item.url))
+    for item in report.truthsocial[:5]:
+        all_items.append((item.score, "Truth Social", item.text[:50] + "...", item.url))
     for item in report.polymarket[:5]:
         all_items.append((item.score, "Polymarket", item.question[:50] + "...", item.url))
     for item in report.web[:5]:
@@ -752,6 +848,46 @@ def render_full_report(report: schema.Report) -> str:
                 for insight in item.comment_insights:
                     lines.append(f"- {insight}")
 
+            lines.append("")
+
+    # Bluesky section
+    if report.bluesky:
+        lines.append("## Bluesky Posts")
+        lines.append("")
+        for item in report.bluesky:
+            lines.append(f"### {item.id}: @{item.author_handle}")
+            lines.append("")
+            lines.append(f"- **URL:** {item.url}")
+            lines.append(f"- **Date:** {item.date or 'Unknown'}")
+            lines.append(f"- **Score:** {item.score}/100")
+            lines.append(f"- **Relevance:** {item.why_relevant}")
+
+            if item.engagement:
+                eng = item.engagement
+                lines.append(f"- **Engagement:** {eng.likes or '?'} likes, {eng.reposts or '?'} reposts, {eng.replies or '?'} replies")
+
+            lines.append("")
+            lines.append(f"> {item.text[:300]}")
+            lines.append("")
+
+    # Truth Social section
+    if report.truthsocial:
+        lines.append("## Truth Social Posts")
+        lines.append("")
+        for item in report.truthsocial:
+            lines.append(f"### {item.id}: @{item.author_handle}")
+            lines.append("")
+            lines.append(f"- **URL:** {item.url}")
+            lines.append(f"- **Date:** {item.date or 'Unknown'}")
+            lines.append(f"- **Score:** {item.score}/100")
+            lines.append(f"- **Relevance:** {item.why_relevant}")
+
+            if item.engagement:
+                eng = item.engagement
+                lines.append(f"- **Engagement:** {eng.likes or '?'} likes, {eng.reposts or '?'} reposts, {eng.replies or '?'} replies")
+
+            lines.append("")
+            lines.append(f"> {item.text[:300]}")
             lines.append("")
 
     # Polymarket section

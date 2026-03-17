@@ -14,6 +14,13 @@ function normalizeValue(value) {
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : null;
 }
+function envFlagEnabled(name) {
+    const value = normalizeValue(process.env[name]);
+    if (!value) {
+        return false;
+    }
+    return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+}
 function cookieHeader(authToken, ct0) {
     return `auth_token=${authToken}; ct0=${ct0}`;
 }
@@ -123,6 +130,8 @@ export async function extractCookiesFromFirefox(profile) {
 export async function resolveCredentials(options) {
     const warnings = [];
     const cookies = buildEmpty();
+    const disableBrowserCookies = envFlagEnabled('BIRD_DISABLE_BROWSER_COOKIES') ||
+        envFlagEnabled('LAST30DAYS_DISABLE_BROWSER_COOKIES');
     const cookieTimeoutMs = typeof options.cookieTimeoutMs === 'number' &&
         Number.isFinite(options.cookieTimeoutMs) &&
         options.cookieTimeoutMs > 0
@@ -144,6 +153,15 @@ export async function resolveCredentials(options) {
     readEnvCookie(cookies, ['CT0', 'TWITTER_CT0'], 'ct0');
     if (cookies.authToken && cookies.ct0) {
         cookies.cookieHeader = cookieHeader(cookies.authToken, cookies.ct0);
+        return { cookies, warnings };
+    }
+    if (disableBrowserCookies) {
+        if (!cookies.authToken) {
+            warnings.push('Missing auth_token - provide via --auth-token, AUTH_TOKEN env var, or disable BIRD_DISABLE_BROWSER_COOKIES to allow browser cookie lookup');
+        }
+        if (!cookies.ct0) {
+            warnings.push('Missing ct0 - provide via --ct0, CT0 env var, or disable BIRD_DISABLE_BROWSER_COOKIES to allow browser cookie lookup');
+        }
         return { cookies, warnings };
     }
     const sourcesToTry = resolveSources(options.cookieSource);

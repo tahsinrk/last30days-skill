@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from .relevance import token_overlap_relevance as _compute_relevance
+
 # Path to the vendored bird-search wrapper
 _BIRD_SEARCH_MJS = Path(__file__).parent / "vendor" / "bird-search" / "bird-search.mjs"
 
@@ -36,10 +38,19 @@ def set_credentials(auth_token: Optional[str], ct0: Optional[str]):
         _credentials['CT0'] = ct0
 
 
+def _has_injected_credentials() -> bool:
+    """Return True when both X session cookies were injected from config."""
+    return bool(_credentials.get('AUTH_TOKEN') and _credentials.get('CT0'))
+
+
 def _subprocess_env() -> Dict[str, str]:
     """Build env dict for Node subprocesses, merging injected credentials."""
     env = os.environ.copy()
     env.update(_credentials)
+    # When repo config already provides cookies, disable browser-cookie fallback
+    # so vendored Bird never hits Safari/Chrome keychain during automation.
+    if _has_injected_credentials():
+        env.setdefault("BIRD_DISABLE_BROWSER_COOKIES", "1")
     return env
 
 
@@ -54,56 +65,10 @@ def _extract_core_subject(topic: str) -> str:
 
     X search is literal keyword AND matching — all words must appear.
     Aggressively strip question/meta/research words to keep only the
-    core product/concept name (2-3 words max).
+    core product/concept name (max 5 words).
     """
-    text = topic.lower().strip()
-
-    # Phase 1: Strip multi-word prefixes (longest first)
-    prefixes = [
-        'what are the best', 'what is the best', 'what are the latest',
-        'what are people saying about', 'what do people think about',
-        'how do i use', 'how to use', 'how to',
-        'what are', 'what is', 'tips for', 'best practices for',
-    ]
-    for p in prefixes:
-        if text.startswith(p + ' '):
-            text = text[len(p):].strip()
-            break
-
-    # Phase 2: Strip multi-word suffixes
-    suffixes = [
-        'best practices', 'use cases', 'prompt techniques',
-        'prompting techniques', 'prompting tips',
-    ]
-    for s in suffixes:
-        if text.endswith(' ' + s):
-            text = text[:-len(s)].strip()
-            break
-
-    # Phase 3: Filter individual noise words
-    _noise = {
-        # Question/filler words
-        'a', 'an', 'the', 'is', 'are', 'was', 'were', 'and', 'or',
-        'of', 'in', 'on', 'for', 'with', 'about', 'to',
-        'people', 'saying', 'think', 'said', 'lately',
-        # Research/meta descriptors
-        'best', 'top', 'good', 'great', 'awesome', 'killer',
-        'latest', 'new', 'news', 'update', 'updates',
-        'trendiest', 'trending', 'hottest', 'hot', 'popular', 'viral',
-        'practices', 'features', 'guide', 'tutorial',
-        'recommendations', 'advice', 'review', 'reviews',
-        'usecases', 'examples', 'comparison', 'versus', 'vs',
-        'plugin', 'plugins', 'skill', 'skills', 'tool', 'tools',
-        # Prompting meta words
-        'prompt', 'prompts', 'prompting', 'techniques', 'tips',
-        'tricks', 'methods', 'strategies', 'approaches',
-        # Action words
-        'using', 'uses', 'use',
-    }
-    words = text.split()
-    result = [w for w in words if w not in _noise]
-
-    return ' '.join(result[:3]) or topic.lower().strip()  # Max 3 words
+    from .query import extract_core_subject
+    return extract_core_subject(topic, max_words=5, strip_suffixes=True)
 
 
 def is_bird_installed() -> bool:
@@ -125,6 +90,9 @@ def is_bird_authenticated() -> Optional[str]:
     """
     if not is_bird_installed():
         return None
+
+    if _has_injected_credentials():
+        return "env AUTH_TOKEN"
 
     try:
         result = subprocess.run(
@@ -279,16 +247,28 @@ def search_x(
     response = _run_bird_search(query, count, timeout)
 
     # Check if we got results
-    items = parse_bird_response(response)
+    items = parse_bird_response(response, query=core_topic)
 
-    # Retry with fewer keywords if 0 results and query has 3+ words
+    # Retry with OR groups for multi-word queries (X supports OR operator)
     core_words = core_topic.split()
+    if not items and len(core_words) >= 2:
+        from .query import extract_compound_terms
+        compounds = extract_compound_terms(topic)
+        if compounds:
+            # Build OR-group query: ("multi-agent" OR "agent simulation") since:DATE
+            or_parts = ' OR '.join(f'"{t}"' for t in compounds[:3])
+            _log(f"0 results for '{core_topic}', retrying with OR groups: {or_parts}")
+            query = f"({or_parts}) since:{from_date}"
+            response = _run_bird_search(query, count, timeout)
+            items = parse_bird_response(response, query=core_topic)
+
+    # Retry with fewer keywords if still 0 results and query has 3+ words
     if not items and len(core_words) > 2:
         shorter = ' '.join(core_words[:2])
         _log(f"0 results for '{core_topic}', retrying with '{shorter}'")
         query = f"{shorter} since:{from_date}"
         response = _run_bird_search(query, count, timeout)
-        items = parse_bird_response(response)
+        items = parse_bird_response(response, query=core_topic)
 
     # Last-chance retry: use strongest remaining token (often the product name)
     if not items and core_words:
@@ -353,6 +333,7 @@ def search_handles(
                 stderr=subprocess.PIPE,
                 text=True,
                 preexec_fn=preexec,
+                env=_subprocess_env(),
             )
 
             try:
@@ -375,7 +356,7 @@ def search_handles(
                 continue
 
             response = json.loads(output)
-            items = parse_bird_response(response)
+            items = parse_bird_response(response, query=core_topic)
             all_items.extend(items)
 
         except json.JSONDecodeError:
@@ -386,11 +367,12 @@ def search_handles(
     return all_items
 
 
-def parse_bird_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
+def parse_bird_response(response: Dict[str, Any], query: str = "") -> List[Dict[str, Any]]:
     """Parse Bird response to match xai_x output format.
 
     Args:
         response: Raw Bird JSON response
+        query: Original search query for relevance scoring
 
     Returns:
         List of normalized item dicts matching xai_x.parse_x_response() format.
@@ -468,7 +450,7 @@ def parse_bird_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
             "date": date,
             "engagement": engagement if any(v is not None for v in engagement.values()) else None,
             "why_relevant": "",  # Bird doesn't provide relevance explanations
-            "relevance": 0.7,  # Default relevance, let score.py re-rank
+            "relevance": _compute_relevance(query, str(tweet.get("text", ""))) if query else 0.7,
         }
 
         items.append(item)

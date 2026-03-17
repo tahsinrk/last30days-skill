@@ -47,11 +47,28 @@ class OpenAIAuth:
     codex_auth_file: str
 
 
+def _check_file_permissions(path: Path) -> None:
+    """Warn to stderr if a secrets file has overly permissive permissions."""
+    try:
+        mode = path.stat().st_mode
+        # Check if group or other can read (bits 0o044)
+        if mode & 0o044:
+            import sys
+            sys.stderr.write(
+                f"[last30days] WARNING: {path} is readable by other users. "
+                f"Run: chmod 600 {path}\n"
+            )
+            sys.stderr.flush()
+    except OSError:
+        pass
+
+
 def load_env_file(path: Path) -> Dict[str, str]:
     """Load environment variables from a file."""
     env = {}
-    if not path.exists():
+    if not path or not path.exists():
         return env
+    _check_file_permissions(path)
 
     with open(path, 'r') as f:
         for line in f:
@@ -178,14 +195,44 @@ def get_openai_auth(file_env: Dict[str, str]) -> OpenAIAuth:
     )
 
 
+def _find_project_env() -> Optional[Path]:
+    """Find per-project .env by walking up from cwd.
+
+    Searches for .claude/last30days.env in each parent directory,
+    stopping at the user's home directory or filesystem root.
+    """
+    cwd = Path.cwd()
+    for parent in [cwd, *cwd.parents]:
+        candidate = parent / '.claude' / 'last30days.env'
+        if candidate.exists():
+            return candidate
+        # Stop at filesystem root or home
+        if parent == Path.home() or parent == parent.parent:
+            break
+    return None
+
+
 def get_config() -> Dict[str, Any]:
-    """Load configuration from ~/.config/last30days/.env and environment."""
-    # Load from config file first (if configured)
+    """Load configuration from multiple sources.
+
+    Priority (highest wins):
+      1. Environment variables (os.environ)
+      2. .claude/last30days.env (per-project config)
+      3. ~/.config/last30days/.env (global config)
+    """
+    # Load from global config file
     file_env = load_env_file(CONFIG_FILE) if CONFIG_FILE else {}
 
-    openai_auth = get_openai_auth(file_env)
+    # Load from per-project config (overrides global)
+    project_env_path = _find_project_env()
+    project_env = load_env_file(project_env_path) if project_env_path else {}
 
-    # Build config: Codex/OpenAI auth + process.env > .env file
+    # Merge: project overrides global
+    merged_env = {**file_env, **project_env}
+
+    openai_auth = get_openai_auth(merged_env)
+
+    # Build config: Codex/OpenAI auth + process.env > project .env > global .env
     config = {
         'OPENAI_API_KEY': openai_auth.token,
         'OPENAI_AUTH_SOURCE': openai_auth.source,
@@ -196,10 +243,14 @@ def get_config() -> Dict[str, Any]:
 
     keys = [
         ('XAI_API_KEY', None),
+        ('GOOGLE_API_KEY', None),
+        ('GEMINI_API_KEY', None),
+        ('GOOGLE_GENAI_API_KEY', None),
         ('OPENROUTER_API_KEY', None),
         ('PARALLEL_API_KEY', None),
         ('BRAVE_API_KEY', None),
         ('XIAOHONGSHU_API_BASE', None),
+        ('GEMINI_MODEL', None),
         ('OPENAI_MODEL_POLICY', 'auto'),
         ('OPENAI_MODEL_PIN', None),
         ('XAI_MODEL_POLICY', 'latest'),
@@ -208,17 +259,32 @@ def get_config() -> Dict[str, Any]:
         ('APIFY_API_TOKEN', None),
         ('AUTH_TOKEN', None),
         ('CT0', None),
+        ('BSKY_HANDLE', None),
+        ('BSKY_APP_PASSWORD', None),
+        ('TRUTHSOCIAL_TOKEN', None),
     ]
 
     for key, default in keys:
-        config[key] = os.environ.get(key) or file_env.get(key, default)
+        config[key] = os.environ.get(key) or merged_env.get(key, default)
+
+    # Track which config source was used
+    if project_env_path:
+        config['_CONFIG_SOURCE'] = f'project:{project_env_path}'
+    elif CONFIG_FILE and CONFIG_FILE.exists():
+        config['_CONFIG_SOURCE'] = f'global:{CONFIG_FILE}'
+    else:
+        config['_CONFIG_SOURCE'] = 'env_only'
 
     return config
 
 
 def config_exists() -> bool:
-    """Check if configuration file exists."""
-    return CONFIG_FILE.exists()
+    """Check if any configuration source exists."""
+    if _find_project_env():
+        return True
+    if CONFIG_FILE:
+        return CONFIG_FILE.exists()
+    return False
 
 
 def is_reddit_available(config: Dict[str, Any]) -> bool:
@@ -284,7 +350,7 @@ def get_web_search_source(config: Dict[str, Any]) -> Optional[str]:
 
 
 def get_missing_keys(config: Dict[str, Any]) -> str:
-    """Determine which sources are missing (accounting for Bird and ScrapeCreators).
+    """Determine which sources are missing (accounting for Bird).
 
     Returns: 'all', 'both', 'reddit', 'x', 'web', or 'none'
     """
@@ -377,6 +443,8 @@ def get_x_source(config: Dict[str, Any]) -> Optional[str]:
 
     Priority: Bird (free) → xAI (paid API)
 
+    Keep X selection limited to documented, verified search backends.
+
     Args:
         config: Configuration dict from get_config()
 
@@ -413,6 +481,22 @@ def is_hackernews_available() -> bool:
     Always returns True - HN uses free Algolia API, no key needed.
     """
     return True
+
+
+def is_bluesky_available(config: Dict[str, Any]) -> bool:
+    """Check if Bluesky source is available.
+
+    Requires BSKY_HANDLE and BSKY_APP_PASSWORD (app password from bsky.app/settings).
+    """
+    return bool(config.get('BSKY_HANDLE') and config.get('BSKY_APP_PASSWORD'))
+
+
+def is_truthsocial_available(config: Dict[str, Any]) -> bool:
+    """Check if Truth Social source is available.
+
+    Requires TRUTHSOCIAL_TOKEN (bearer token from browser dev tools).
+    """
+    return bool(config.get('TRUTHSOCIAL_TOKEN'))
 
 
 def is_polymarket_available() -> bool:

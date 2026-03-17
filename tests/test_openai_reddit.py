@@ -64,13 +64,18 @@ class TestIsModelAccessError(unittest.TestCase):
 class TestModelFallbackOrder(unittest.TestCase):
     """Tests for MODEL_FALLBACK_ORDER constant."""
 
-    def test_contains_gpt4o(self):
-        """Fallback list should include gpt-4o."""
+    def test_mini_first(self):
+        """Mini models should come first (cost-efficient for structured extraction)."""
+        self.assertEqual(MODEL_FALLBACK_ORDER[0], "gpt-5-mini")
+
+    def test_contains_mainline_fallbacks(self):
+        """Fallback list should include mainline models as last resort."""
+        self.assertIn("gpt-4.1", MODEL_FALLBACK_ORDER)
         self.assertIn("gpt-4o", MODEL_FALLBACK_ORDER)
 
-    def test_gpt4o_is_first(self):
-        """gpt-4o should be the first fallback option."""
-        self.assertEqual(MODEL_FALLBACK_ORDER[0], "gpt-4o")
+    def test_no_gpt4o_mini(self):
+        """gpt-4o-mini should NOT be in fallback (no domain filtering support)."""
+        self.assertNotIn("gpt-4o-mini", MODEL_FALLBACK_ORDER)
 
 
 if __name__ == "__main__":

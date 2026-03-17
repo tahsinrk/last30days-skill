@@ -4,16 +4,25 @@ import math
 from typing import List, Optional, Union
 
 from . import dates, schema
+from .query_type import QueryType, WEBSEARCH_PENALTY_BY_TYPE, TIEBREAKER_BY_TYPE
 
 # Score weights for Reddit/X (has engagement)
 WEIGHT_RELEVANCE = 0.45
 WEIGHT_RECENCY = 0.25
 WEIGHT_ENGAGEMENT = 0.30
 
-# WebSearch weights (no engagement, reweighted to 100%)
+# Polymarket needs stronger semantic weighting because volume/liquidity already
+# show up as engagement and lightly influence parse-time relevance.
+PM_WEIGHT_RELEVANCE = 0.60
+PM_WEIGHT_RECENCY = 0.20
+PM_WEIGHT_ENGAGEMENT = 0.20
+
+# WebSearch weights (no engagement data available)
 WEBSEARCH_WEIGHT_RELEVANCE = 0.55
 WEBSEARCH_WEIGHT_RECENCY = 0.45
-WEBSEARCH_SOURCE_PENALTY = 15  # Points deducted for lacking engagement
+# Default web search penalty (fallback when query_type is not provided).
+# Per-type penalties in query_type.WEBSEARCH_PENALTY_BY_TYPE.
+WEBSEARCH_SOURCE_PENALTY = 15
 
 # WebSearch date confidence adjustments
 WEBSEARCH_VERIFIED_BONUS = 10   # Bonus for URL-verified recent date (high confidence)
@@ -468,6 +477,122 @@ def score_hackernews_items(items: List[schema.HackerNewsItem]) -> List[schema.Ha
     return items
 
 
+def compute_bluesky_engagement_raw(engagement: Optional[schema.Engagement]) -> Optional[float]:
+    """Compute raw engagement score for Bluesky item.
+
+    Formula: 0.40*log1p(likes) + 0.30*log1p(reposts) + 0.20*log1p(replies) + 0.10*log1p(quotes)
+    Likes are primary signal; reposts indicate reach; replies indicate discussion depth.
+    """
+    if engagement is None:
+        return None
+
+    if engagement.likes is None and engagement.reposts is None:
+        return None
+
+    likes = log1p_safe(engagement.likes)
+    reposts = log1p_safe(engagement.reposts)
+    replies = log1p_safe(engagement.replies)
+    quotes = log1p_safe(engagement.quotes)
+
+    return 0.40 * likes + 0.30 * reposts + 0.20 * replies + 0.10 * quotes
+
+
+def score_bluesky_items(items: List[schema.BlueskyItem]) -> List[schema.BlueskyItem]:
+    """Compute scores for Bluesky items.
+
+    Uses same weight structure as Reddit/X (relevance + recency + engagement).
+    """
+    if not items:
+        return items
+
+    eng_raw = [compute_bluesky_engagement_raw(item.engagement) for item in items]
+    eng_normalized = normalize_to_100(eng_raw)
+
+    for i, item in enumerate(items):
+        rel_score = int(item.relevance * 100)
+        rec_score = dates.recency_score(item.date)
+
+        if eng_normalized[i] is not None:
+            eng_score = int(eng_normalized[i])
+        else:
+            eng_score = DEFAULT_ENGAGEMENT
+
+        item.subs = schema.SubScores(
+            relevance=rel_score,
+            recency=rec_score,
+            engagement=eng_score,
+        )
+
+        overall = (
+            WEIGHT_RELEVANCE * rel_score +
+            WEIGHT_RECENCY * rec_score +
+            WEIGHT_ENGAGEMENT * eng_score
+        )
+
+        if eng_raw[i] is None:
+            overall -= UNKNOWN_ENGAGEMENT_PENALTY
+
+        item.score = max(0, min(100, int(overall)))
+
+    return items
+
+
+def compute_truthsocial_engagement_raw(engagement: Optional[schema.Engagement]) -> Optional[float]:
+    """Compute raw engagement score for Truth Social item.
+
+    Formula: 0.45*log1p(likes) + 0.30*log1p(reposts) + 0.25*log1p(replies)
+    Likes are primary signal; reposts indicate reach; replies indicate discussion.
+    """
+    if engagement is None:
+        return None
+
+    if engagement.likes is None and engagement.reposts is None:
+        return None
+
+    likes = log1p_safe(engagement.likes)
+    reposts = log1p_safe(engagement.reposts)
+    replies = log1p_safe(engagement.replies)
+
+    return 0.45 * likes + 0.30 * reposts + 0.25 * replies
+
+
+def score_truthsocial_items(items: List[schema.TruthSocialItem]) -> List[schema.TruthSocialItem]:
+    """Compute scores for Truth Social items."""
+    if not items:
+        return items
+
+    eng_raw = [compute_truthsocial_engagement_raw(item.engagement) for item in items]
+    eng_normalized = normalize_to_100(eng_raw)
+
+    for i, item in enumerate(items):
+        rel_score = int(item.relevance * 100)
+        rec_score = dates.recency_score(item.date)
+
+        if eng_normalized[i] is not None:
+            eng_score = int(eng_normalized[i])
+        else:
+            eng_score = DEFAULT_ENGAGEMENT
+
+        item.subs = schema.SubScores(
+            relevance=rel_score,
+            recency=rec_score,
+            engagement=eng_score,
+        )
+
+        overall = (
+            WEIGHT_RELEVANCE * rel_score +
+            WEIGHT_RECENCY * rec_score +
+            WEIGHT_ENGAGEMENT * eng_score
+        )
+
+        if eng_raw[i] is None:
+            overall -= UNKNOWN_ENGAGEMENT_PENALTY
+
+        item.score = max(0, min(100, int(overall)))
+
+    return items
+
+
 def compute_polymarket_engagement_raw(engagement: Optional[schema.Engagement]) -> Optional[float]:
     """Compute raw engagement score for Polymarket item.
 
@@ -513,9 +638,9 @@ def score_polymarket_items(items: List[schema.PolymarketItem]) -> List[schema.Po
         )
 
         overall = (
-            WEIGHT_RELEVANCE * rel_score +
-            WEIGHT_RECENCY * rec_score +
-            WEIGHT_ENGAGEMENT * eng_score
+            PM_WEIGHT_RELEVANCE * rel_score +
+            PM_WEIGHT_RECENCY * rec_score +
+            PM_WEIGHT_ENGAGEMENT * eng_score
         )
 
         if eng_raw[i] is None:
@@ -526,19 +651,17 @@ def score_polymarket_items(items: List[schema.PolymarketItem]) -> List[schema.Po
     return items
 
 
-def score_websearch_items(items: List[schema.WebSearchItem]) -> List[schema.WebSearchItem]:
+def score_websearch_items(items: List[schema.WebSearchItem], query_type: QueryType = None) -> List[schema.WebSearchItem]:
     """Compute scores for WebSearch items WITHOUT engagement metrics.
 
-    Uses reweighted formula: 55% relevance + 45% recency - 15pt source penalty.
-    This ensures WebSearch items rank below comparable Reddit/X items.
-
-    Date confidence adjustments:
-    - High confidence (URL-verified date): +10 bonus
-    - Med confidence (snippet-extracted date): no change
-    - Low confidence (no date signals): -20 penalty
+    Uses reweighted formula: 55% relevance + 45% recency - penalty.
+    Penalty varies by query type: concept queries get 0 penalty (web docs
+    are authoritative), while product/opinion queries get full 15pt penalty
+    (social discussion is more valuable).
 
     Args:
         items: List of WebSearch items
+        query_type: Query classification for penalty adjustment
 
     Returns:
         Items with updated scores
@@ -566,8 +689,9 @@ def score_websearch_items(items: List[schema.WebSearchItem]) -> List[schema.WebS
             WEBSEARCH_WEIGHT_RECENCY * rec_score
         )
 
-        # Apply source penalty (WebSearch < Reddit/X for same relevance/recency)
-        overall -= WEBSEARCH_SOURCE_PENALTY
+        # Apply source penalty (varies by query type)
+        penalty = WEBSEARCH_PENALTY_BY_TYPE.get(query_type, WEBSEARCH_SOURCE_PENALTY) if query_type else WEBSEARCH_SOURCE_PENALTY
+        overall -= penalty
 
         # Apply date confidence adjustments
         # High confidence (URL-verified): reward with bonus
@@ -583,15 +707,36 @@ def score_websearch_items(items: List[schema.WebSearchItem]) -> List[schema.WebS
     return items
 
 
-def sort_items(items: List[Union[schema.RedditItem, schema.XItem, schema.WebSearchItem, schema.YouTubeItem, schema.TikTokItem, schema.InstagramItem, schema.HackerNewsItem, schema.PolymarketItem]]) -> List:
-    """Sort items by score (descending), then date, then source priority.
+_ITEM_SOURCE_MAP = {
+    schema.RedditItem: "reddit",
+    schema.XItem: "x",
+    schema.YouTubeItem: "youtube",
+    schema.TikTokItem: "tiktok",
+    schema.InstagramItem: "instagram",
+    schema.HackerNewsItem: "hn",
+    schema.BlueskyItem: "bluesky",
+    schema.TruthSocialItem: "truthsocial",
+    schema.PolymarketItem: "polymarket",
+}
+_DEFAULT_TIEBREAKER = {"reddit": 0, "x": 1, "youtube": 2, "tiktok": 3, "instagram": 4, "hn": 5, "bluesky": 6, "truthsocial": 7, "polymarket": 8, "web": 9}
+
+
+def sort_items(items: List[Union[schema.RedditItem, schema.XItem, schema.WebSearchItem, schema.YouTubeItem, schema.TikTokItem, schema.InstagramItem, schema.HackerNewsItem, schema.BlueskyItem, schema.TruthSocialItem, schema.PolymarketItem]], query_type: QueryType = None) -> List:
+    """Sort items by score (descending), then date, then source tiebreaker.
+
+    Tiebreaker (tertiary sort key, after score and date): source priority
+    varies by query type. YouTube ranks first for how_to, X ranks first
+    for breaking_news, Polymarket ranks first for prediction.
 
     Args:
         items: List of items to sort
+        query_type: Query classification for tiebreaker adjustment
 
     Returns:
         Sorted items
     """
+    tiebreaker = TIEBREAKER_BY_TYPE.get(query_type, _DEFAULT_TIEBREAKER) if query_type else _DEFAULT_TIEBREAKER
+
     def sort_key(item):
         # Primary: score descending (negate for descending)
         score = -item.score
@@ -600,23 +745,9 @@ def sort_items(items: List[Union[schema.RedditItem, schema.XItem, schema.WebSear
         date = item.date or "0000-00-00"
         date_key = -int(date.replace("-", ""))
 
-        # Tertiary: source priority (Reddit > X > YouTube > TikTok > HN > Polymarket > WebSearch)
-        if isinstance(item, schema.RedditItem):
-            source_priority = 0
-        elif isinstance(item, schema.XItem):
-            source_priority = 1
-        elif isinstance(item, schema.YouTubeItem):
-            source_priority = 2
-        elif isinstance(item, schema.TikTokItem):
-            source_priority = 3
-        elif isinstance(item, schema.InstagramItem):
-            source_priority = 4
-        elif isinstance(item, schema.HackerNewsItem):
-            source_priority = 5
-        elif isinstance(item, schema.PolymarketItem):
-            source_priority = 6
-        else:  # WebSearchItem
-            source_priority = 7
+        # Tertiary: query-type-aware source priority
+        source_name = _ITEM_SOURCE_MAP.get(type(item), "web")
+        source_priority = tiebreaker.get(source_name, 99)
 
         # Quaternary: title/text for stability
         text = getattr(item, "title", "") or getattr(item, "text", "")
@@ -624,3 +755,21 @@ def sort_items(items: List[Union[schema.RedditItem, schema.XItem, schema.WebSear
         return (score, date_key, source_priority, text)
 
     return sorted(items, key=sort_key)
+
+
+def relevance_filter(items, source_name: str, threshold: float = 0.3):
+    """Filter items below relevance threshold with minimum-result guarantee.
+
+    Items with no relevance attribute are treated as 0.0 (fail the filter).
+    If all items are below threshold, keeps the top 3 by relevance.
+    Lists with 3 or fewer items are returned unchanged.
+    """
+    import sys
+    if len(items) <= 3:
+        return items
+    passed = [i for i in items if getattr(i, 'relevance', 0.0) >= threshold]
+    if not passed:
+        print(f"[{source_name} WARNING] All results below relevance {threshold}, keeping top 3", file=sys.stderr)
+        by_rel = sorted(items, key=lambda x: getattr(x, 'relevance', 0.0), reverse=True)
+        return by_rel[:3]
+    return passed

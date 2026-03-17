@@ -9,7 +9,7 @@ User: /last30days "kanye west"
     ↓           ↓           (concurrent via ThreadPoolExecutor)
  [REDDIT]    [X/TWITTER]
     ↓           ↓
- OpenAI     Bird CLI or
+ OpenAI     Bundled Bird or
  API        xAI API
     ↓           ↓
  Parse       Parse
@@ -95,11 +95,11 @@ No API key needed. This returns the actual thread data:
 
 X search has **two backends** — the skill auto-detects which to use.
 
-### Priority: Bird CLI (free) → xAI API (paid)
+### Priority: Bundled Bird (env auth) → xAI API (paid)
 
 ```python
-if bird_installed and bird_authenticated:
-    use Bird CLI        # Free, uses your X login
+if node_available and AUTH_TOKEN and CT0:
+    use bundled Bird    # Free, popup-free, env-authenticated
 elif XAI_API_KEY:
     use xAI API         # Paid, uses grok-4-1-fast
 else:
@@ -128,20 +128,15 @@ The prompt asks grok to return JSON with:
 - `engagement`: `{ likes, reposts, replies, quotes }`
 - `why_relevant`, `relevance` score
 
-**Engagement data comes from grok's x_search tool** — it has direct access to X's data.
+**Engagement data comes from grok's x_search tool** - it has direct access to X's data.
 
-### Backend 2: Bird CLI (free alternative)
+### Backend 2: Bundled Bird client (free alternative)
 
-Bird is a CLI tool (`npm install -g @steipete/bird`) that uses your X login.
+The repo vendors a search-only subset of Bird's Twitter GraphQL client and shells out to it with Node.js. No global `bird` install is required. The Python wrapper passes `AUTH_TOKEN` and `CT0` via env, which keeps normal local runs headless and avoids browser-cookie prompts.
 
-**Command:**
-```bash
-bird search "{topic} since:{from_date}" -n 30 --json
-```
+**Bundled Bird returns raw X API data** - likes, reposts, replies are real engagement metrics from X's API, not estimates.
 
-**Bird returns raw X API data** — likes, reposts, replies are real engagement metrics from X's API, not estimates.
-
-| Metric | Bird CLI | xAI API |
+| Metric | Bundled Bird | xAI API |
 |---|---|---|
 | Post text | Real | Real |
 | Likes/reposts | Real (X API) | Real (x_search tool) |
@@ -151,7 +146,7 @@ bird search "{topic} since:{from_date}" -n 30 --json
 
 ### Depth settings
 
-| Depth | xAI posts | Bird results | xAI timeout | Bird timeout |
+| Depth | xAI posts | Bundled Bird results | xAI timeout | Bird timeout |
 |---|---|---|---|---|
 | `--quick` | 8-12 | 12 | 90s | 30s |
 | default | 20-30 | 30 | 120s | 45s |
@@ -192,7 +187,7 @@ After both searches complete:
 | `scripts/lib/openai_reddit.py` | Reddit search via OpenAI Responses API |
 | `scripts/lib/reddit_enrich.py` | Fetch real engagement data from Reddit JSON API |
 | `scripts/lib/xai_x.py` | X search via xAI API |
-| `scripts/lib/bird_x.py` | X search via Bird CLI (free) |
+| `scripts/lib/bird_x.py` | X search via bundled Bird client (free) |
 | `scripts/lib/models.py` | Auto-select best available model |
 | `scripts/lib/env.py` | API key loading, source detection |
 | `scripts/lib/http.py` | HTTP transport with retries |

@@ -143,7 +143,7 @@ Just start with "last30" and talk to me like normal.
 # Shorter promo for single missing key
 PROMO_SINGLE_KEY = {
     "reddit": "\n💡 You can unlock Reddit with an OpenAI API key or by running `codex login` — just ask me how.\n",
-    "x": "\n💡 You can unlock X with an xAI API key — just ask me how.\n",
+    "x": "\n💡 You can unlock X with AUTH_TOKEN/CT0 or XAI_API_KEY - just ask me how.\n",
 }
 
 # Bird auth help (for local users with vendored Bird CLI)
@@ -151,16 +151,16 @@ BIRD_AUTH_HELP = f"""
 {Colors.YELLOW}Bird authentication failed.{Colors.RESET}
 
 To fix this:
-1. Log into X (twitter.com) in Safari, Chrome, or Firefox
-2. Try again — Bird reads your browser cookies automatically.
+1. Add AUTH_TOKEN and CT0 to ~/.config/last30days/.env or .claude/last30days.env
+2. Or set XAI_API_KEY for the xAI fallback backend
 """
 
 BIRD_AUTH_HELP_PLAIN = """
 Bird authentication failed.
 
 To fix this:
-1. Log into X (twitter.com) in Safari, Chrome, or Firefox
-2. Try again — Bird reads your browser cookies automatically.
+1. Add AUTH_TOKEN and CT0 to ~/.config/last30days/.env or .claude/last30days.env
+2. Or set XAI_API_KEY for the xAI fallback backend
 """
 
 # Spinner frames
@@ -460,10 +460,9 @@ def show_diagnostic_banner(diag: dict):
             label = f"Bird ({username})" if source == "bird" and username else source.upper()
             lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ X/Twitter{Colors.RESET} — {label}                          {Colors.DIM}│{Colors.RESET}")
         else:
-            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ X/Twitter{Colors.RESET} — No Bird CLI or XAI_API_KEY          {Colors.DIM}│{Colors.RESET}")
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ X/Twitter{Colors.RESET} — No X auth or fallback key        {Colors.DIM}│{Colors.RESET}")
             if diag.get("bird_installed"):
-                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Bird installed but not authenticated         {Colors.DIM}│{Colors.RESET}")
-                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Log into x.com in your browser, then retry   {Colors.DIM}│{Colors.RESET}")
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Add AUTH_TOKEN/CT0 or XAI_API_KEY      {Colors.DIM}│{Colors.RESET}")
             else:
                 lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Needs Node.js 22+ (Bird is bundled)           {Colors.DIM}│{Colors.RESET}")
 
@@ -507,9 +506,9 @@ def show_diagnostic_banner(diag: dict):
         if has_x:
             lines.append("│  ✅ X/Twitter — available                            │")
         else:
-            lines.append("│  ❌ X/Twitter — No Bird CLI or XAI_API_KEY          │")
+            lines.append("│  ❌ X/Twitter — No X auth or fallback key          │")
             if diag.get("bird_installed"):
-                lines.append("│     └─ Log into x.com in your browser, then retry   │")
+                lines.append("│     └─ Add AUTH_TOKEN/CT0 or XAI_API_KEY           │")
             else:
                 lines.append("│     └─ Needs Node.js 22+ (Bird is bundled)           │")
 

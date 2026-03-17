@@ -14,3 +14,4 @@ variants/open/references/research.md
 .entire/
 __pycache__/
 *.pyc
+mise.toml

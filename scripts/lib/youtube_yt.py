@@ -35,65 +35,7 @@ TRANSCRIPT_LIMITS = {
 # Max words to keep from each transcript
 TRANSCRIPT_MAX_WORDS = 500
 
-# Stopwords for relevance computation (common English words that dilute token overlap)
-STOPWORDS = frozenset({
-    'the', 'a', 'an', 'to', 'for', 'how', 'is', 'in', 'of', 'on',
-    'and', 'with', 'from', 'by', 'at', 'this', 'that', 'it', 'my',
-    'your', 'i', 'me', 'we', 'you', 'what', 'are', 'do', 'can',
-    'its', 'be', 'or', 'not', 'no', 'so', 'if', 'but', 'about',
-    'all', 'just', 'get', 'has', 'have', 'was', 'will',
-})
-
-
-# Synonym groups for relevance scoring (bidirectional expansion)
-SYNONYMS = {
-    'hip': {'rap', 'hiphop'},
-    'hop': {'rap', 'hiphop'},
-    'rap': {'hip', 'hop', 'hiphop'},
-    'hiphop': {'rap', 'hip', 'hop'},
-    'js': {'javascript'},
-    'javascript': {'js'},
-    'ts': {'typescript'},
-    'typescript': {'ts'},
-    'ai': {'artificial', 'intelligence'},
-    'ml': {'machine', 'learning'},
-    'react': {'reactjs'},
-    'reactjs': {'react'},
-    'svelte': {'sveltejs'},
-    'sveltejs': {'svelte'},
-    'vue': {'vuejs'},
-    'vuejs': {'vue'},
-}
-
-
-def _tokenize(text: str) -> Set[str]:
-    """Lowercase, strip punctuation, remove stopwords, drop single-char tokens.
-    Expands tokens with synonyms for better cross-domain matching."""
-    words = re.sub(r'[^\w\s]', ' ', text.lower()).split()
-    tokens = {w for w in words if w not in STOPWORDS and len(w) > 1}
-    # Expand synonyms
-    expanded = set(tokens)
-    for t in tokens:
-        if t in SYNONYMS:
-            expanded.update(SYNONYMS[t])
-    return expanded
-
-
-def _compute_relevance(query: str, title: str) -> float:
-    """Compute relevance as ratio of query tokens found in title.
-
-    Uses ratio overlap (intersection / query_length) so short queries
-    score higher when fully represented in the title. Floors at 0.1.
-    """
-    q_tokens = _tokenize(query)
-    t_tokens = _tokenize(title)
-
-    if not q_tokens:
-        return 0.5  # Neutral fallback for empty/stopword-only queries
-
-    overlap = len(q_tokens & t_tokens)
-    ratio = overlap / len(q_tokens)
-    return max(0.1, min(1.0, ratio))
+from .relevance import token_overlap_relevance as _compute_relevance
 
 
 def _log(msg: str):
@@ -110,26 +52,12 @@ def is_ytdlp_installed() -> bool:
 def _extract_core_subject(topic: str) -> str:
     """Extract core subject from verbose query for YouTube search.
 
-    Strips meta/research words to keep only the core product/concept name,
-    similar to bird_x.py's approach.
+    NOTE: 'tips', 'tricks', 'tutorial', 'guide', 'review', 'reviews'
+    are intentionally KEPT — they're YouTube content types that improve search.
     """
-    text = topic.lower().strip()
-
-    # Strip multi-word prefixes
-    prefixes = [
-        'what are the best', 'what is the best', 'what are the latest',
-        'what are people saying about', 'what do people think about',
-        'how do i use', 'how to use', 'how to',
-        'what are', 'what is', 'tips for', 'best practices for',
-    ]
-    for p in prefixes:
-        if text.startswith(p + ' '):
-            text = text[len(p):].strip()
-
-    # Strip individual noise words
-    # NOTE: 'tips', 'tricks', 'tutorial', 'guide', 'review', 'reviews'
-    # are intentionally KEPT — they're YouTube content types that improve search
-    noise = {
+    from .query import extract_core_subject
+    # YouTube-specific noise set: smaller than default, keeps content-type words
+    _YT_NOISE = frozenset({
         'best', 'top', 'good', 'great', 'awesome', 'killer',
         'latest', 'new', 'news', 'update', 'updates',
         'trending', 'hottest', 'popular', 'viral',
@@ -137,12 +65,8 @@ def _extract_core_subject(topic: str) -> str:
         'recommendations', 'advice',
         'prompt', 'prompts', 'prompting',
         'methods', 'strategies', 'approaches',
-    }
-    words = text.split()
-    filtered = [w for w in words if w not in noise]
-
-    result = ' '.join(filtered) if filtered else text
-    return result.rstrip('?!.')
+    })
+    return extract_core_subject(topic, noise=_YT_NOISE)
 
 
 def search_youtube(
@@ -171,11 +95,13 @@ def search_youtube(
     _log(f"Searching YouTube for '{core_topic}' (since {from_date}, count={count})")
 
     # yt-dlp search with full metadata (no --flat-playlist so dates are real).
-    # No --dateafter — we filter by date in Python with a soft fallback,
-    # because YouTube search returns relevance-sorted results and strict date
-    # filtering returns 0 for evergreen topics like "thumbnail tips".
+    # NOTE: --dateafter intentionally omitted — YouTube search returns
+    # relevance-sorted results and strict date filtering returns 0 for
+    # evergreen topics. Python soft filter (below) handles date filtering.
     cmd = [
         "yt-dlp",
+        "--ignore-config",
+        "--no-cookies-from-browser",
         f"ytsearch{count}:{core_topic}",
         "--dump-json",
         "--no-warnings",
@@ -295,6 +221,8 @@ def fetch_transcript(video_id: str, temp_dir: str) -> Optional[str]:
     """
     cmd = [
         "yt-dlp",
+        "--ignore-config",
+        "--no-cookies-from-browser",
         "--write-auto-subs",
         "--sub-lang", "en",
         "--sub-format", "vtt",

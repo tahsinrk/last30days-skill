@@ -7,7 +7,7 @@ from pathlib import Path
 # Add lib to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from lib.youtube_yt import _compute_relevance, _tokenize
+from lib.relevance import token_overlap_relevance as _compute_relevance, tokenize as _tokenize
 
 
 class TestTokenize(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestComputeRelevance(unittest.TestCase):
 
     def test_no_match(self):
         result = _compute_relevance("Claude Code", "Python Web Scraping")
-        self.assertEqual(result, 0.1)  # Floor
+        self.assertEqual(result, 0.0)
 
     def test_empty_query_returns_neutral(self):
         result = _compute_relevance("", "Some Video Title")
@@ -74,7 +74,7 @@ class TestComputeRelevance(unittest.TestCase):
 
     def test_empty_title(self):
         result = _compute_relevance("Claude Code", "")
-        self.assertEqual(result, 0.1)  # Floor
+        self.assertEqual(result, 0.0)
 
     def test_case_insensitive(self):
         result = _compute_relevance("claude code", "CLAUDE CODE Tutorial")
@@ -89,9 +89,9 @@ class TestComputeRelevance(unittest.TestCase):
         )
         self.assertEqual(result, 1.0)
 
-    def test_floor_at_0_1(self):
+    def test_no_match_returns_zero(self):
         result = _compute_relevance("quantum computing", "cat videos compilation")
-        self.assertEqual(result, 0.1)
+        self.assertEqual(result, 0.0)
 
     def test_cap_at_1_0(self):
         result = _compute_relevance("AI", "AI AI AI AI AI")
@@ -103,7 +103,7 @@ class TestComputeRelevance(unittest.TestCase):
 
     def test_single_word_no_match(self):
         result = _compute_relevance("Seedance", "Random cooking video")
-        self.assertEqual(result, 0.1)
+        self.assertEqual(result, 0.0)
 
 
 if __name__ == "__main__":

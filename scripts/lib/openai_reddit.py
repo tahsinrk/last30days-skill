@@ -7,9 +7,10 @@ from typing import Any, Dict, List, Optional
 
 from . import http, env
 
-# Fallback models when the selected model isn't accessible (e.g., org not verified for GPT-5)
-# Note: gpt-4o-mini does NOT support web_search with filters param, so exclude it
-MODEL_FALLBACK_ORDER = ["gpt-4.1", "gpt-4o"]
+# Fallback models when the selected model isn't accessible (e.g., org not verified).
+# Ordered by cost-efficiency: mini models handle structured extraction equally well.
+# Note: gpt-4o-mini does NOT support web_search with filters — excluded.
+MODEL_FALLBACK_ORDER = ["gpt-5-mini", "gpt-4.1-mini", "gpt-4.1", "gpt-4o"]
 
 
 def _log_error(msg: str):

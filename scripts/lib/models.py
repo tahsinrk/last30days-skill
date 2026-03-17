@@ -1,20 +1,35 @@
-"""Model auto-selection for last30days skill."""
+"""Model auto-selection for last30days skill.
+
+Model selection philosophy: this tool uses LLM APIs exclusively for
+search tool invocation + structured JSON extraction. This is not
+reasoning-heavy or creative work — mini models handle it equally well
+at ~3-5x lower cost. We prefer the newest-generation mini model, falling
+back to mainline only when mini isn't available.
+
+xAI non-reasoning variant preferred: same pricing as reasoning, but
+faster (skips thinking phase, saves reasoning token output costs).
+"""
 
 import re
+import sys
 from typing import Dict, List, Optional, Tuple
 
 from . import cache, http, env
 
 # OpenAI API
 OPENAI_MODELS_URL = "https://api.openai.com/v1/models"
-OPENAI_FALLBACK_MODELS = ["gpt-5.2", "gpt-5.1", "gpt-5", "gpt-4.1", "gpt-4o"]
+# Ordered by cost-efficiency for web_search + JSON extraction tasks.
+# Mini models first: same structured extraction quality at ~3x lower cost.
+OPENAI_FALLBACK_MODELS = ["gpt-5-mini", "gpt-4.1-mini", "gpt-4.1", "gpt-4o"]
 CODEX_FALLBACK_MODELS = ["gpt-5.1-codex-mini", "gpt-5.2"]
 
 # xAI API - Agent Tools API requires grok-4 family
+# Non-reasoning: same price, faster, no unnecessary thinking tokens.
+# Both variants support function calling and structured outputs.
 XAI_MODELS_URL = "https://api.x.ai/v1/models"
 XAI_ALIASES = {
-    "latest": "grok-4-1-fast",  # Required for x_search tool
-    "stable": "grok-4-1-fast",
+    "latest": "grok-4-1-fast-non-reasoning",
+    "stable": "grok-4-1-fast-non-reasoning",
 }
 
 
@@ -32,21 +47,37 @@ def parse_version(model_id: str) -> Optional[Tuple[int, ...]]:
     return None
 
 
-def is_mainline_openai_model(model_id: str) -> bool:
-    """Check if model is a mainline GPT model (not mini/nano/chat/codex/pro)."""
+def is_search_capable_model(model_id: str) -> bool:
+    """Check if model supports Responses API web_search with domain filtering.
+
+    Includes mini variants (same structured extraction quality, lower cost).
+    Excludes: nano (no web_search), gpt-4o-mini (no domain filtering),
+    chat/codex/pro/preview/turbo/search (specialized variants).
+
+    Note: gpt-5 with reasoning effort="minimal" does NOT support web_search
+    (per OpenAI docs). We never set reasoning params — our usage is pure
+    tool invocation + JSON extraction — so gpt-5 is safe to include here.
+    """
     model_lower = model_id.lower()
 
-    # Must be gpt-4o, gpt-4.1+, or gpt-5+ series (mainline, not mini/nano/etc)
-    if not re.match(r'^gpt-(?:4o|4\.1|5)(\.\d+)*$', model_lower):
+    # gpt-4o-mini does NOT support web_search with filters — exclude it
+    if model_lower.startswith("gpt-4o-mini"):
         return False
 
-    # Exclude variants
-    excludes = ['mini', 'nano', 'chat', 'codex', 'pro', 'preview', 'turbo']
-    for exc in excludes:
+    # Must be gpt-4o, gpt-4.1[-mini], or gpt-5[-mini] series
+    if not re.match(r'^gpt-(?:4o|4\.1|5)(\.\d+)*(-mini)?$', model_lower):
+        return False
+
+    # Exclude unsupported variants
+    for exc in ['nano', 'chat', 'codex', 'pro', 'preview', 'turbo', 'search']:
         if exc in model_lower:
             return False
 
     return True
+
+
+# Backward compat alias
+is_mainline_openai_model = is_search_capable_model
 
 
 def select_openai_model(
@@ -55,7 +86,10 @@ def select_openai_model(
     pin: Optional[str] = None,
     mock_models: Optional[List[Dict]] = None,
 ) -> str:
-    """Select the best OpenAI model based on policy.
+    """Select the most cost-efficient OpenAI model for web_search + JSON extraction.
+
+    Prefers mini models within the newest generation available, since the task
+    is structured extraction (not reasoning or creative work).
 
     Args:
         api_key: OpenAI API key
@@ -82,27 +116,29 @@ def select_openai_model(
             headers = {"Authorization": f"Bearer {api_key}"}
             response = http.get(OPENAI_MODELS_URL, headers=headers)
             models = response.get("data", [])
-        except http.HTTPError:
-            # Fall back to known models
+        except http.HTTPError as e:
+            sys.stderr.write(f"[Models] Failed to fetch OpenAI models: {e}")
+            if hasattr(e, 'status_code') and e.status_code in (401, 403):
+                sys.stderr.write(" — API key may be invalid or lack permissions")
+            sys.stderr.write(f", using fallback {OPENAI_FALLBACK_MODELS[0]}\n")
             return OPENAI_FALLBACK_MODELS[0]
 
-    # Filter to mainline models
-    candidates = [m for m in models if is_mainline_openai_model(m.get("id", ""))]
+    candidates = [m for m in models if is_search_capable_model(m.get("id", ""))]
 
     if not candidates:
-        # No gpt-5 models found, use fallback
         return OPENAI_FALLBACK_MODELS[0]
 
-    # Sort by version (descending), then by created timestamp
+    # Sort: newest generation first, prefer mini within same generation
     def sort_key(m):
-        version = parse_version(m.get("id", "")) or (0,)
-        created = m.get("created", 0)
-        return (version, created)
+        model_id = m.get("id", "")
+        version = parse_version(model_id) or (0,)
+        major = version[0] if version else 0
+        is_mini = 1 if "mini" in model_id.lower() else 0
+        return (major, is_mini, version)
 
     candidates.sort(key=sort_key, reverse=True)
     selected = candidates[0]["id"]
 
-    # Cache the selection
     cache.set_cached_model("openai", selected)
 
     return selected

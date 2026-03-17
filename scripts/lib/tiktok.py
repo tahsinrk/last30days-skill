@@ -17,6 +17,8 @@ try:
 except ImportError:
     _requests = None
 
+from . import http
+
 SCRAPECREATORS_BASE = "https://api.scrapecreators.com/v1/tiktok"
 
 # Depth configurations: how many results to fetch / captions to extract
@@ -29,93 +31,13 @@ DEPTH_CONFIG = {
 # Max words to keep from each caption
 CAPTION_MAX_WORDS = 500
 
-# Stopwords for relevance computation (shared with youtube_yt.py pattern)
-STOPWORDS = frozenset({
-    'the', 'a', 'an', 'to', 'for', 'how', 'is', 'in', 'of', 'on',
-    'and', 'with', 'from', 'by', 'at', 'this', 'that', 'it', 'my',
-    'your', 'i', 'me', 'we', 'you', 'what', 'are', 'do', 'can',
-    'its', 'be', 'or', 'not', 'no', 'so', 'if', 'but', 'about',
-    'all', 'just', 'get', 'has', 'have', 'was', 'will',
-})
-
-# Synonym groups for relevance scoring
-SYNONYMS = {
-    'hip': {'rap', 'hiphop'},
-    'hop': {'rap', 'hiphop'},
-    'rap': {'hip', 'hop', 'hiphop'},
-    'hiphop': {'rap', 'hip', 'hop'},
-    'js': {'javascript'},
-    'javascript': {'js'},
-    'ts': {'typescript'},
-    'typescript': {'ts'},
-    'ai': {'artificial', 'intelligence'},
-    'ml': {'machine', 'learning'},
-    'react': {'reactjs'},
-    'reactjs': {'react'},
-}
-
-
-def _tokenize(text: str) -> Set[str]:
-    """Lowercase, strip punctuation, remove stopwords, drop single-char tokens."""
-    words = re.sub(r'[^\w\s]', ' ', text.lower()).split()
-    tokens = {w for w in words if w not in STOPWORDS and len(w) > 1}
-    expanded = set(tokens)
-    for t in tokens:
-        if t in SYNONYMS:
-            expanded.update(SYNONYMS[t])
-    return expanded
-
-
-def _compute_relevance(query: str, text: str, hashtags: List[str] = None) -> float:
-    """Compute relevance as ratio of query tokens found in text + hashtags.
-
-    Uses ratio overlap (intersection / query_length). Hashtags provide
-    a TikTok-specific relevance boost. Floors at 0.1.
-    """
-    q_tokens = _tokenize(query)
-
-    # Combine text and hashtags for matching
-    combined = text
-    if hashtags:
-        combined = f"{text} {' '.join(hashtags)}"
-    t_tokens = _tokenize(combined)
-
-    # Split concatenated hashtags (e.g., "claudecode" -> "claude", "code")
-    if hashtags:
-        for tag in hashtags:
-            tag_lower = tag.lower()
-            for qt in q_tokens:
-                if qt in tag_lower and qt != tag_lower:
-                    t_tokens.add(qt)
-
-    if not q_tokens:
-        return 0.5  # Neutral fallback
-
-    overlap = len(q_tokens & t_tokens)
-    ratio = overlap / len(q_tokens)
-    return max(0.1, min(1.0, ratio))
+from .relevance import token_overlap_relevance as _compute_relevance
 
 
 def _extract_core_subject(topic: str) -> str:
-    """Extract core subject from verbose query for TikTok search.
-
-    Strips meta/research words to keep only the core product/concept name.
-    """
-    text = topic.lower().strip()
-
-    # Strip multi-word prefixes
-    prefixes = [
-        'what are the best', 'what is the best', 'what are the latest',
-        'what are people saying about', 'what do people think about',
-        'how do i use', 'how to use', 'how to',
-        'what are', 'what is', 'tips for', 'best practices for',
-    ]
-    for p in prefixes:
-        if text.startswith(p + ' '):
-            text = text[len(p):].strip()
-
-    # Strip individual noise words
-    noise = {
+    """Extract core subject from verbose query for TikTok search."""
+    from .query import extract_core_subject
+    _TIKTOK_NOISE = frozenset({
         'best', 'top', 'good', 'great', 'awesome', 'killer',
         'latest', 'new', 'news', 'update', 'updates',
         'trending', 'hottest', 'popular', 'viral',
@@ -123,12 +45,8 @@ def _extract_core_subject(topic: str) -> str:
         'recommendations', 'advice',
         'prompt', 'prompts', 'prompting',
         'methods', 'strategies', 'approaches',
-    }
-    words = text.split()
-    filtered = [w for w in words if w not in noise]
-
-    result = ' '.join(filtered) if filtered else text
-    return result.rstrip('?!.')
+    })
+    return extract_core_subject(topic, noise=_TIKTOK_NOISE)
 
 
 def _log(msg: str):
@@ -204,26 +122,36 @@ def search_tiktok(
     if not token:
         return {"items": [], "error": "No SCRAPECREATORS_API_KEY configured"}
 
-    if not _requests:
-        return {"items": [], "error": "requests library not installed"}
-
     config = DEPTH_CONFIG.get(depth, DEPTH_CONFIG["default"])
     core_topic = _extract_core_subject(topic)
 
     _log(f"Searching TikTok for '{core_topic}' (depth={depth}, count={config['results_per_page']})")
 
-    try:
-        resp = _requests.get(
-            f"{SCRAPECREATORS_BASE}/search/keyword",
-            params={"query": core_topic, "sort_by": "relevance"},
-            headers=_sc_headers(token),
-            timeout=30,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        _log(f"ScrapeCreators error: {e}")
-        return {"items": [], "error": f"{type(e).__name__}: {e}"}
+    if not _requests:
+        _log("requests library not installed, falling back to urllib")
+        try:
+            from urllib.parse import urlencode
+            params = urlencode({"query": core_topic, "sort_by": "relevance"})
+            url = f"{SCRAPECREATORS_BASE}/search/keyword?{params}"
+            headers = _sc_headers(token)
+            headers["User-Agent"] = http.USER_AGENT
+            data = http.get(url, headers=headers, timeout=30, retries=2)
+        except Exception as e:
+            _log(f"ScrapeCreators error (urllib): {e}")
+            return {"items": [], "error": f"{type(e).__name__}: {e}"}
+    else:
+        try:
+            resp = _requests.get(
+                f"{SCRAPECREATORS_BASE}/search/keyword",
+                params={"query": core_topic, "sort_by": "relevance"},
+                headers=_sc_headers(token),
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            _log(f"ScrapeCreators error: {e}")
+            return {"items": [], "error": f"{type(e).__name__}: {e}"}
 
     # Items are nested under aweme_info
     raw_entries = data.get("search_item_list") or data.get("data") or []

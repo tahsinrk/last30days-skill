@@ -1,7 +1,7 @@
 ---
 title: "feat: Publish last30days as Claude Code marketplace plugin"
 type: feat
-status: active
+status: completed
 date: 2026-03-08
 ---
 

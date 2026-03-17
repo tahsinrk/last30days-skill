@@ -33,9 +33,9 @@ class TestTikTokRelevance(unittest.TestCase):
         rel = tiktok._compute_relevance("", "Some video title")
         self.assertEqual(rel, 0.5)
 
-    def test_floor(self):
+    def test_no_match_returns_zero(self):
         rel = tiktok._compute_relevance("quantum physics", "cat dancing video")
-        self.assertGreaterEqual(rel, 0.1)
+        self.assertEqual(rel, 0.0)
 
 
 class TestExtractCoreSubject(unittest.TestCase):

@@ -48,7 +48,11 @@ DEPTH_CONFIG = {
     },
 }
 
-# Stopwords for query extraction
+from .query import extract_core_subject as _query_extract
+from .query_type import detect_query_type
+from .relevance import token_overlap_relevance
+
+# Reddit-specific noise words (preserves original smaller set)
 NOISE_WORDS = frozenset({
     'best', 'top', 'good', 'great', 'awesome', 'killer',
     'latest', 'new', 'news', 'update', 'updates',
@@ -82,24 +86,7 @@ def _extract_core_subject(topic: str) -> str:
 
     Strips meta/research words to keep only the core product/concept name.
     """
-    text = topic.lower().strip()
-
-    # Strip multi-word prefixes
-    prefixes = [
-        'what are the best', 'what is the best', 'what are the latest',
-        'what are people saying about', 'what do people think about',
-        'how do i use', 'how to use', 'how to',
-        'what are', 'what is', 'tips for', 'best practices for',
-    ]
-    for p in prefixes:
-        if text.startswith(p + ' '):
-            text = text[len(p):].strip()
-
-    words = text.split()
-    filtered = [w for w in words if w not in NOISE_WORDS]
-
-    result = ' '.join(filtered) if filtered else text
-    return result.rstrip('?!.')
+    return _query_extract(topic, noise=NOISE_WORDS)
 
 
 def expand_reddit_queries(topic: str, depth: str) -> List[str]:
@@ -121,10 +108,14 @@ def expand_reddit_queries(topic: str, depth: str) -> List[str]:
     if core.lower() != original_clean.lower() and len(original_clean.split()) <= 8:
         queries.append(original_clean)
 
-    if depth in ("default", "deep"):
+    # Opinion/review variants help mostly for product and opinion queries.
+    # They contaminate broader searches like predictions or breaking news.
+    qtype = detect_query_type(topic)
+    if depth in ("default", "deep") and qtype in ("product", "opinion"):
         queries.append(f"{core} worth it OR thoughts OR review")
 
-    if depth == "deep":
+    # Problem/bug variants are useful for tool workflows, not generic news.
+    if depth == "deep" and qtype in ("product", "opinion", "how_to"):
         queries.append(f"{core} issues OR problems OR bug OR broken")
 
     return queries
@@ -199,7 +190,7 @@ def _parse_date(created_utc) -> Optional[str]:
         return None
 
 
-def _normalize_post(post: Dict[str, Any], idx: int, source_label: str = "global") -> Dict[str, Any]:
+def _normalize_post(post: Dict[str, Any], idx: int, source_label: str = "global", query: str = "") -> Dict[str, Any]:
     """Normalize a ScrapeCreators Reddit post to our internal format."""
     permalink = post.get("permalink", "")
     url = f"https://www.reddit.com{permalink}" if permalink else post.get("url", "")
@@ -208,10 +199,17 @@ def _normalize_post(post: Dict[str, Any], idx: int, source_label: str = "global"
     if url and "reddit.com" not in url:
         url = ""
 
+    title = str(post.get("title", "")).strip()
+    selftext = str(post.get("selftext", ""))
+
+    # Score the title first, then let the body provide limited support.
+    # This keeps long selftexts from overpowering the visible topic signal.
+    relevance = _compute_post_relevance(query, title, selftext) if query else 0.7
+
     return {
         "id": f"R{idx}",
         "reddit_id": post.get("id", ""),
-        "title": str(post.get("title", "")).strip(),
+        "title": title,
         "url": url,
         "subreddit": str(post.get("subreddit", "")).strip(),
         "date": _parse_date(post.get("created_utc")),
@@ -220,10 +218,26 @@ def _normalize_post(post: Dict[str, Any], idx: int, source_label: str = "global"
             "num_comments": post.get("num_comments", 0),
             "upvote_ratio": post.get("upvote_ratio"),
         },
-        "relevance": 0.7,
+        "relevance": relevance,
         "why_relevant": f"Reddit {source_label} search",
         "selftext": str(post.get("selftext", ""))[:500],
     }
+
+
+def _compute_post_relevance(query: str, title: str, selftext: str) -> float:
+    """Compute Reddit relevance with title-first weighting.
+
+    Title should carry most of the weight because it is the visible summary the
+    user sees. Selftext can lift a marginal match, but it should not rescue a
+    weak or ambiguous title into the top ranks.
+    """
+    title_score = token_overlap_relevance(query, title)
+    if not selftext.strip():
+        return title_score
+
+    body_score = token_overlap_relevance(query, selftext)
+    support_score = max(title_score, body_score)
+    return round(0.75 * title_score + 0.25 * support_score, 2)
 
 
 def _global_search(
@@ -431,23 +445,23 @@ def search_reddit(
         _log(f"  -> {len(posts)} results")
         all_raw_posts.extend(posts)
 
-    # Normalize all posts
+    # Normalize all posts (with query for relevance scoring)
+    core = _extract_core_subject(topic)
     all_items = []
     for i, post in enumerate(all_raw_posts):
-        item = _normalize_post(post, i + 1, "global")
+        item = _normalize_post(post, i + 1, "global", query=core)
         all_items.append(item)
 
     # === Phase 3: Subreddit Discovery + Targeted Search ===
     discovered_subs = discover_subreddits(all_raw_posts, topic=topic, max_subs=config["subreddit_searches"])
     _log(f"Discovered subreddits: {discovered_subs}")
 
-    core = _extract_core_subject(topic)
     for sub in discovered_subs[:config["subreddit_searches"]]:
         _log(f"Subreddit search: r/{sub} for '{core}'")
         sub_posts = _subreddit_search(sub, core, token, sort="relevance", timeframe=timeframe)
         _log(f"  -> {len(sub_posts)} results from r/{sub}")
         for j, post in enumerate(sub_posts):
-            item = _normalize_post(post, len(all_items) + j + 1, f"r/{sub}")
+            item = _normalize_post(post, len(all_items) + j + 1, f"r/{sub}", query=core)
             all_items.append(item)
 
     # === Phase 4: Deduplicate ===

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, TypeVar, Union
 
 from . import dates, schema
 
-T = TypeVar("T", schema.RedditItem, schema.XItem, schema.WebSearchItem, schema.YouTubeItem, schema.TikTokItem, schema.InstagramItem, schema.HackerNewsItem, schema.PolymarketItem)
+T = TypeVar("T", schema.RedditItem, schema.XItem, schema.WebSearchItem, schema.YouTubeItem, schema.TikTokItem, schema.InstagramItem, schema.HackerNewsItem, schema.BlueskyItem, schema.PolymarketItem)
 
 
 def filter_by_date_range(
@@ -343,6 +343,93 @@ def normalize_hackernews_items(
             engagement=engagement,
             top_comments=top_comments,
             comment_insights=item.get("comment_insights", []),
+            relevance=item.get("relevance", 0.5),
+            why_relevant=item.get("why_relevant", ""),
+        ))
+
+    return normalized
+
+
+def normalize_bluesky_items(
+    items: List[Dict[str, Any]],
+    from_date: str,
+    to_date: str,
+) -> List[schema.BlueskyItem]:
+    """Normalize raw Bluesky items to schema.
+
+    Args:
+        items: Raw Bluesky items from AT Protocol API
+        from_date: Start of date range
+        to_date: End of date range
+
+    Returns:
+        List of BlueskyItem objects
+    """
+    normalized = []
+
+    for i, item in enumerate(items):
+        eng_raw = item.get("engagement") or {}
+        engagement = schema.Engagement(
+            likes=eng_raw.get("likes"),
+            reposts=eng_raw.get("reposts"),
+            replies=eng_raw.get("replies"),
+            quotes=eng_raw.get("quotes"),
+        )
+
+        date_str = item.get("date")
+
+        normalized.append(schema.BlueskyItem(
+            id=f"BS{i+1}",
+            text=item.get("text", ""),
+            url=item.get("url", ""),
+            author_handle=item.get("handle", ""),
+            display_name=item.get("display_name", ""),
+            date=date_str,
+            date_confidence="high",
+            engagement=engagement,
+            relevance=item.get("relevance", 0.5),
+            why_relevant=item.get("why_relevant", ""),
+        ))
+
+    return normalized
+
+
+def normalize_truthsocial_items(
+    items: List[Dict[str, Any]],
+    from_date: str,
+    to_date: str,
+) -> List[schema.TruthSocialItem]:
+    """Normalize raw Truth Social items to schema.
+
+    Args:
+        items: Raw Truth Social items from Mastodon API
+        from_date: Start of date range
+        to_date: End of date range
+
+    Returns:
+        List of TruthSocialItem objects
+    """
+    normalized = []
+
+    for i, item in enumerate(items):
+        eng_raw = item.get("engagement") or {}
+        engagement = schema.Engagement(
+            likes=eng_raw.get("likes"),
+            reposts=eng_raw.get("reposts"),
+            replies=eng_raw.get("replies"),
+        )
+
+        date_str = item.get("date")
+
+        normalized.append(schema.TruthSocialItem(
+            id=f"TS{i+1}",
+            text=item.get("text", ""),
+            url=item.get("url", ""),
+            author_handle=item.get("handle", ""),
+            display_name=item.get("display_name", ""),
+            date=date_str,
+            date_confidence="high",
+            engagement=engagement,
             relevance=item.get("relevance", 0.5),
             why_relevant=item.get("why_relevant", ""),
         ))
