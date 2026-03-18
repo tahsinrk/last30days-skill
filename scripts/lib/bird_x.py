@@ -16,6 +16,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .relevance import token_overlap_relevance as _compute_relevance
 
+# Python 3.11+ supports process_group kwarg (fork-safe alternative to preexec_fn).
+# preexec_fn=os.setsid can deadlock when used with ThreadPoolExecutor.
+_PY311_PLUS = sys.version_info >= (3, 11)
+
 # Path to the vendored bird-search wrapper
 _BIRD_SEARCH_MJS = Path(__file__).parent / "vendor" / "bird-search" / "bird-search.mjs"
 
@@ -44,13 +48,14 @@ def _has_injected_credentials() -> bool:
 
 
 def _subprocess_env() -> Dict[str, str]:
-    """Build env dict for Node subprocesses, merging injected credentials."""
-    env = os.environ.copy()
-    env.update(_credentials)
-    # When repo config already provides cookies, disable browser-cookie fallback
-    # so vendored Bird never hits Safari/Chrome keychain during automation.
-    if _has_injected_credentials():
-        env.setdefault("BIRD_DISABLE_BROWSER_COOKIES", "1")
+    """Build minimal env dict for Node subprocesses.
+
+    Only passes the vars Node.js actually needs — avoids leaking database
+    passwords, other API keys, or secrets that happen to be in the parent env.
+    """
+    _ALLOWED_KEYS = {"PATH", "HOME", "NODE_PATH", "TERM", "LANG"}
+    env = {k: v for k, v in os.environ.items() if k in _ALLOWED_KEYS}
+    env.update(_credentials)  # AUTH_TOKEN, CT0
     return env
 
 
@@ -166,8 +171,13 @@ def _run_bird_search(query: str, count: int, timeout: int) -> Dict[str, Any]:
         "--json",
     ]
 
-    # Use process groups for clean cleanup on timeout/kill
-    preexec = os.setsid if hasattr(os, 'setsid') else None
+    # Use process groups for clean cleanup on timeout/kill.
+    # Python 3.11+ process_group is fork-safe; preexec_fn can deadlock with threads.
+    pg_kwargs: Dict[str, Any] = {}
+    if _PY311_PLUS:
+        pg_kwargs["process_group"] = 0
+    elif hasattr(os, "setsid"):
+        pg_kwargs["preexec_fn"] = os.setsid
 
     try:
         proc = subprocess.Popen(
@@ -175,8 +185,8 @@ def _run_bird_search(query: str, count: int, timeout: int) -> Dict[str, Any]:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            preexec_fn=preexec,
             env=_subprocess_env(),
+            **pg_kwargs,
         )
 
         # Register for cleanup tracking (if available)
@@ -324,7 +334,11 @@ def search_handles(
             "--json",
         ]
 
-        preexec = os.setsid if hasattr(os, 'setsid') else None
+        pg_kwargs: Dict[str, Any] = {}
+        if _PY311_PLUS:
+            pg_kwargs["process_group"] = 0
+        elif hasattr(os, "setsid"):
+            pg_kwargs["preexec_fn"] = os.setsid
 
         try:
             proc = subprocess.Popen(
@@ -332,8 +346,8 @@ def search_handles(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                preexec_fn=preexec,
                 env=_subprocess_env(),
+                **pg_kwargs,
             )
 
             try:

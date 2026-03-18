@@ -44,7 +44,11 @@ def _xref_tag(item) -> str:
 
 
 def ensure_output_dir():
-    """Ensure output directory exists. Supports env override and sandbox fallback."""
+    """Ensure output directory exists. Supports env override and sandbox fallback.
+
+    Fallback uses tempfile.mkdtemp() with restricted permissions instead of a
+    predictable path under /tmp, to prevent other users reading output data.
+    """
     global OUTPUT_DIR
     env_dir = os.environ.get("LAST30DAYS_OUTPUT_DIR")
     if env_dir:
@@ -52,9 +56,10 @@ def ensure_output_dir():
 
     try:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        os.chmod(OUTPUT_DIR, 0o700)
     except PermissionError:
-        OUTPUT_DIR = Path(tempfile.gettempdir()) / "last30days" / "out"
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        OUTPUT_DIR = Path(tempfile.mkdtemp(prefix="last30days_out_"))
+        # mkdtemp already creates with 0o700 permissions
 
 
 def _assess_data_freshness(report: schema.Report) -> dict:
@@ -955,9 +960,11 @@ def write_outputs(
 
     Args:
         report: Report data
-        raw_openai: Raw OpenAI API response
-        raw_xai: Raw xAI API response
-        raw_reddit_enriched: Raw enriched Reddit thread data
+        raw_openai: Raw OpenAI API response (ignored — raw API responses
+            are not persisted to disk to avoid leaking Authorization headers
+            or other sensitive data embedded in API responses)
+        raw_xai: Raw xAI API response (ignored — same reason)
+        raw_reddit_enriched: Raw enriched Reddit thread data (ignored — same reason)
     """
     ensure_output_dir()
 
@@ -973,18 +980,10 @@ def write_outputs(
     with open(OUTPUT_DIR / "last30days.context.md", 'w') as f:
         f.write(render_context_snippet(report))
 
-    # Raw responses
-    if raw_openai:
-        with open(OUTPUT_DIR / "raw_openai.json", 'w') as f:
-            json.dump(raw_openai, f, indent=2)
-
-    if raw_xai:
-        with open(OUTPUT_DIR / "raw_xai.json", 'w') as f:
-            json.dump(raw_xai, f, indent=2)
-
-    if raw_reddit_enriched:
-        with open(OUTPUT_DIR / "raw_reddit_threads_enriched.json", 'w') as f:
-            json.dump(raw_reddit_enriched, f, indent=2)
+    # NOTE: raw_openai, raw_xai, and raw_reddit_enriched are intentionally
+    # NOT written to disk. Raw API responses can contain Authorization headers,
+    # Bearer tokens, x-api-key values, or other sensitive data. The processed
+    # report.json contains all the user-facing data needed.
 
 
 def get_context_path() -> str:

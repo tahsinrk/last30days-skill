@@ -19,6 +19,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+# Python 3.11+ supports process_group kwarg (fork-safe alternative to preexec_fn).
+_PY311_PLUS = sys.version_info >= (3, 11)
+
 # Depth configurations: how many videos to search / transcribe
 DEPTH_CONFIG = {
     "quick": 10,
@@ -95,20 +98,29 @@ def search_youtube(
     _log(f"Searching YouTube for '{core_topic}' (since {from_date}, count={count})")
 
     # yt-dlp search with full metadata (no --flat-playlist so dates are real).
-    # NOTE: --dateafter intentionally omitted — YouTube search returns
-    # relevance-sorted results and strict date filtering returns 0 for
-    # evergreen topics. Python soft filter (below) handles date filtering.
+    # No --dateafter — we filter by date in Python with a soft fallback,
+    # because YouTube search returns relevance-sorted results and strict date
+    # filtering returns 0 for evergreen topics like "thumbnail tips".
+    # The -- separator prevents topic strings starting with "-" from being
+    # interpreted as flags.
+    # --ignore-config prevents user's yt-dlp config from overriding security flags.
     cmd = [
         "yt-dlp",
         "--ignore-config",
         "--no-cookies-from-browser",
-        f"ytsearch{count}:{core_topic}",
         "--dump-json",
         "--no-warnings",
         "--no-download",
+        "--",
+        f"ytsearch{count}:{core_topic}",
     ]
 
-    preexec = os.setsid if hasattr(os, 'setsid') else None
+    # Python 3.11+ process_group is fork-safe; preexec_fn can deadlock with threads.
+    pg_kwargs: Dict[str, Any] = {}
+    if _PY311_PLUS:
+        pg_kwargs["process_group"] = 0
+    elif hasattr(os, "setsid"):
+        pg_kwargs["preexec_fn"] = os.setsid
 
     try:
         proc = subprocess.Popen(
@@ -116,7 +128,7 @@ def search_youtube(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            preexec_fn=preexec,
+            **pg_kwargs,
         )
         try:
             stdout, stderr = proc.communicate(timeout=120)
@@ -229,10 +241,15 @@ def fetch_transcript(video_id: str, temp_dir: str) -> Optional[str]:
         "--skip-download",
         "--no-warnings",
         "-o", f"{temp_dir}/%(id)s",
+        "--",
         f"https://www.youtube.com/watch?v={video_id}",
     ]
 
-    preexec = os.setsid if hasattr(os, 'setsid') else None
+    pg_kwargs: Dict[str, Any] = {}
+    if _PY311_PLUS:
+        pg_kwargs["process_group"] = 0
+    elif hasattr(os, "setsid"):
+        pg_kwargs["preexec_fn"] = os.setsid
 
     try:
         proc = subprocess.Popen(
@@ -240,7 +257,7 @@ def fetch_transcript(video_id: str, temp_dir: str) -> Optional[str]:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            preexec_fn=preexec,
+            **pg_kwargs,
         )
         try:
             proc.communicate(timeout=30)

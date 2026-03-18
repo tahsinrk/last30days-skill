@@ -15,7 +15,11 @@ MODEL_CACHE_FILE = CACHE_DIR / "model_selection.json"
 
 
 def ensure_cache_dir():
-    """Ensure cache directory exists. Supports env override and sandbox fallback."""
+    """Ensure cache directory exists. Supports env override and sandbox fallback.
+
+    Fallback uses tempfile.mkdtemp() with restricted permissions instead of a
+    predictable path under /tmp, to prevent other users from reading cache data.
+    """
     global CACHE_DIR, MODEL_CACHE_FILE
     env_dir = os.environ.get("LAST30DAYS_CACHE_DIR")
     if env_dir:
@@ -24,10 +28,12 @@ def ensure_cache_dir():
 
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        # Restrict directory permissions to owner only
+        os.chmod(CACHE_DIR, 0o700)
     except PermissionError:
-        CACHE_DIR = Path(tempfile.gettempdir()) / "last30days" / "cache"
+        # Use mkdtemp for a unique, owner-only temporary directory
+        CACHE_DIR = Path(tempfile.mkdtemp(prefix="last30days_cache_"))
         MODEL_CACHE_FILE = CACHE_DIR / "model_selection.json"
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_cache_key(topic: str, from_date: str, to_date: str, sources: str) -> str:
@@ -104,13 +110,14 @@ def load_cache_with_age(cache_key: str, ttl_hours: int = DEFAULT_TTL_HOURS) -> t
 
 
 def save_cache(cache_key: str, data: dict):
-    """Save data to cache."""
+    """Save data to cache with owner-only permissions (0o600)."""
     ensure_cache_dir()
     cache_path = get_cache_path(cache_key)
 
     try:
         with open(cache_path, 'w') as f:
             json.dump(data, f)
+        os.chmod(cache_path, 0o600)
     except OSError:
         pass  # Silently fail on cache write errors
 
@@ -142,11 +149,12 @@ def load_model_cache() -> dict:
 
 
 def save_model_cache(data: dict):
-    """Save model selection cache."""
+    """Save model selection cache with owner-only permissions (0o600)."""
     ensure_cache_dir()
     try:
         with open(MODEL_CACHE_FILE, 'w') as f:
             json.dump(data, f)
+        os.chmod(MODEL_CACHE_FILE, 0o600)
     except OSError:
         pass
 

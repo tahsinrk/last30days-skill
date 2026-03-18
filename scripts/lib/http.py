@@ -81,7 +81,7 @@ def request(
             body = None
             try:
                 body = e.read().decode('utf-8')
-            except:
+            except Exception:
                 pass
             log(f"HTTP Error {e.code}: {e.reason}")
             if body:

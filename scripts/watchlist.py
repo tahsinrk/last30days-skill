@@ -139,8 +139,9 @@ def _run_topic(topic: dict) -> dict:
         cmd = [
             sys.executable,
             str(SCRIPT_DIR / "last30days.py"),
-            search_term,
             "--emit=json",
+            "--",
+            search_term,
         ]
         result = subprocess.run(
             cmd,

@@ -155,28 +155,11 @@ export async function resolveCredentials(options) {
         cookies.cookieHeader = cookieHeader(cookies.authToken, cookies.ct0);
         return { cookies, warnings };
     }
-    if (disableBrowserCookies) {
-        if (!cookies.authToken) {
-            warnings.push('Missing auth_token - provide via --auth-token, AUTH_TOKEN env var, or disable BIRD_DISABLE_BROWSER_COOKIES to allow browser cookie lookup');
-        }
-        if (!cookies.ct0) {
-            warnings.push('Missing ct0 - provide via --ct0, CT0 env var, or disable BIRD_DISABLE_BROWSER_COOKIES to allow browser cookie lookup');
-        }
-        return { cookies, warnings };
-    }
-    const sourcesToTry = resolveSources(options.cookieSource);
-    for (const source of sourcesToTry) {
-        const res = await readTwitterCookiesFromBrowser({
-            source,
-            chromeProfile: options.chromeProfile,
-            firefoxProfile: options.firefoxProfile,
-            cookieTimeoutMs,
-        });
-        warnings.push(...res.warnings);
-        if (res.cookies.authToken && res.cookies.ct0) {
-            return { cookies: res.cookies, warnings };
-        }
-    }
+    // SECURITY: Never fall back to browser cookie extraction.
+    // Browser probing reads the macOS Keychain and all browser cookies,
+    // which is an unacceptable privacy/security risk for a research tool.
+    // Users must provide AUTH_TOKEN/CT0 via env vars or CLI args.
+    warnings.push('Browser cookie extraction disabled for security. Set AUTH_TOKEN and CT0 env vars to use X search.');
     if (!cookies.authToken) {
         warnings.push('Missing auth_token - provide via --auth-token, AUTH_TOKEN env var, or login to x.com in Safari/Chrome/Firefox');
     }
