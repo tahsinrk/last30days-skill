@@ -36,7 +36,7 @@ TRANSCRIPT_LIMITS = {
 }
 
 # Max words to keep from each transcript
-TRANSCRIPT_MAX_WORDS = 500
+TRANSCRIPT_MAX_WORDS = 5000
 
 from .relevance import token_overlap_relevance as _compute_relevance
 

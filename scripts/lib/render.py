@@ -284,10 +284,7 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
             lines.append(f"  {item.title}")
             lines.append(f"  {item.url}")
             if item.transcript_snippet:
-                snippet = item.transcript_snippet[:200]
-                if len(item.transcript_snippet) > 200:
-                    snippet += "..."
-                lines.append(f"  Transcript: {snippet}")
+                lines.append(f"  Transcript: {item.transcript_snippet}")
             lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
