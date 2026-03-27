@@ -16,7 +16,7 @@ ByteDance's **Seedance 2.0** has been the most discussed AI video model this mon
 
 **Multi-shot coherence is the technical differentiator.** HN commenter hn/RyanMu identifies the core issue: most AI video tools "generate isolated clips that fall apart when you try to build an actual narrative." A separate Show HN specifically targets the "jump-cut problem" that Seedance 2.0 claims to solve.
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Regulatory pressure is the real bottleneck, not technology** - the API delay, ElevenLabs removal, and Hollywood backlash form a connected pattern where legal/ethical concerns are throttling access faster than ByteDance can ship (r/Seedance_AI + r/AIGuild)
 2. **Access fragmentation creates parallel economies** - CapCut for consumers, Atlas Cloud for enterprise, Jimeng for China, third-party wrappers for everyone else, scam sites for the desperate - all serving the same model through different channels with different reliability [xref: HN/Reddit]

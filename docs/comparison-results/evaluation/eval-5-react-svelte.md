@@ -7,31 +7,31 @@
 
 Score each version 1-5 on these dimensions:
 
-### 1. GROUNDEDNESS (30%)
+#### 1. GROUNDEDNESS (30%)
 Does the narrative cite specific sources from the research data?
 - 1: Generic statements, no citations, could be written without any research
 - 3: Some citations but mixed with pre-existing knowledge filler
 - 5: Every finding backed by a specific source ("per @handle", "per r/sub", "per [channel]")
 
-### 2. SPECIFICITY (25%)
+#### 2. SPECIFICITY (25%)
 Are findings specific (named entities, exact numbers) or vague?
 - 1: Vague generalities ("AI video tools are improving", "developers are debating frameworks")
 - 3: Some specifics mixed with generic padding
 - 5: Named products, exact numbers, version names ("Seedance 2.0 added lip sync", "698 likes")
 
-### 3. COVERAGE (20%)
+#### 3. COVERAGE (20%)
 Does the synthesis represent findings from all available data sources?
 - 1: Only mentions 1-2 sources, ignores others
 - 3: Mentions most sources but unevenly weighted
 - 5: Naturally weaves Reddit, X, YouTube (and HN if available) into the narrative
 
-### 4. ACTIONABILITY (15%)
+#### 4. ACTIONABILITY (15%)
 Does the invitation give specific, research-derived next steps?
 - 1: Generic "let me know if you want more info"
 - 3: Somewhat specific but not clearly grounded in research findings
 - 5: Each suggestion references a specific thing from the research ("I can compare Seedance 2.0 vs Kling")
 
-### 5. FORMAT COMPLIANCE (10%)
+#### 5. FORMAT COMPLIANCE (10%)
 Does it follow the expected output format?
 - 1: Missing stats block, no invitation, wrong structure
 - 3: Partial stats block, generic invitation
@@ -157,7 +157,7 @@ I'm now an expert on React vs Svelte 2026. Some things I can help with:
 ---
 ## SCORES
 
-### Version A
+#### Version A
 - Groundedness: 5/5
 - Specificity: 5/5
 - Coverage: 5/5
@@ -166,7 +166,7 @@ I'm now an expert on React vs Svelte 2026. Some things I can help with:
 - **Weighted Total**: 4.90/5.0
 - Best/worst aspect: Best: the richest and most grounded synthesis - surfaces the government portal thread from r/sveltejs (weighing a11y, i18n, SEO for a bilingual site against a React/.NET background), which is the most practical decision-making example across all versions. Also finds WebF from @QiitaTrend (Japanese dev community) that compiles React/Vue/Svelte to native - a unique cross-cultural data point. 6 Reddit threads and 339 upvotes vs 3-4 in others. Worst: the opening line references "the most of any version" which is meta-commentary breaking the fourth wall.
 
-### Version B
+#### Version B
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5
@@ -175,7 +175,7 @@ I'm now an expert on React vs Svelte 2026. Some things I can help with:
 - **Weighted Total**: 3.80/5.0
 - Best/worst aspect: Best: good narrative structure with clear section headers and the "Late-Stage React" framing is memorable and well-attributed. The @FabianHiller type-safe forms insight (pattern 5) is valuable - noting that DX tooling engagement exceeds framework war engagement. Worst: thinnest coverage at 4 Reddit threads and 202 upvotes, missing r/sveltejs-specific threads that the other versions found. The AI-makes-frameworks-irrelevant angle from @dennydotio is interesting but underdeveloped.
 
-### Version C
+#### Version C
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5

@@ -21,7 +21,7 @@ The task is to:
 
 ## What PR #37 Added (Now All on Main)
 
-### Core Codex auth system (`scripts/lib/env.py`)
+#### Core Codex auth system (`scripts/lib/env.py`)
 - `CODEX_AUTH_FILE` path constant (`~/.codex/auth.json`)
 - `OpenAIAuth` dataclass: `token`, `source`, `status`, `account_id`, `codex_auth_file`
 - `_decode_jwt_payload()` - JWT base64 decode without verification
@@ -31,14 +31,14 @@ The task is to:
 - `get_codex_access_token()` - returns `(token, status)` tuple
 - `get_openai_auth()` - priority chain: `OPENAI_API_KEY` env var > `.env` file key > Codex token
 
-### Codex endpoint routing (`scripts/lib/openai_reddit.py`)
+#### Codex endpoint routing (`scripts/lib/openai_reddit.py`)
 - `CODEX_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses"`
 - `_parse_sse_chunk()` / `_parse_sse_stream()` / `_parse_codex_stream()` - SSE response parsing
 - Headers injected for Codex path: `chatgpt-account-id`, `OpenAI-Beta: responses=v1`, `originator: pi`
 - Codex payload: `store: false`, `stream: true`
 - `CODEX_FALLBACK_MODELS` retry chain: `gpt-5.1-codex-mini` → `gpt-5.2`
 
-### Tests (`tests/test_codex_auth.py`)
+#### Tests (`tests/test_codex_auth.py`)
 - 22 unit tests covering JWT decode, expiry, account ID extraction, auth resolution,
   SSE parsing, payload building, source availability
 - 21/22 pass; 1 has a test isolation bug (see below)
@@ -142,13 +142,13 @@ valid and sidesteps the isolation problem entirely.
 
 ## Implementation Steps
 
-### Step 1: Fix the test
+#### Step 1: Fix the test
 
 In the **private source repo** (`/Users/mvanhorn/last30days-skill-private/`):
 
 Edit `tests/test_codex_auth.py` line 77-84. Replace the bare test with the `@patch.dict` version above. Run `python3 -m pytest tests/test_codex_auth.py -v` to confirm 22/22.
 
-### Step 2: Run full test suite
+#### Step 2: Run full test suite
 
 ```bash
 cd /Users/mvanhorn/last30days-skill-private
@@ -159,7 +159,7 @@ Expected: only `test_reddit_search_basic`, `test_default_model`, `test_model_pin
 similar model-name tests fail (the 5 pre-existing stale model failures from before PR #37).
 Codex auth tests should all pass.
 
-### Step 3: Verify the private docs protection
+#### Step 3: Verify the private docs protection
 
 Check that `.gitignore` (or the upstream push config) prevents `docs/comparison-results/`
 from leaking to the public GitHub remote.
@@ -178,7 +178,7 @@ docs/v2.1-tweets.md
 variants/open/references/research.md
 ```
 
-### Step 4: Commit and sync
+#### Step 4: Commit and sync
 
 ```bash
 cd /Users/mvanhorn/last30days-skill-private
@@ -192,7 +192,7 @@ Then push to upstream (public):
 git push upstream main
 ```
 
-### Step 5: Close PR #37
+#### Step 5: Close PR #37
 
 Post a comment on PR #37 explaining what happened, then close it:
 

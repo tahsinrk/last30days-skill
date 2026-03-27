@@ -51,9 +51,9 @@ repo-root/                          # = marketplace
 
 ## Implementation Plan
 
-### 1. Create marketplace manifest
+#### 1. Create marketplace manifest
 
-#### `.claude-plugin/marketplace.json`
+##### `.claude-plugin/marketplace.json`
 
 ```json
 {
@@ -81,9 +81,9 @@ repo-root/                          # = marketplace
 }
 ```
 
-### 2. Create plugin directory
+#### 2. Create plugin directory
 
-#### `plugins/last30days/.claude-plugin/plugin.json`
+##### `plugins/last30days/.claude-plugin/plugin.json`
 
 ```json
 {
@@ -110,7 +110,7 @@ repo-root/                          # = marketplace
 }
 ```
 
-### 3. Symlink skill and scripts into plugin directory
+#### 3. Symlink skill and scripts into plugin directory
 
 ```bash
 mkdir -p plugins/last30days/.claude-plugin
@@ -126,7 +126,7 @@ ln -s ../../scripts plugins/last30days/scripts
 ln -s ../../fixtures plugins/last30days/fixtures
 ```
 
-### 4. Update README with plugin install instructions
+#### 4. Update README with plugin install instructions
 
 Add before the manual install section:
 
@@ -144,7 +144,7 @@ mkdir -p ~/.config/last30days
 ```
 ```
 
-### 5. Version bump workflow
+#### 5. Version bump workflow
 
 When releasing new versions, update version in ALL manifests:
 - `SKILL.md` frontmatter `version:`

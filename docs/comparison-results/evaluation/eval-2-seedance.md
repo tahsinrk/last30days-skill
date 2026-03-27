@@ -7,31 +7,31 @@
 
 Score each version 1-5 on these dimensions:
 
-### 1. GROUNDEDNESS (30%)
+#### 1. GROUNDEDNESS (30%)
 Does the narrative cite specific sources from the research data?
 - 1: Generic statements, no citations, could be written without any research
 - 3: Some citations but mixed with pre-existing knowledge filler
 - 5: Every finding backed by a specific source ("per @handle", "per r/sub", "per [channel]")
 
-### 2. SPECIFICITY (25%)
+#### 2. SPECIFICITY (25%)
 Are findings specific (named entities, exact numbers) or vague?
 - 1: Vague generalities ("AI video tools are improving", "developers are debating frameworks")
 - 3: Some specifics mixed with generic padding
 - 5: Named products, exact numbers, version names ("Seedance 2.0 added lip sync", "698 likes")
 
-### 3. COVERAGE (20%)
+#### 3. COVERAGE (20%)
 Does the synthesis represent findings from all available data sources?
 - 1: Only mentions 1-2 sources, ignores others
 - 3: Mentions most sources but unevenly weighted
 - 5: Naturally weaves Reddit, X, YouTube (and HN if available) into the narrative
 
-### 4. ACTIONABILITY (15%)
+#### 4. ACTIONABILITY (15%)
 Does the invitation give specific, research-derived next steps?
 - 1: Generic "let me know if you want more info"
 - 3: Somewhat specific but not clearly grounded in research findings
 - 5: Each suggestion references a specific thing from the research ("I can compare Seedance 2.0 vs Kling")
 
-### 5. FORMAT COMPLIANCE (10%)
+#### 5. FORMAT COMPLIANCE (10%)
 Does it follow the expected output format?
 - 1: Missing stats block, no invitation, wrong structure
 - 3: Partial stats block, generic invitation
@@ -59,7 +59,7 @@ ByteDance's **Seedance 2.0** has erupted across AI video communities this month,
 
 **Phishing scams exploit the hype.** @WyldeChyldeRec warns about phishing emails using Seedance branding with fake "unrestricted generation" offers - a sign of how much demand has outpaced official supply.
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Access demand far exceeds official supply** - the gap between Seedance 2.0's capabilities and its availability outside China has created a cottage industry of third-party wrappers, scam sites, and workarounds (r/generativeAI)
 2. **Platform musical chairs** - Seedance 2.0 gets added to CapCut, removed from ElevenLabs, and claimed by NemoVideo all within weeks, making the ecosystem unstable for anyone building workflows (@grok)
@@ -99,7 +99,7 @@ ByteDance's **Seedance 2.0** has dominated AI video discussion this month, with 
 
 **Multi-shot narrative is the real breakthrough.** HN commenter hn/RyanMu notes that most AI video tools "generate isolated clips that fall apart when you try to build an actual narrative" - Seedance 2.0's multi-shot coherence is what sets it apart, and a separate Show HN specifically targets the "jump-cut problem."
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Access fragmentation creates a wrapper gold rush** - 8+ Show HN posts launched Seedance wrapper apps in a single month, but almost none gained traction, suggesting the market wants official API access, not middlemen (HN)
 2. **Platform musical chairs** - added to CapCut, removed from ElevenLabs, broken on Jimeng, promised on Atlas Cloud - the access surface is shifting weekly, making production workflows unreliable (r/singularity)
@@ -140,7 +140,7 @@ ByteDance's **Seedance 2.0** has been the most discussed AI video model this mon
 
 **Multi-shot coherence is the technical differentiator.** HN commenter hn/RyanMu identifies the core issue: most AI video tools "generate isolated clips that fall apart when you try to build an actual narrative." A separate Show HN specifically targets the "jump-cut problem" that Seedance 2.0 claims to solve.
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Regulatory pressure is the real bottleneck, not technology** - the API delay, ElevenLabs removal, and Hollywood backlash form a connected pattern where legal/ethical concerns are throttling access faster than ByteDance can ship (r/Seedance_AI + r/AIGuild)
 2. **Access fragmentation creates parallel economies** - CapCut for consumers, Atlas Cloud for enterprise, Jimeng for China, third-party wrappers for everyone else, scam sites for the desperate - all serving the same model through different channels with different reliability [xref: HN/Reddit]
@@ -163,7 +163,7 @@ Want to dig deeper? I can look into **the full SAG-AFTRA timeline and how it con
 ---
 ## SCORES
 
-### Version A
+#### Version A
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5
@@ -172,7 +172,7 @@ Want to dig deeper? I can look into **the full SAG-AFTRA timeline and how it con
 - **Weighted Total**: 3.70/5.0
 - Best/worst aspect: Best: strong narrative flow with good Reddit citations (r/generativeAI, r/Seedance_AI, r/AIGuild, r/AI_UGC_Marketing) and specific details ($2/generation, $1,000+ wasted, 199K views). Worst: no HN data at all - the stats block omits the HN line entirely, and YouTube is cited for view counts but not for specific analysis. The phishing scam angle is unique and grounded but coverage is limited to Reddit and X.
 
-### Version B
+#### Version B
 - Groundedness: 5/5
 - Specificity: 5/5
 - Coverage: 4/5
@@ -181,7 +181,7 @@ Want to dig deeper? I can look into **the full SAG-AFTRA timeline and how it con
 - **Weighted Total**: 4.55/5.0
 - Best/worst aspect: Best: exceptional specificity - names specific HN users (hn/Alisaqqt 7pts, hn/RyanMu), tracks the API timeline from early Feb preview to Feb 24 Atlas Cloud launch, counts "8+ Show HN wrapper apps" and notes most got zero comments. The "breadth without depth" HN insight is original. Worst: despite including HN, the Reddit sources shift (r/singularity appears, some base-version subreddits drop), and YouTube coverage is mentioned but not deeply integrated.
 
-### Version C
+#### Version C
 - Groundedness: 5/5
 - Specificity: 5/5
 - Coverage: 5/5

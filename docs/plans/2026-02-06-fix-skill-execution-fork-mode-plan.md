@@ -37,7 +37,7 @@ The last30days v2 skill stopped running its Python script and stopped showing ac
 
 ## Proposed Fix
 
-### Option A: Remove `context: fork` (Recommended)
+#### Option A: Remove `context: fork` (Recommended)
 
 **Remove `context: fork` from frontmatter.** The skill runs inline in the main conversation, exactly like the old v1 skill accidentally did.
 
@@ -78,7 +78,7 @@ That's it. Remove the one line.
 3. "Do WebSearch" while script runs
 4. Synthesize and present
 
-### Option B: Keep `context: fork` + Use `!`command`` Preprocessing
+#### Option B: Keep `context: fork` + Use `!`command`` Preprocessing
 
 Use shell preprocessing syntax (`!`command``) to run the script **before** the model even sees the prompt:
 
@@ -89,17 +89,17 @@ Use shell preprocessing syntax (`!`command``) to run the script **before** the m
 
 **Risk:** Not confirmed that `$ARGUMENTS` works in `!`command`` context. More complex. The user still won't see progress text during preprocessing.
 
-### Recommendation: Option A
+#### Recommendation: Option A
 
 Remove `context: fork`. It's one line. The old skill worked inline. The v2 skill should too. Option B is a backup if inline mode causes context window issues.
 
 ## Implementation
 
-### Step 1: Remove `context: fork` from frontmatter
+#### Step 1: Remove `context: fork` from frontmatter
 
 Single line removal in `SKILL.md`.
 
-### Step 2: Restore v1-style instruction flow
+#### Step 2: Restore v1-style instruction flow
 
 The SKILL.md opening should match the public v1 pattern:
 
@@ -140,11 +140,11 @@ The key structural elements from v1 that need to return:
 3. Script execution as a clearly labeled step
 4. WebSearch as step 2 (not step 1)
 
-### Step 3: Keep all v2 improvements
+#### Step 3: Keep all v2 improvements
 
 The v2-specific improvements (citation rules, stats template, Reddit fallback, scoring changes) stay. Only the frontmatter and instruction flow change.
 
-### Step 4: Sync and test
+#### Step 4: Sync and test
 
 Copy to `~/.claude/skills/last30days/SKILL.md`, test in new session.
 

@@ -16,12 +16,12 @@ Add YouTube as a 4th research source alongside Reddit, X, and Web. Search for re
 
 Use **yt-dlp** (already installed via Homebrew) for both YouTube search and transcript extraction. No new API keys, no new dependencies. Follows the same "zero friction" philosophy as vendored Bird search.
 
-### Two-step process per research run:
+#### Two-step process per research run:
 
 1. **Search**: `yt-dlp "ytsearch{N}:{topic}" --dateafter {30d_ago} --flat-playlist --print` → top videos by view count
 2. **Transcripts**: For top 5 videos, extract auto-generated subtitles via `yt-dlp --write-auto-subs --skip-download`, clean VTT to plaintext in Python
 
-### Why NOT use `summarize` CLI:
+#### Why NOT use `summarize` CLI:
 
 - Adds 146MB brew dependency (arm64-only binary)
 - Calls OpenAI API per video ($0.01-0.03 each) — adds cost on top of existing API usage
@@ -32,7 +32,7 @@ Use **yt-dlp** (already installed via Homebrew) for both YouTube search and tran
 
 ## Technical Approach
 
-### Architecture
+#### Architecture
 
 New file: `scripts/lib/youtube_yt.py` (mirrors `bird_x.py` pattern)
 
@@ -52,9 +52,9 @@ yt-dlp subtitle extraction → raw VTT files
   score, dedupe, render (same pipeline as Reddit/X)
 ```
 
-### Implementation Phases
+#### Implementation Phases
 
-#### Phase 1: Search + Metadata (the fast part)
+##### Phase 1: Search + Metadata (the fast part)
 
 **New file: `scripts/lib/youtube_yt.py`**
 
@@ -100,7 +100,7 @@ TRANSCRIPT_LIMITS = {
 
 **Key detail**: `yt-dlp --flat-playlist` returns exit code 0 with empty stdout when `--dateafter` filters out everything. Check for empty output, not error codes.
 
-#### Phase 2: Transcript Extraction (the slow part)
+##### Phase 2: Transcript Extraction (the slow part)
 
 For top N videos (by view count), fetch transcripts:
 
@@ -165,7 +165,7 @@ def fetch_transcripts_parallel(video_ids: List[str], max_workers: int = 5) -> Di
     return results
 ```
 
-#### Phase 3: Integration into Pipeline
+##### Phase 3: Integration into Pipeline
 
 **Update `scripts/lib/schema.py`** — add YouTubeItem:
 ```python
@@ -232,7 +232,7 @@ def is_ytdlp_available() -> bool:
 
 No API key needed. YouTube search is available whenever yt-dlp is in PATH.
 
-#### Phase 4: SKILL.md Updates
+##### Phase 4: SKILL.md Updates
 
 Stats box adds YouTube line:
 ```
@@ -282,12 +282,12 @@ Synthesis instructions updated to weight YouTube transcripts highly — a 20-min
 
 ## Files to Create/Modify
 
-### New Files
+#### New Files
 - `scripts/lib/youtube_yt.py` — search, transcript extraction, parsing
 - `tests/test_youtube_yt.py` — unit tests
 - `fixtures/youtube_sample.json` — mock data for tests
 
-### Modified Files
+#### Modified Files
 - `scripts/lib/schema.py` — add YouTubeItem, update Report
 - `scripts/lib/normalize.py` — add normalize_youtube_items()
 - `scripts/lib/score.py` — add YouTube engagement scoring

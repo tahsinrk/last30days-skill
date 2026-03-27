@@ -7,31 +7,31 @@
 
 Score each version 1-5 on these dimensions:
 
-### 1. GROUNDEDNESS (30%)
+#### 1. GROUNDEDNESS (30%)
 Does the narrative cite specific sources from the research data?
 - 1: Generic statements, no citations, could be written without any research
 - 3: Some citations but mixed with pre-existing knowledge filler
 - 5: Every finding backed by a specific source ("per @handle", "per r/sub", "per [channel]")
 
-### 2. SPECIFICITY (25%)
+#### 2. SPECIFICITY (25%)
 Are findings specific (named entities, exact numbers) or vague?
 - 1: Vague generalities ("AI video tools are improving", "developers are debating frameworks")
 - 3: Some specifics mixed with generic padding
 - 5: Named products, exact numbers, version names ("Seedance 2.0 added lip sync", "698 likes")
 
-### 3. COVERAGE (20%)
+#### 3. COVERAGE (20%)
 Does the synthesis represent findings from all available data sources?
 - 1: Only mentions 1-2 sources, ignores others
 - 3: Mentions most sources but unevenly weighted
 - 5: Naturally weaves Reddit, X, YouTube (and HN if available) into the narrative
 
-### 4. ACTIONABILITY (15%)
+#### 4. ACTIONABILITY (15%)
 Does the invitation give specific, research-derived next steps?
 - 1: Generic "let me know if you want more info"
 - 3: Somewhat specific but not clearly grounded in research findings
 - 5: Each suggestion references a specific thing from the research ("I can compare Seedance 2.0 vs Kling")
 
-### 5. FORMAT COMPLIANCE (10%)
+#### 5. FORMAT COMPLIANCE (10%)
 Does it follow the expected output format?
 - 1: Missing stats block, no invitation, wrong structure
 - 3: Partial stats block, generic invitation
@@ -133,7 +133,7 @@ Cross-referencing Reddit ownership reports, YouTube long-term reviews, and X com
 ---
 ## SCORES
 
-### Version A
+#### Version A
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 4/5
@@ -142,7 +142,7 @@ Cross-referencing Reddit ownership reports, YouTube long-term reviews, and X com
 - **Weighted Total**: 3.85/5.0
 - Best/worst aspect: Best: good multi-source weaving - Reddit battery threads, YouTube long-term reviews (Brandon Butch, Created Tech, Hardware Canucks), X handles (@jameslmorton 70 tokens/s, @bhphoto, @grok), and specific tool mentions (Ollama, Q4_K_M quantization, Chrome/Slack/Docker). Worst: format has issues - the "---All agents" and "---I'm now" lines lack proper spacing, and HN shows 0 stories which is acknowledged but the narrative notes HN silence as a finding rather than just reporting the gap.
 
-### Version B
+#### Version B
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5
@@ -151,7 +151,7 @@ Cross-referencing Reddit ownership reports, YouTube long-term reviews, and X com
 - **Weighted Total**: 3.70/5.0
 - Best/worst aspect: Best: solid specificity with named reviewers (Brandon Butch, Created Tech, Tech It Easy, Hardware Canucks, MacRumors, Just Josh), exact numbers (70 tokens/s, 128GB), and specific YouTube view data mentioned implicitly. Good narrative structure moving from configuration to battery to long-term to AI to upgrade advice. Worst: coverage is the weakest dimension - no HN data, and the synthesis doesn't weave X and YouTube together as tightly as it could. Stats block missing the HN line entirely.
 
-### Version C
+#### Version C
 - Groundedness: 4/5
 - Specificity: 5/5
 - Coverage: 4/5

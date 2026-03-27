@@ -29,7 +29,7 @@ Ran 5 canonical topics through all 3 skill versions (Base, HN, CROSS) for 15 tot
 - **Source routing:** Identical across all 15 runs (verified via --diagnose)
 - **Duration:** ~11 minutes for all 15 runs
 
-### 5 Test Topics
+#### 5 Test Topics
 
 | # | Topic | Category |
 |---|-------|----------|
@@ -88,7 +88,7 @@ Ran 5 canonical topics through all 3 skill versions (Base, HN, CROSS) for 15 tot
 | React/Svelte | hn | 0.70 | 0.70 | 0.70 | all 0.7 (hardcoded) |
 | React/Svelte | cross | 0.25 | 0.53 | 1.00 | [0.75, 0.75, 0.75, 1.0, 0.75, 0.25, 0.25, 0.25, 0.25, 0.25] |
 
-### YouTube Matched-Item Analysis (Base vs CROSS, same videos)
+#### YouTube Matched-Item Analysis (Base vs CROSS, same videos)
 
 Videos matched by title across Base and CROSS runs of each topic:
 
@@ -132,7 +132,7 @@ Videos matched by title across Base and CROSS runs of each topic:
 
 **Total: 3 items linked out of ~178 across 5 tests.** The 0.5 char-trigram Jaccard threshold is far too strict.
 
-### With hybrid fix (token+trigram Jaccard at 0.40):
+#### With hybrid fix (token+trigram Jaccard at 0.40):
 
 | Topic | Current Links | Hybrid Links | Items Tagged |
 |-------|--------------|-------------|-------------|
@@ -221,7 +221,7 @@ Weighted scoring: 25% diversity + 25% score quality + 25% relevance accuracy + 2
 | React/Svelte | 62.5 | 62.0 | **74.4** | CROSS |
 | **TOTAL** | **307.0** | **315.5** | **370.1** | **CROSS** |
 
-### Category Winners
+#### Category Winners
 
 | Category | Winner | Scores (Base / HN / CROSS) |
 |----------|--------|---------------------------|
@@ -231,7 +231,7 @@ Weighted scoring: 25% diversity + 25% score quality + 25% relevance accuracy + 2
 
 **CROSS wins all 5 topics and all 3 categories. No regressions found.**
 
-### Why CROSS Wins
+#### Why CROSS Wins
 
 1. **YouTube relevance accuracy** is the single biggest differentiator. It correctly promotes on-topic videos and demotes off-topic ones, changing rankings in every topic.
 2. **Source diversity** improves for tech topics because YouTube re-scoring redistributes which items make the top 15.
@@ -239,7 +239,7 @@ Weighted scoring: 25% diversity + 25% score quality + 25% relevance accuracy + 2
 4. **HN source** (shared with HN version) adds strong value for tech topics.
 5. **No score regressions** - non-HN topics (MacBook, Rap, React) perform at least as well as Base.
 
-### Why CROSS Is Not Yet the GOAT
+#### Why CROSS Is Not Yet the GOAT
 
 1. **Cross-source linking barely works** - 3 items linked out of ~178 (1.7%). Should be ~26 items (14.6%) with hybrid fix.
 2. **Cross-ref rendering is cryptic** - `[xref: HN5, HN4]` means nothing to users. Should show source names.
@@ -250,7 +250,7 @@ Weighted scoring: 25% diversity + 25% score quality + 25% relevance accuracy + 2
 
 ## GOAT Improvement Plan: Make CROSS the Best Version
 
-### Priority 1: Fix Cross-Source Linking (HIGH IMPACT)
+#### Priority 1: Fix Cross-Source Linking (HIGH IMPACT)
 
 Goes from 3 to 26 linked items across 5 tests.
 
@@ -291,7 +291,7 @@ def _hybrid_similarity(text_a: str, text_b: str) -> float:
 - [ ] Strip "Show HN:" prefix from HN titles in `_get_cross_source_text()`
 - [ ] Add tests for the new hybrid functions
 
-### Priority 2: Human-Readable Cross-Ref Tags (MEDIUM IMPACT)
+#### Priority 2: Human-Readable Cross-Ref Tags (MEDIUM IMPACT)
 
 Change from `[xref: HN5, HN4]` to `[also on: HN, Reddit]`.
 
@@ -321,7 +321,7 @@ def _xref_tag(item) -> str:
 - [ ] Update `_xref_tag()` in render.py to show source names instead of IDs
 - [ ] Add a cross-ref summary count to the report footer (e.g., "3 topics discussed across multiple platforms")
 
-### Priority 3: YouTube Synonym Awareness (LOW IMPACT)
+#### Priority 3: YouTube Synonym Awareness (LOW IMPACT)
 
 "hip hop" should match "rap" in relevance scoring. Add a small synonym map.
 
@@ -354,7 +354,7 @@ def _tokenize(text: str) -> Set[str]:
 - [ ] Expand tokens with synonyms in `_tokenize()`
 - [ ] Add tests for synonym matching
 
-### Priority 4: HN Search Broadening (LOW IMPACT)
+#### Priority 4: HN Search Broadening (LOW IMPACT)
 
 React/Svelte returned 0 HN items despite being a common HN topic.
 
@@ -362,7 +362,7 @@ React/Svelte returned 0 HN items despite being a common HN topic.
 - [ ] Consider splitting multi-word topics into OR queries (e.g., "React" OR "Svelte")
 - [ ] Test with broader HN search terms
 
-### Not Recommended
+#### Not Recommended
 
 - **Semantic similarity (embeddings)** - Token Jaccard at 0.40 already captures the right matches with zero dependencies
 - **LLM-based matching** - Overkill for title comparison. Save LLM tokens for synthesis.
@@ -400,9 +400,9 @@ Runner script: `/tmp/last30days-comparison/run-15-tests.sh`
 
 The actual research results each version produced - the items, scores, titles, URLs, and insights that would be fed to Claude for synthesis.
 
-### Base - Claude Code skills and MCP servers
+#### Base - Claude Code skills and MCP servers
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R2** (score:76) r/ClaudeCode (2026-02-22) [0 pts, 0 comments]
   We 3x'd our team's Claude Code skill usage in 2 weeks — here's how
@@ -424,7 +424,7 @@ The actual research results each version produced - the items, scores, titles, U
   https://www.reddit.com/r/ClaudeCode/comments/1r0l549/i_built_12_seo_skills_for_claude_code_open_source/
   *Concrete example of building and sharing Claude Code skills.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X6** (score:86) @zeeg (2026-02-25) [4 likes, 1 rp]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -493,7 +493,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **X8afcX2s2Mo** (score:74, rel:0.70) Grace Leung (2026-02-21) [47474 views, 1900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)
@@ -550,9 +550,9 @@ Developers with 15+ years experience are either embracing AI to expand their rea
 
 **Total: Reddit=4, X=11, YouTube=10, HN=0, Web=0**
 
-### HN - Claude Code skills and MCP servers
+#### HN - Claude Code skills and MCP servers
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:0) r/ClaudeAI (2025-06-17) [0 pts, 0 comments]
   Claude code and mcp servers
@@ -569,7 +569,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.reddit.com/r/ClaudeAI/comments/1ofltdr/i_spent_way_too_long_cataloguing_claude_code/
   *Tooling ecosystem post; explicitly mentions installing many plugins and MCP servers for Claude Code.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X5** (score:86) @zeeg (2026-02-25) [4 likes, 1 rp]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -648,7 +648,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **X8afcX2s2Mo** (score:74, rel:0.70) Grace Leung (2026-02-21) [47474 views, 1900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)
@@ -703,7 +703,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.youtube.com/watch?v=jzf7DQa2CAc
   *YouTube video about claude code skills and mcp servers*
 
-#### Hacker News Stories
+##### Hacker News Stories
 
 **HN1** (score:90) hn/cosmoblk (2026-02-21) [10 pts, 2 cmt]
   Show HN: I built a 55K-word email marketing knowledge base and Claude Code skill
@@ -784,9 +784,9 @@ Developers with 15+ years experience are either embracing AI to expand their rea
 
 **Total: Reddit=3, X=12, YouTube=10, HN=15, Web=0**
 
-### CROSS - Claude Code skills and MCP servers
+#### CROSS - Claude Code skills and MCP servers
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:78) r/ClaudeCode (2026-02-23) [0 pts, 0 comments]
   ClaudeInOne — a full framework for Claude Code, installed in one command
@@ -838,7 +838,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.reddit.com/r/ClaudeCode/comments/1o8t6xe/difference_between_skills_and_these_subagents/
   *Conceptual thread clarifying what Skills are versus subagents/CLAUDE.md/slash commands (relevant to skills usage).*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X5** (score:86) @zeeg (2026-02-25) [5 likes, 1 rp]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -917,7 +917,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **X8afcX2s2Mo** (score:69, rel:0.60) Grace Leung (2026-02-21) [47512 views, 1900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)
@@ -972,7 +972,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.youtube.com/watch?v=qthyl0GCpDo
   *YouTube: Claude Skills vs MCP: What’s the Difference and When to Use *
 
-#### Hacker News Stories
+##### Hacker News Stories
 
 **HN1** (score:90) hn/cosmoblk (2026-02-21) [10 pts, 2 cmt]
   Show HN: I built a 55K-word email marketing knowledge base and Claude Code skill
@@ -1053,9 +1053,9 @@ Developers with 15+ years experience are either embracing AI to expand their rea
 
 **Total: Reddit=10, X=12, YouTube=10, HN=15, Web=0**
 
-### Base - Seedance AI video generation
+#### Base - Seedance AI video generation
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R23** (score:76) r/generativeAI (2026-02-24) [0 pts, 0 comments]
   Official website for creating content with Seedance 2.0?
@@ -1137,7 +1137,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.reddit.com/r/u_Impossible-Dish409/comments/1r1lekj/seedance_20_whats_new_and_why_it_matters/
   *Overview/discussion of Seedance 2.0 capabilities for multimodal AI video generation and editing.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9 likes, 0 rp]
   First Seedance 2.0 Test! 
@@ -1219,7 +1219,7 @@ This is not real. We don't h
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **F1kWxdfiBNE** (score:73, rel:0.70) AI Filmmaking Academy (2026-02-22) [40982 views, 1088 likes]
   Seedance 2.0 Claims the AI Video Throne!
@@ -1276,9 +1276,9 @@ This is not real. We don't h
 
 **Total: Reddit=16, X=11, YouTube=10, HN=0, Web=0**
 
-### HN - Seedance AI video generation
+#### HN - Seedance AI video generation
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R2** (score:79) r/singularity (2026-02-25) [0 pts, 0 comments]
   Official: Seedance 2.0 now live in CapCut desktop and API access available, details below
@@ -1380,7 +1380,7 @@ This is not real. We don't h
   https://www.reddit.com/r/GoogleGeminiAI/comments/1qzrhgd/has_anyone_used_seedance_20_yet/
   *General user discussion about whether/where Seedance 2.0 can be used and early impressions.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9 likes, 0 rp]
   First Seedance 2.0 Test! 
@@ -1462,7 +1462,7 @@ This is not real. We don't h
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **F1kWxdfiBNE** (score:73, rel:0.70) AI Filmmaking Academy (2026-02-22) [40982 views, 1088 likes]
   Seedance 2.0 Claims the AI Video Throne!
@@ -1517,7 +1517,7 @@ This is not real. We don't h
   https://www.youtube.com/watch?v=61ThJGqwHsI
   *YouTube video about seedance ai video generation*
 
-#### Hacker News Stories
+##### Hacker News Stories
 
 **HN8** (score:75) hn/Alisaqqt (2026-02-09) [7 pts, 7 cmt]
   Seedance 2.0 preview: The best video model of 2026, outperforming Sora 2
@@ -1599,9 +1599,9 @@ This is not real. We don't h
 
 **Total: Reddit=20, X=11, YouTube=10, HN=15, Web=0**
 
-### CROSS - Seedance AI video generation
+#### CROSS - Seedance AI video generation
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R23** (score:77) r/Seedance_AI (2026-02-25) [0 pts, 0 comments]
   Looking for a real Seedance website that actually works (not scams, SJINN is too expensive)
@@ -1698,7 +1698,7 @@ This is not real. We don't h
   https://www.reddit.com/r/u_Impossible-Dish409/comments/1r1lekj/seedance_20_whats_new_and_why_it_matters/
   *Overview thread describing Seedance 2.0 capabilities for multimodal video generation/editing.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9 likes, 0 rp]
   First Seedance 2.0 Test! 
@@ -1780,7 +1780,7 @@ This is not real. We don't h
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **F1kWxdfiBNE** (score:75, rel:0.75) AI Filmmaking Academy (2026-02-22) [40982 views, 1088 likes]
   Seedance 2.0 Claims the AI Video Throne!
@@ -1835,7 +1835,7 @@ This is not real. We don't h
   https://www.youtube.com/watch?v=kJ0NAVmd4f4
   *YouTube: Seedance 2.0 Changes Filmmaking Forever | New Original Serie*
 
-#### Hacker News Stories
+##### Hacker News Stories
 
 **HN8** (score:75) hn/Alisaqqt (2026-02-09) [7 pts, 7 cmt]
   Seedance 2.0 preview: The best video model of 2026, outperforming Sora 2
@@ -1917,9 +1917,9 @@ This is not real. We don't h
 
 **Total: Reddit=19, X=11, YouTube=10, HN=15, Web=0**
 
-### Base - M4 MacBook Pro review
+#### Base - M4 MacBook Pro review
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:0) r/macbookpro (2025-04-09) [0 pts, 0 comments]
   M4 Macbook Pro 14’ 1 month review
@@ -1936,7 +1936,7 @@ This is not real. We don't h
   https://www.reddit.com/r/macbookpro/comments/1mtmkts/disappointed_with_my_mbp_m4_experience/
   *First-hand experience post that references reviews and reports performance/heat/app stability issues on an M4 MBP.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X1** (score:86) @bhphoto (2026-02-25) [3 likes, 0 rp]
   If you are in the market for a new MacBook Pro and you’re wondering what the real differences are between Apple’s M3 and M4 silicon, you’ve come to th
@@ -2039,7 +2039,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://x.com/grok/status/2026727605517394283
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **9HQx5pgUoiY** (score:61, rel:0.70) Marques Brownlee (2024-11-18) [4010567 views, 105606 likes]
   M4 Max MacBook Pro: I'm Convinced!
@@ -2096,9 +2096,9 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
 
 **Total: Reddit=3, X=12, YouTube=10, HN=0, Web=0**
 
-### HN - M4 MacBook Pro review
+#### HN - M4 MacBook Pro review
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:0) r/macbookpro (2025-04-09) [0 pts, 0 comments]
   M4 Macbook Pro 14’ 1 month review
@@ -2115,7 +2115,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://www.reddit.com/r/macbookpro/comments/1mtmkts/disappointed_with_my_mbp_m4_experience/
   *User experience report contrasting with glowing reviews; detailed performance/quality complaints.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X1** (score:86) @bhphoto (2026-02-25) [3 likes, 0 rp]
   If you are in the market for a new MacBook Pro and you’re wondering what the real differences are between Apple’s M3 and M4 silicon, you’ve come to th
@@ -2218,7 +2218,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://x.com/grok/status/2026727605517394283
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **9HQx5pgUoiY** (score:61, rel:0.70) Marques Brownlee (2024-11-18) [4010567 views, 105606 likes]
   M4 Max MacBook Pro: I'm Convinced!
@@ -2275,9 +2275,9 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
 
 **Total: Reddit=3, X=12, YouTube=10, HN=0, Web=0**
 
-### CROSS - M4 MacBook Pro review
+#### CROSS - M4 MacBook Pro review
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:0) r/macbookpro (2025-08-18) [0 pts, 0 comments]
   Disappointed with my MBP M4 Experience …
@@ -2294,7 +2294,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://www.reddit.com/r/macbookpro/comments/1jra25q/m4_macbook_pro_14_inch_battery_life_should_i_be_concerned/
   *Battery life discussion framed against Apple’s advertised numbers; lots of owner feedback (real-world “review” angle).*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X1** (score:86) @bhphoto (2026-02-25) [3 likes, 0 rp]
   If you are in the market for a new MacBook Pro and you’re wondering what the real differences are between Apple’s M3 and M4 silicon, you’ve come to th
@@ -2397,7 +2397,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://x.com/grok/status/2026727605517394283
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **9HQx5pgUoiY** (score:63, rel:0.75) Marques Brownlee (2024-11-18) [4010567 views, 105606 likes]
   M4 Max MacBook Pro: I'm Convinced!
@@ -2454,9 +2454,9 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
 
 **Total: Reddit=3, X=12, YouTube=10, HN=0, Web=0**
 
-### Base - best rap songs 2026
+#### Base - best rap songs 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R10** (score:57) r/TeenageRapFans (2026-02-15) [0 pts, 0 comments]
   What's the best rap song ever made?
@@ -2488,7 +2488,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://www.reddit.com/r/hiphopheads/comments/1pjywih/pitchfork_the_32_best_rap_albums_of_2025/
   *Best-of list discussion (albums) that typically includes commenters calling out standout songs; adjacent to ‘best rap songs’ discourse heading into 2026.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [11 likes, 5 rp]
   Talking about meaningful rap songs...
@@ -2566,7 +2566,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **ZUExyc50ZVU** (score:63, rel:0.70) West Coast Finest (2026-01-29) [407260 views, 4228 likes]
   Lit Hip Hop Mix 2026🔥🔥🔥Tyga, Quavo, Iggy Azalea, Wiz Khalifa, Juicy J, 50 Cent
@@ -2588,9 +2588,9 @@ https://t.co/Nxzkb005lP
 
 **Total: Reddit=6, X=12, YouTube=3, HN=0, Web=0**
 
-### HN - best rap songs 2026
+#### HN - best rap songs 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R6** (score:71) r/playlists (2026-02-19) [0 pts, 0 comments]
   Mix Rap Hiphop 2026
@@ -2642,7 +2642,7 @@ https://t.co/Nxzkb005lP
   https://www.reddit.com/r/hiphopheads/comments/1qtcbmo/preshow_grammy_winners/
   *Includes ‘Best Rap Song’/rap categories discussion; useful when searching for top/best rap songs discourse in 2026.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [12 likes, 5 rp]
   Talking about meaningful rap songs...
@@ -2720,7 +2720,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **ZUExyc50ZVU** (score:63, rel:0.70) West Coast Finest (2026-01-29) [407260 views, 4229 likes]
   Lit Hip Hop Mix 2026🔥🔥🔥Tyga, Quavo, Iggy Azalea, Wiz Khalifa, Juicy J, 50 Cent
@@ -2742,9 +2742,9 @@ https://t.co/Nxzkb005lP
 
 **Total: Reddit=10, X=12, YouTube=3, HN=0, Web=0**
 
-### CROSS - best rap songs 2026
+#### CROSS - best rap songs 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R1** (score:57) r/edranked (2026-02-01) [0 pts, 0 comments]
   Reddit Ranked: Hip Hop ‘26
@@ -2801,7 +2801,7 @@ https://t.co/Nxzkb005lP
   https://www.reddit.com/r/KendrickLamar/comments/1qtczjl/68th_annual_grammy_awards_live_megathread/
   *Live discussion around Grammys 2026 including rap categories; good for discovering what Reddit called the best tracks.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [12 likes, 5 rp]
   Talking about meaningful rap songs...
@@ -2879,7 +2879,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **d1melQQVp6s** (score:71, rel:1.00) DJ Noize (2026-02-14) [42713 views, 761 likes]
   New Rap Songs 2026 Mix February | Trap Tape #127 | New Hip Hop 2026 Mixtape | DJ Noize
@@ -2901,9 +2901,9 @@ https://t.co/Nxzkb005lP
 
 **Total: Reddit=11, X=12, YouTube=3, HN=0, Web=0**
 
-### Base - React vs Svelte 2026
+#### Base - React vs Svelte 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R2** (score:67) r/eact (2026-02-10) [0 pts, 0 comments]
   What do you guys think about comparison between React vs Svelte?
@@ -2925,7 +2925,7 @@ https://t.co/Nxzkb005lP
   https://www.reddit.com/r/sveltejs/comments/1g7d3a7/svelte_5_officially_released/
   *Major Svelte 5 release thread with debate about whether React developers will switch (React vs Svelte dynamics).*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X4** (score:76) @FabianHiller (2026-02-13) [61 likes, 2 rp]
   TypeScript is the baseline in 2026. But most forms still fight type drift between API, schema & UI.  
@@ -2991,7 +2991,7 @@ Dev 4: "Ju
   https://x.com/Chubbi_Stephen/status/2020087839648800853
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **yl0YWA2K2B0** (score:61, rel:0.70) Fireship (2025-10-17) [699597 views, 22894 likes]
   React wants to win you back…
@@ -3048,9 +3048,9 @@ Dev 4: "Ju
 
 **Total: Reddit=4, X=9, YouTube=10, HN=0, Web=0**
 
-### HN - React vs Svelte 2026
+#### HN - React vs Svelte 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R2** (score:66) r/eact (2026-02-10) [0 pts, 0 comments]
   What do you guys think about comparison between React vs Svelte?
@@ -3067,7 +3067,7 @@ Dev 4: "Ju
   https://www.reddit.com/r/sveltejs/comments/1jeknib/when_to_choose_react_over_svelte/
   *Decision-oriented thread explicitly contrasting when React vs Svelte makes sense (ecosystem/jobs/productivity).*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X4** (score:76) @FabianHiller (2026-02-13) [61 likes, 2 rp]
   TypeScript is the baseline in 2026. But most forms still fight type drift between API, schema & UI.  
@@ -3133,7 +3133,7 @@ Dev 4: "Ju
   https://x.com/Chubbi_Stephen/status/2020087839648800853
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **yl0YWA2K2B0** (score:61, rel:0.70) Fireship (2025-10-17) [699597 views, 22894 likes]
   React wants to win you back…
@@ -3190,9 +3190,9 @@ Dev 4: "Ju
 
 **Total: Reddit=3, X=9, YouTube=10, HN=0, Web=0**
 
-### CROSS - React vs Svelte 2026
+#### CROSS - React vs Svelte 2026
 
-#### Reddit Discussions
+##### Reddit Discussions
 
 **R2** (score:67) r/eact (2026-02-10) [0 pts, 0 comments]
   What do you guys think about comparison between React vs Svelte?
@@ -3224,7 +3224,7 @@ Dev 4: "Ju
   https://www.reddit.com/r/sveltejs/comments/1qrdhba/how_is_going_svelte/
   *General state-of-Svelte discussion with explicit mentions comparing to React and job-market pragmatism.*
 
-#### X/Twitter Posts
+##### X/Twitter Posts
 
 **X4** (score:76) @FabianHiller (2026-02-13) [61 likes, 2 rp]
   TypeScript is the baseline in 2026. But most forms still fight type drift between API, schema & UI.  
@@ -3290,7 +3290,7 @@ Dev 4: "Ju
   https://x.com/Chubbi_Stephen/status/2020087839648800853
   **
 
-#### YouTube Videos
+##### YouTube Videos
 
 **MnpuK0MK4yo** (score:63, rel:0.75) Beyond Fireship (2023-06-30) [697142 views, 25490 likes]
   React VS Svelte...10 Examples

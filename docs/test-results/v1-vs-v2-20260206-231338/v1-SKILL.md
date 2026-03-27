@@ -55,7 +55,7 @@ The skill works in three modes based on available API keys:
 
 **API keys are OPTIONAL.** The skill will work without them using WebSearch fallback.
 
-### First-Time Setup (Optional but Recommended)
+#### First-Time Setup (Optional but Recommended)
 
 If the user wants to add API keys for better results:
 
@@ -174,7 +174,7 @@ Read the research output carefully. Pay attention to:
 
 **ANTI-PATTERN TO AVOID**: If user asks about "clawdbot skills" and research returns ClawdBot content (self-hosted AI agent), do NOT synthesize this as "Claude Code skills" just because both involve "skills". Read what the research actually says.
 
-### If QUERY_TYPE = RECOMMENDATIONS
+#### If QUERY_TYPE = RECOMMENDATIONS
 
 **CRITICAL: Extract SPECIFIC NAMES, not generic patterns.**
 
@@ -190,7 +190,7 @@ When user asks "best X" or "top X", they want a LIST of specific things:
 **GOOD synthesis for "best Claude Code skills":**
 > "Most mentioned skills: /commit (5 mentions), remotion skill (4x), git-worktree (3x), /pr (3x). The Remotion announcement got 16K likes on X."
 
-### For all QUERY_TYPEs
+#### For all QUERY_TYPEs
 
 Identify from the ACTUAL RESEARCH OUTPUT:
 - **PROMPT FORMAT** - Does research recommend JSON, structured params, natural language, keywords? THIS IS CRITICAL.
@@ -295,7 +295,7 @@ When they respond with their vision (e.g., "I want a landing page mockup for my 
 
 Based on what they want to create, write a **single, highly-tailored prompt** using your research expertise.
 
-### CRITICAL: Match the FORMAT the research recommends
+#### CRITICAL: Match the FORMAT the research recommends
 
 **If research says to use a specific prompt FORMAT, YOU MUST USE THAT FORMAT:**
 
@@ -306,7 +306,7 @@ Based on what they want to create, write a **single, highly-tailored prompt** us
 
 **ANTI-PATTERN**: Research says "use JSON prompts with device specs" but you write plain prose. This defeats the entire purpose of the research.
 
-### Output Format:
+#### Output Format:
 
 ```
 Here's your prompt for {TARGET_TOOL}:
@@ -320,7 +320,7 @@ Here's your prompt for {TARGET_TOOL}:
 This uses [brief 1-line explanation of what research insight you applied].
 ```
 
-### Quality Checklist:
+#### Quality Checklist:
 - [ ] **FORMAT MATCHES RESEARCH** - If research said JSON/structured/etc, prompt IS that format
 - [ ] Directly addresses what the user said they want to create
 - [ ] Uses specific patterns/keywords discovered in research

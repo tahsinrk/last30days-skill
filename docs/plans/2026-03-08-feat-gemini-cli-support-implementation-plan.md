@@ -32,7 +32,7 @@ Based on the review at `docs/plans/2026-03-08-review-pr-53-gemini-cli-support-pl
 
 ## Implementation Steps
 
-### 1. Create `gemini-extension.json` (new file)
+#### 1. Create `gemini-extension.json` (new file)
 
 Based on PR #53 but with correct settings format (array per Gemini CLI docs) and v2.9.5 version.
 
@@ -106,7 +106,7 @@ Based on PR #53 but with correct settings format (array per Gemini CLI docs) and
 }
 ```
 
-### 2. Create `skills/last30days/SKILL.md` as symlink
+#### 2. Create `skills/last30days/SKILL.md` as symlink
 
 ```bash
 mkdir -p skills/last30days
@@ -115,7 +115,7 @@ ln -s ../../SKILL.md skills/last30days/SKILL.md
 
 Gemini CLI discovers skills from `skills/<name>/SKILL.md`. Symlink ensures single source of truth - no drift, no duplicate maintenance. Git tracks symlinks natively on macOS/Linux (Gemini CLI's target platforms).
 
-### 3. Add Gemini paths to SKILL.md for-loop (line ~172)
+#### 3. Add Gemini paths to SKILL.md for-loop (line ~172)
 
 Add these 3 entries after `"${CLAUDE_PLUGIN_ROOT:-}"`:
 
@@ -125,11 +125,11 @@ Add these 3 entries after `"${CLAUDE_PLUGIN_ROOT:-}"`:
 "$HOME/.gemini/extensions/last30days" \
 ```
 
-### 4. Add same Gemini paths to `variants/open/SKILL.md` for-loop
+#### 4. Add same Gemini paths to `variants/open/SKILL.md` for-loop
 
 Same 3 entries, same position.
 
-### 5. Update `README.md` install section
+#### 5. Update `README.md` install section
 
 Add Gemini CLI install before existing Claude Code section:
 
@@ -142,7 +142,7 @@ gemini extensions install https://github.com/mvanhorn/last30days-skill.git
 ### Claude Code / Codex
 ```
 
-### 6. Close PR #53 with credit
+#### 6. Close PR #53 with credit
 
 Post comment thanking @alexferrari88, explaining we incorporated their work with modifications, and close the PR. Credit them in the commit message.
 

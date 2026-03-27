@@ -309,7 +309,7 @@ The Judge Agent must:
 
 7. **Cross-platform signals are the strongest evidence.** When items have `[also on: Reddit, HN]` or similar tags, it means the same story appears across multiple platforms. Lead with these cross-platform findings - they're the most important signals in the research.
 
-### Prediction Markets (Polymarket)
+#### Prediction Markets (Polymarket)
 
 **CRITICAL: When Polymarket returns relevant markets, prediction market odds are among the highest-signal data points in your research.** Real money on outcomes cuts through opinion. Treat them as strong evidence, not an afterthought.
 
@@ -346,7 +346,7 @@ Read the research output carefully. Pay attention to:
 
 **ANTI-PATTERN TO AVOID**: If user asks about "clawdbot skills" and research returns ClawdBot content (self-hosted AI agent), do NOT synthesize this as "Claude Code skills" just because both involve "skills". Read what the research actually says.
 
-### If QUERY_TYPE = RECOMMENDATIONS
+#### If QUERY_TYPE = RECOMMENDATIONS
 
 **CRITICAL: Extract SPECIFIC NAMES, not generic patterns.**
 
@@ -362,7 +362,7 @@ When user asks "best X" or "top X", they want a LIST of specific things:
 **GOOD synthesis for "best Claude Code skills":**
 > "Most mentioned skills: /commit (5 mentions), remotion skill (4x), git-worktree (3x), /pr (3x). The Remotion announcement got 16K likes on X."
 
-### If QUERY_TYPE = COMPARISON
+#### If QUERY_TYPE = COMPARISON
 
 Structure the output as a side-by-side comparison using data from all three research passes:
 
@@ -409,7 +409,7 @@ Choose {TOPIC_A} if... Choose {TOPIC_B} if... (based on actual community data, n
 
 Then show combined stats from all three passes and the standard invitation section.
 
-### For all QUERY_TYPEs
+#### For all QUERY_TYPEs
 
 Identify from the ACTUAL RESEARCH OUTPUT:
 - **PROMPT FORMAT** - Does research recommend JSON, structured params, natural language, keywords?
@@ -635,24 +635,24 @@ For `/last30days war in Iran` (NEWS):
 
 **Only write a prompt when the user wants one.** Don't force a prompt on someone who asked "what could happen next with Iran."
 
-### Writing a Prompt
+#### Writing a Prompt
 
 When the user wants a prompt, write a **single, highly-tailored prompt** using your research expertise.
 
-### CRITICAL: Match the FORMAT the research recommends
+#### CRITICAL: Match the FORMAT the research recommends
 
 **If research says to use a specific prompt FORMAT, YOU MUST USE THAT FORMAT.**
 
 **ANTI-PATTERN**: Research says "use JSON prompts with device specs" but you write plain prose. This defeats the entire purpose of the research.
 
-### Quality Checklist (run before delivering):
+#### Quality Checklist (run before delivering):
 - [ ] **FORMAT MATCHES RESEARCH** - If research said JSON/structured/etc, prompt IS that format
 - [ ] Directly addresses what the user said they want to create
 - [ ] Uses specific patterns/keywords discovered in research
 - [ ] Ready to paste with zero edits (or minimal [PLACEHOLDERS] clearly marked)
 - [ ] Appropriate length and style for TARGET_TOOL
 
-### Output Format:
+#### Output Format:
 
 ```
 Here's your prompt for {TARGET_TOOL}:

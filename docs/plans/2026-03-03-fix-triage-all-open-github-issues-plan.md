@@ -22,7 +22,7 @@
 
 ## Issue-by-Issue Triage
 
-### #43 — Security Assessment Offer - Claude Code Skill with Social Media APIs
+#### #43 — Security Assessment Offer - Claude Code Skill with Social Media APIs
 **Author:** Neo-Assistent | **Created:** 2026-02-26
 
 > Unsolicited marketing from "SkillSec" offering a free security audit.
@@ -33,7 +33,7 @@ No comment needed. This is a cold sales pitch, not a bug or feature request. Clo
 
 ---
 
-### #42 — License & Secondary Development Permission
+#### #42 — License & Secondary Development Permission
 **Author:** AllenX95 | **Created:** 2026-02-26
 
 > Asks what license the project uses and whether modification for open-source models (Kimi K2.5) is allowed.
@@ -48,7 +48,7 @@ Once #35/#34 are addressed (LICENSE file added), comment:
 
 ---
 
-### #41 — Can I use openrouter API to replace with openai API to do the reddit search?
+#### #41 — Can I use openrouter API to replace with openai API to do the reddit search?
 **Author:** iklynow-hue | **Created:** 2026-02-25
 
 > Asks about using OpenRouter instead of OpenAI for Reddit search. Has one off-topic spam comment from @gbessoni.
@@ -67,7 +67,7 @@ Also: **minimize/hide** the off-topic spam comment from @gbessoni ("I'm testing 
 
 ---
 
-### #40 — watchlist: search_queries field stored but never used by _run_topic()
+#### #40 — watchlist: search_queries field stored but never used by _run_topic()
 **Author:** tejasgadhia | **Created:** 2026-02-23
 
 > `add --queries "q1,q2,q3"` stores queries in DB but `_run_topic()` always passes `topic["name"]` as the search query. Long descriptive names produce poor results on X and web search.
@@ -95,7 +95,7 @@ cmd = [sys.executable, str(SCRIPT_DIR / "last30days.py"), search_term, "--emit=j
 
 ---
 
-### #39 — watchlist.py: YouTube findings never stored + run-one silent output
+#### #39 — watchlist.py: YouTube findings never stored + run-one silent output
 **Author:** tejasgadhia | **Created:** 2026-02-23
 
 > **Bug 1:** YouTube findings extracted by the research script but dropped in `_run_topic()` because there's no YouTube loop in the findings extraction.
@@ -144,7 +144,7 @@ print(json.dumps(result, default=str))
 
 ---
 
-### #36 — SKILL.md doesn't forward --store, --include-web, --sort-x, --diagnose, --timeout to script
+#### #36 — SKILL.md doesn't forward --store, --include-web, --sort-x, --diagnose, --timeout to script
 **Author:** nicolefinateri | **Created:** 2026-02-21
 
 > `"$ARGUMENTS"` is passed as a single quoted string, so argparse treats the whole thing as the topic positional. Flags like `--store` get swallowed. Also, 5 flags are undocumented in SKILL.md.
@@ -178,7 +178,7 @@ This lets word-splitting happen so argparse sees separate positional + flag args
 
 ---
 
-### #35 — Add LICENSE file to repository
+#### #35 — Add LICENSE file to repository
 **Author:** HackJob7418 | **Created:** 2026-02-21
 
 > Points out that `plugin.json` declares MIT but no LICENSE file exists in repo root.
@@ -193,7 +193,7 @@ Trivial fix. Add `LICENSE` file with standard MIT text to repo root.
 
 ---
 
-### #34 — License missing
+#### #34 — License missing
 **Author:** jdsika (Carlo van Driesten) | **Created:** 2026-02-21
 
 > Same request as #35 — add a LICENSE file.
@@ -206,7 +206,7 @@ Trivial fix. Add `LICENSE` file with standard MIT text to repo root.
 
 ---
 
-### #32 — Cannot install Claude Code plugin marketplace
+#### #32 — Cannot install Claude Code plugin marketplace
 **Author:** rayshan (Ray Shan) | **Created:** 2026-02-19
 
 > `marketplace.json` schema validation fails: `plugins.0.source: Invalid input`
@@ -236,7 +236,7 @@ Or the schema may have changed since the file was written. Check skills.sh docs.
 
 ---
 
-### #31 — mvanhorn/last30days is being trashed on skills.sh
+#### #31 — mvanhorn/last30days is being trashed on skills.sh
 **Author:** PiotrAleksander (Piotr Mrzygłosz) | **Created:** 2026-02-19
 
 > skills.sh security audit gives the skill bad scores. A mirror at `sickn33/antigravity-awesome-skills` has better scores.
@@ -264,7 +264,7 @@ This is a reputation/trust issue. The skills.sh audit likely flags things like:
 
 ---
 
-### #30 — Bird cookie auth: source availability mapping misses reddit-web + Bird combination
+#### #30 — Bird cookie auth: source availability mapping misses reddit-web + Bird combination
 **Author:** volarian-vai | **Created:** 2026-02-19
 
 > When using Bird cookie auth without `XAI_API_KEY` but with a web search key (e.g., `BRAVE_API_KEY`), the source override logic misses the `reddit-web` → `all` mapping.
@@ -291,7 +291,7 @@ if x_source == 'bird':
 
 ---
 
-### #29 — YouTube stats show 'yt-dlp not installed' when search returns 0 results
+#### #29 — YouTube stats show 'yt-dlp not installed' when search returns 0 results
 **Author:** alexkrivov | **Created:** 2026-02-19
 
 > When yt-dlp runs successfully but returns 0 results, the stats footer says "yt-dlp not installed" because `report.youtube` is `[]` (falsy) and the fallback message is wrong.
@@ -321,7 +321,7 @@ reason = source_info.get("youtube_skip_reason", "not available")
 
 ---
 
-### #22 — Feature request: Surface more Bird CLI capabilities (engagement sorting, time windows, thread following)
+#### #22 — Feature request: Surface more Bird CLI capabilities (engagement sorting, time windows, thread following)
 **Author:** nicolefinateri | **Created:** 2026-02-09
 
 > Requests: (1) `--sort-x likes` flag, (2) `--since 3h` granular time windows, (3) thread following via `bird thread <id>`.
@@ -350,7 +350,7 @@ Good feature requests but some are already partially addressed:
 
 ---
 
-### #19 — Bird is missing
+#### #19 — Bird is missing
 **Author:** brianjking (Brian J King) | **Created:** 2026-02-09
 
 > Bird GitHub repo is gone. Comments confirm npm package is deprecated, Homebrew install fails. Multiple users affected.
@@ -376,7 +376,7 @@ This was a major pain point that drove the v2.1 vendoring decision. Bird's Graph
 
 ---
 
-### #4 — Add macOS Python SSL certificate prerequisite to README
+#### #4 — Add macOS Python SSL certificate prerequisite to README
 **Author:** joshdaws (Josh Daws) | **Created:** 2026-01-27
 
 > Python.org macOS installer doesn't include SSL certificates. Users get `CERTIFICATE_VERIFY_FAILED` errors on all API calls.
@@ -393,7 +393,7 @@ Add a troubleshooting section to README.md. The reporter's suggested text is goo
 
 ---
 
-### #2 — npx skills add fails for this package
+#### #2 — npx skills add fails for this package
 **Author:** mikecfisher (Mike Fisher) | **Created:** 2026-01-26
 
 > `npx skills add` can't find any skills in the repo. Owner commented that PR #1 restructures to standard plugin format.
@@ -435,7 +435,7 @@ The repo was restructured to standard plugin format in PR #1 (SKILL.md at root, 
 
 ## Recommended Execution Order
 
-### Batch 1 — Quick wins (close/comment only, no code)
+#### Batch 1 — Quick wins (close/comment only, no code)
 1. Close #43 (spam)
 2. Close #34 (dup of #35)
 3. Close #19 (resolved in v2.1)
@@ -444,17 +444,17 @@ The repo was restructured to standard plugin format in PR #1 (SKILL.md at root, 
 6. Comment #22 (Bird feature requests — partial accept, backlog)
 7. Comment #31 (skills.sh audit — will improve after LICENSE fix)
 
-### Batch 2 — Trivial fixes
+#### Batch 2 — Trivial fixes
 8. **#35** — Add MIT LICENSE file to repo root
 9. Comment + close #42 (license question — now answered by LICENSE file)
 
-### Batch 3 — Small code fixes
+#### Batch 3 — Small code fixes
 10. **#29** — Fix YouTube "not installed" false message (`render.py` + `last30days.py`)
 11. **#30** — Fix Bird source mapping for `reddit-web` combo (`last30days.py`)
 12. **#40** — Fix watchlist `search_queries` usage (`watchlist.py`)
 13. **#39** — Fix watchlist YouTube/TikTok extraction + `run-one` output (`watchlist.py`)
 
-### Batch 4 — Investigation needed
+#### Batch 4 — Investigation needed
 14. **#32** — Fix marketplace.json schema (needs schema research)
 15. **#36** — Fix `$ARGUMENTS` flag forwarding (needs Claude Code expansion testing)
 16. **#4** — Add SSL troubleshooting to README
@@ -463,17 +463,17 @@ The repo was restructured to standard plugin format in PR #1 (SKILL.md at root, 
 
 ## Proposed Comment Templates
 
-### For spam (#43):
+#### For spam (#43):
 > Closing — this is not a bug report or feature request.
 
-### For duplicates (#34):
+#### For duplicates (#34):
 > Duplicate of #35. Adding MIT LICENSE file — thanks!
 
-### For resolved issues (#19, #2):
+#### For resolved issues (#19, #2):
 > Resolved in v2.1.0. [details specific to issue]. Closing — please reopen if you're still experiencing this on the latest version.
 
-### For questions (#41, #42):
+#### For questions (#41, #42):
 > [Answer the question]. Closing as answered — feel free to reopen if you have follow-ups.
 
-### For accepted bugs (#29, #30, #39, #40):
+#### For accepted bugs (#29, #30, #39, #40):
 > Confirmed — [brief acknowledgment]. Fix incoming. Thanks for the detailed report.

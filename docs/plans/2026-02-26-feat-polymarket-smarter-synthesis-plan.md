@@ -22,7 +22,7 @@ The problem has two layers: (1) the Python scoring penalizes multi-outcome marke
 
 ## Problem Statement
 
-### Layer 1: Scoring penalizes the most interesting markets
+#### Layer 1: Scoring penalizes the most interesting markets
 
 `_compute_text_similarity()` (polymarket.py:236) only compares the search topic against the **event title**. It never checks outcome names.
 
@@ -33,7 +33,7 @@ Example: Market titled "Who will be the #1 overall seed in the 2026 NCAA Tournam
 
 This means the most contextually interesting markets (seeding, championship, matchup odds) get pushed below less interesting but title-matching markets (Big 12 regular season).
 
-### Layer 2: SKILL.md has zero Polymarket synthesis guidance
+#### Layer 2: SKILL.md has zero Polymarket synthesis guidance
 
 The SKILL.md Judge Agent section tells the LLM how to weight Reddit (higher), YouTube (high), WebSearch (lower), but says **nothing** about:
 - How to interpret prediction market probabilities
@@ -42,13 +42,13 @@ The SKILL.md Judge Agent section tells the LLM how to weight Reddit (higher), Yo
 - How to connect a specific outcome in a multi-outcome market to the user's topic
 - How to use odds as a signal alongside social media sentiment
 
-### Layer 3: Stats box loses information
+#### Layer 3: Stats box loses information
 
 The Polymarket stats line only has room for 1-2 market highlights. When there are 5+ relevant markets, the user misses the most interesting ones.
 
 ## Proposed Solution
 
-### 1. Outcome-aware text similarity scoring
+#### 1. Outcome-aware text similarity scoring
 
 Update `_compute_text_similarity()` to check if the topic appears in any outcome name, with **bidirectional** substring matching. The check must work in both directions since the topic ("Arizona Basketball") is longer than the outcome name ("Arizona").
 
@@ -90,11 +90,11 @@ def _compute_text_similarity(topic: str, title: str, outcomes: list = None) -> f
     return overlap / len(topic_tokens)
 ```
 
-### 2. Surface the topic-matching outcome in display
+#### 2. Surface the topic-matching outcome in display
 
 When the topic matches an outcome name, reorder `outcome_prices` to put the matching outcome first before truncating to top 3. This ensures the LLM sees the user-relevant odds.
 
-### 3. Add SKILL.md synthesis instructions for Polymarket
+#### 3. Add SKILL.md synthesis instructions for Polymarket
 
 Add a dedicated section telling the LLM:
 - **Prediction markets are high-signal when relevant.** Real money on outcomes > opinions.
@@ -110,22 +110,22 @@ Domain examples:
 - Tech: major milestones (IPO, product launch) > incremental updates
 - Elections: presidency > primary > individual state
 
-### 4. Improve stats box template
+#### 4. Improve stats box template
 
 Show up to 5 markets with odds, capped for readability:
 ```
 ├─ 📊 Polymarket: 5 markets (Championship: 12%, #1 Seed: 85%, Big 12: 68%, vs Kansas: 71%, NCAA: 12%)
 ```
 
-### 5. Fix render.py volume label
+#### 5. Fix render.py volume label
 
 The render module labels volume as "vol24h" even when `volume1mo` is the actual data source. Fix to "vol/mo" when monthly volume is used.
 
 ## Technical Approach
 
-### Implementation Plan
+#### Implementation Plan
 
-#### Phase 1: Fix text similarity to check outcomes
+##### Phase 1: Fix text similarity to check outcomes
 
 - [x] `scripts/lib/polymarket.py` - Update `_compute_text_similarity()` to accept optional `outcomes` parameter with bidirectional substring matching and token overlap
 - [x] `scripts/lib/polymarket.py` - In `parse_polymarket_response()`, collect outcome names from ALL active markets (not just top market), filter to outcomes with price > 1%, and pass to `_compute_text_similarity()`
@@ -135,7 +135,7 @@ The render module labels volume as "vol24h" even when `volume1mo` is the actual 
 - [x] `tests/test_polymarket.py` - Add test: multi-outcome market where topic is an outcome should rank higher than tangential title-match markets
 - [x] `tests/test_polymarket.py` - Add test: topic-matching outcome is surfaced to front of outcome_prices display
 
-#### Phase 2: Add SKILL.md Polymarket synthesis instructions
+##### Phase 2: Add SKILL.md Polymarket synthesis instructions
 
 - [x] `SKILL.md` - Add "Prediction Markets" subsection to the Judge Agent section with:
   - General heuristic: prefer structural/long-term markets over near-term deadlines
@@ -147,7 +147,7 @@ The render module labels volume as "vol24h" even when `volume1mo` is the actual 
 - [x] `variants/open/references/research.md` - Add condensed Polymarket synthesis guidance matching the open variant's style
 - [x] `scripts/lib/render.py` - Fix "vol24h" label to "vol/mo" when volume1mo is the data source (changed to "volume")
 
-#### Phase 3: Tests and verification
+##### Phase 3: Tests and verification
 
 - [x] Run full test suite (229 passed, 5 pre-existing failures unrelated to this change)
 - [ ] Manual test: `/last30days "Arizona Basketball"` - verify championship, seed, and matchup odds appear in synthesis

@@ -270,7 +270,7 @@ Environment shortcuts:
 - `read` returns full text for Notes and Articles when present.
 - Use `--plain` for stable, script-friendly output (no emoji, no color).
 
-### JSON Schema
+#### JSON Schema
 
 When using `--json`, tweet objects include:
 

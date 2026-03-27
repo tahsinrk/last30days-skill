@@ -60,7 +60,7 @@ Run in **topic-sequential** order (all 3 versions of topic 1 back-to-back, then 
 
 ## Execution Protocol
 
-### Pre-flight (once)
+#### Pre-flight (once)
 
 - [x] Clear model cache: `rm -f ~/.cache/last30days/model_selection.json`
 - [x] Run `--diagnose` on current branch, save as `diagnose-baseline.json`
@@ -68,7 +68,7 @@ Run in **topic-sequential** order (all 3 versions of topic 1 back-to-back, then 
 - [x] Create output dir: `mkdir -p /tmp/last30days-comparison/full`
 - [x] Stash any uncommitted changes: `git stash` (none needed - no uncommitted changes)
 
-### Per-topic loop (repeat 5 times)
+#### Per-topic loop (repeat 5 times)
 
 For each topic, run all 3 versions back-to-back:
 
@@ -93,7 +93,7 @@ cleanup() {
   - `cleanup && git checkout feat/youtube-relevance-cross-source`
   - `python3 scripts/last30days.py "<topic>" --quick --emit=json > /tmp/last30days-comparison/full/cross-{N}-{slug}.json 2>/tmp/last30days-comparison/full/cross-{N}-{slug}.log`
 
-### Post-run
+#### Post-run
 
 - [x] Return to feature branch: `git checkout feat/youtube-relevance-cross-source`
 - [x] Verify all 15 JSON files exist and are non-empty
@@ -101,7 +101,7 @@ cleanup() {
 
 ## Analysis Dimensions
 
-### 1. Source Coverage Table
+#### 1. Source Coverage Table
 
 For each of 15 runs, count items per source:
 
@@ -110,7 +110,7 @@ For each of 15 runs, count items per source:
 
 Expected: Base has 0 HN items. HN and CROSS should have identical source counts (same search code). Any differences indicate API non-determinism.
 
-### 2. YouTube Relevance Comparison
+#### 2. YouTube Relevance Comparison
 
 **Matched-item analysis:** Match videos by `video_id` across Base/CROSS runs of the same topic. For each matched video:
 - Base relevance: always 0.7
@@ -119,19 +119,19 @@ Expected: Base has 0 HN items. HN and CROSS should have identical source counts 
 
 **Aggregate analysis:** Distribution stats (min/avg/max/stddev) per version per topic.
 
-### 3. Cross-Source Links (CROSS only)
+#### 3. Cross-Source Links (CROSS only)
 
 - Count of items with cross_refs per topic
 - Quality assessment: are the linked items actually about the same story?
 - Which source pairs link most often? (Reddit-HN? YouTube-HN? X-Reddit?)
 
-### 4. Score Distribution and Rankings
+#### 4. Score Distribution and Rankings
 
 - Mean/median score of top 10 items per version per topic
 - Rank position changes: do the same items appear in different orders?
 - Does HN crowd out Reddit/X items in the top 10?
 
-### 5. "Best Version" Judging Criteria
+#### 5. "Best Version" Judging Criteria
 
 Define BEFORE analyzing to avoid bias:
 
@@ -142,7 +142,7 @@ Define BEFORE analyzing to avoid bias:
 | Relevance accuracy | 25% | YouTube: do high-relevance videos actually match the query? Manual spot-check of top 3 + bottom 3 per topic |
 | Bonus features | 25% | HN value-add (unique info not in other sources) + cross-ref utility (do xrefs add value to the reader?) |
 
-### 6. HN Value-Add Assessment
+#### 6. HN Value-Add Assessment
 
 For each topic where HN returns results:
 - How many HN items appear in the overall top 10?
@@ -151,19 +151,19 @@ For each topic where HN returns results:
 
 ## Deliverables
 
-### A. Raw Results Archive
+#### A. Raw Results Archive
 
 All 15 JSON files plus logs saved in `/tmp/last30days-comparison/full/`, also copied to `docs/comparison-results/` for persistence.
 
-### B. Comparison Summary Table
+#### B. Comparison Summary Table
 
 A single markdown table showing all 15 runs with key metrics per cell.
 
-### C. Version Verdict
+#### C. Version Verdict
 
 Clear judgment: which version is best overall, and best per topic category (tech, consumer, culture).
 
-### D. CROSS Improvement Plan
+#### D. CROSS Improvement Plan
 
 Concrete changes to make CROSS the GOAT:
 

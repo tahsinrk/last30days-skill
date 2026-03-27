@@ -20,7 +20,7 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
 
 ## ScrapeCreators API Endpoints
 
-### Instagram
+#### Instagram
 
 | Endpoint | Path | Params | Credits | Notes |
 |----------|------|--------|---------|-------|
@@ -43,7 +43,7 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
 - `caption` object — text content
 - Media URLs for thumbnails and video versions
 
-### Facebook
+#### Facebook
 
 | Endpoint | Path | Params | Credits | Notes |
 |----------|------|--------|---------|-------|
@@ -68,9 +68,9 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
 
 ## Implementation Plan
 
-### Phase 1: Instagram Source (Primary)
+#### Phase 1: Instagram Source (Primary)
 
-#### 1.1 Create `scripts/lib/instagram.py`
+##### 1.1 Create `scripts/lib/instagram.py`
 - [x] Copy structure from `scripts/lib/tiktok.py`
 - [x] Change `SCRAPECREATORS_BASE` to `"https://api.scrapecreators.com"`
 - [x] Implement `search_instagram()` → calls `/v1/instagram/reels/search`
@@ -91,7 +91,7 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
 
 **Key difference from TikTok:** Instagram response uses `play_count`/`like_count`/`comment_count` directly (no `statistics` wrapper), `user.username` (not `author.unique_id`), `caption.text` (not `desc`), `taken_at` (not `create_time`), `code` shortcode for URL construction.
 
-#### 1.2 Add `InstagramItem` to `scripts/lib/schema.py`
+##### 1.2 Add `InstagramItem` to `scripts/lib/schema.py`
 - [x] Add dataclass mirroring `TikTokItem` structure:
   ```python
   @dataclass
@@ -112,35 +112,35 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
       cross_refs: List[str]
   ```
 
-#### 1.3 Add normalization to `scripts/lib/normalize.py`
+##### 1.3 Add normalization to `scripts/lib/normalize.py`
 - [x] Add `normalize_instagram_items()` function
   - Assign IDs as `IG1`, `IG2`, ...
   - Map engagement: `views=play_count`, `likes=like_count`, `num_comments=comment_count`
   - Set `date_confidence="high"` (unix timestamp)
 
-#### 1.4 Add scoring to `scripts/lib/score.py`
+##### 1.4 Add scoring to `scripts/lib/score.py`
 - [x] Add `compute_instagram_engagement_raw()` — same formula as TikTok:
   `0.50*log1p(views) + 0.30*log1p(likes) + 0.20*log1p(comments)`
   Views dominate on Instagram Reels just like TikTok.
 - [x] Add `score_instagram_items()` — same weights: 45% relevance, 25% recency, 30% engagement
 
-#### 1.5 Add dedup to `scripts/lib/dedupe.py`
+##### 1.5 Add dedup to `scripts/lib/dedupe.py`
 - [x] Add `dedupe_instagram()` — same as `dedupe_tiktok()`, calls `dedupe_items()` with 0.7 threshold
 - [x] Update `get_item_text()` to handle `InstagramItem`
 - [x] Update `_get_cross_source_text()` for cross-source linking
 - [x] Add `IG` prefix to cross-ref detection in `cross_source_link()`
 
-#### 1.6 Add rendering to `scripts/lib/render.py`
+##### 1.6 Add rendering to `scripts/lib/render.py`
 - [x] Add Instagram section in `render_compact()` — same pattern as TikTok block (lines 251-285)
   - Show: score, @author, date, views/likes, caption snippet, hashtags, why_relevant
 - [x] Update data freshness check to include `instagram_recent`
 - [x] Update stats footer to include Instagram count
 - [x] Add `'IG'` to cross-ref source name mapping
 
-#### 1.7 Add `Report.instagram` field to `scripts/lib/schema.py`
+##### 1.7 Add `Report.instagram` field to `scripts/lib/schema.py`
 - [x] Add `instagram: List[InstagramItem]` and `instagram_error: str` to `Report` dataclass
 
-#### 1.8 Integrate into `scripts/last30days.py` orchestrator
+##### 1.8 Integrate into `scripts/last30days.py` orchestrator
 - [x] Add `"instagram"` to `VALID_SEARCH_SOURCES`
 - [x] Add `import` for `instagram` module in `scripts/lib/`
 - [x] Add `is_instagram_available()` check in `env.py` — reuse `SCRAPECREATORS_API_KEY` (same key as TikTok)
@@ -151,14 +151,14 @@ tiktok.py pattern → instagram.py (new) → facebook.py (new, conditional)
 - [x] Wire through pipeline: normalize → filter → score → sort → dedupe → cross-link → report
 - [x] Add Instagram to `progress.show_complete()` and UI spinner
 
-#### 1.9 Add to watchlist extraction in `scripts/watchlist.py`
+##### 1.9 Add to watchlist extraction in `scripts/watchlist.py`
 - [x] Add Instagram findings loop in `_run_topic()` (mirrors TikTok block at lines 204-213)
 
-#### 1.10 Update README.md
+##### 1.10 Update README.md
 - [x] Add Instagram to the sources list
 - [x] Note that `SCRAPECREATORS_API_KEY` covers both TikTok and Instagram
 
-### Phase 2: Facebook Source (Conditional)
+#### Phase 2: Facebook Source (Conditional)
 
 **Recommendation: SKIP Facebook for now.** Here's why:
 

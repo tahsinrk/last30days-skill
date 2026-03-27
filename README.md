@@ -1,6 +1,6 @@
 # /last30days v2.9.5
 
-### Claude Code (recommended)
+#### Claude Code (recommended)
 ```
 /plugin marketplace add mvanhorn/last30days-skill
 /plugin install last30days@last30days-skill
@@ -50,18 +50,18 @@ Instagram Reels is now the 8th signal source. TikTok and Instagram both run on S
 
 ## Installation
 
-### Claude Code Plugin (recommended)
+#### Claude Code Plugin (recommended)
 ```
 /plugin marketplace add mvanhorn/last30days-skill
 /plugin install last30days@last30days-skill
 ```
 
-### Gemini CLI
+#### Gemini CLI
 ```bash
 gemini extensions install https://github.com/mvanhorn/last30days-skill.git
 ```
 
-### Manual Install (Claude Code / Codex)
+#### Manual Install (Claude Code / Codex)
 ```bash
 # Clone the repo
 git clone https://github.com/mvanhorn/last30days-skill.git ~/.claude/skills/last30days
@@ -84,7 +84,7 @@ If you're signed in to Codex (`codex login`), the skill will use your Codex cred
 
 For project-specific overrides, create `.claude/last30days.env` in the repo root. It overrides the global `~/.config/last30days/.env`.
 
-### X Search Authentication
+#### X Search Authentication
 
 X search prefers explicit env auth. This keeps local runs headless and avoids browser-cookie and macOS Keychain prompts.
 
@@ -102,7 +102,7 @@ node ~/.claude/skills/last30days/scripts/lib/vendor/bird-search/bird-search.mjs 
 
 **Requirements:** Node.js 22+ (for the vendored Twitter GraphQL client).
 
-### Codex CLI
+#### Codex CLI
 
 This skill also works in OpenAI Codex CLI. Install to the Codex skills directory instead:
 
@@ -112,7 +112,7 @@ git clone https://github.com/mvanhorn/last30days-skill.git ~/.agents/skills/last
 
 Same SKILL.md, same Python engine, same scripts. The `agents/openai.yaml` provides Codex-specific discovery metadata. Invoke with `$last30days` or through the `/skills` menu.
 
-### Open Variant (Watchlist + Briefings)  - For Always-On Bots
+#### Open Variant (Watchlist + Briefings)  - For Always-On Bots
 
 **Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on AI environments.** Add your competitors, specific people, or any topic to a watchlist. When paired with a cron job or always-on bot, /last30days re-researches them on a schedule and accumulates findings in a local SQLite database. Ask for a briefing anytime.
 
@@ -178,7 +178,7 @@ Examples:
 2. **Synthesizes** - Identifies patterns, best practices, and what actually works
 3. **Delivers** - Either writes copy-paste-ready prompts for your target tool, or gives you a curated expert-level answer
 
-### Use it for:
+#### Use it for:
 - **Prompt research** - "What prompting techniques work for legal questions in ChatGPT?"
 - **Tool best practices** - "How are people using Remotion with Claude Code?"
 - **Trend discovery** - "What are the best rap songs right now?"
@@ -938,7 +938,7 @@ At least one auth path is required. Reddit needs OpenAI auth. X needs either `AU
 
 ## Troubleshooting
 
-### macOS: SSL Certificate Verify Failed
+#### macOS: SSL Certificate Verify Failed
 
 If you see `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate`, your Python installation is missing SSL root certificates. This only affects Python installed from python.org — **Homebrew users are not affected**.
 
@@ -954,7 +954,7 @@ sudo "/Applications/Python 3.12/Install Certificates.command"
 
 ## How It Works
 
-### Two-Phase Search Architecture
+#### Two-Phase Search Architecture
 
 **Phase 1: Broad discovery**
 - OpenAI Responses API with `web_search` tool scoped to reddit.com
@@ -973,7 +973,7 @@ sudo "/Applications/Python 3.12/Install Certificates.command"
 - Merges and deduplicates with Phase 1 results
 - Skipped on `--quick` for speed; extended on `--deep`
 
-### Model Fallback Chain
+#### Model Fallback Chain
 
 Reddit search (via OpenAI) automatically falls back through available models:
 gpt-4.1 -> gpt-4o -> gpt-4o-mini
@@ -984,7 +984,7 @@ If your OpenAI org doesn't have access to a model (e.g., unverified for gpt-4.1)
 
 ## What's New in v2.9
 
-### ScrapeCreators Reddit as default
+#### ScrapeCreators Reddit as default
 
 Reddit now runs on [ScrapeCreators](https://scrapecreators.com) by default. One `SCRAPECREATORS_API_KEY` powers Reddit, TikTok, and Instagram — three sources, one key. No more `OPENAI_API_KEY` required for Reddit search.
 
@@ -992,7 +992,7 @@ Reddit now runs on [ScrapeCreators](https://scrapecreators.com) by default. One 
 echo 'SCRAPECREATORS_API_KEY=your_key_here' >> ~/.config/last30days/.env
 ```
 
-### Smart subreddit discovery
+#### Smart subreddit discovery
 
 Subreddit discovery now uses relevance-weighted scoring instead of pure frequency count. Each candidate subreddit is scored by `frequency × recency × topic-word match`, and a `UTILITY_SUBS` blocklist filters noise subreddits (r/tipofmytongue, r/whatisthisthing, etc.).
 
@@ -1002,7 +1002,7 @@ Subreddit discovery now uses relevance-weighted scoring instead of pure frequenc
 | Kanye West | r/AskReddit, r/OutOfTheLoop | r/hiphopheads, r/Kanye, r/NFCWestMemeWar |
 | Nano Banana Pro | r/techsupport, r/whatisthisthing | r/GeminiAI, r/nanobanana2pro, r/macbookpro |
 
-### Top comments elevated
+#### Top comments elevated
 
 Top comments now carry a 10% weight in the engagement scoring formula and are displayed prominently with `💬` and upvote counts:
 
@@ -1014,7 +1014,7 @@ Top comments now carry a 10% weight in the engagement scoring formula and are di
 
 **Updated scoring formula:** `0.50 × log1p(score) + 0.35 × log1p(comments) + 0.05 × (ratio×10) + 0.10 × log1p(top_comment_score)` (was 0.55/0.40/0.05).
 
-### Beta test results
+#### Beta test results
 
 | Topic | Time | Threads | Discovered Subreddits |
 |-------|------|---------|----------------------|
@@ -1028,7 +1028,7 @@ Top comments now carry a 10% weight in the engagement scoring formula and are di
 
 ## What's New in v2.8
 
-### Instagram Reels as a source
+#### Instagram Reels as a source
 
 **See what creators are posting on Instagram.** Search any topic and get trending Reels with views, likes, spoken-word transcripts, and hashtags — scored and ranked alongside all other sources.
 
@@ -1037,7 +1037,7 @@ Search "AI tools" and you get:
 - @danmartell: 803K views — "AI tools from 2025 vs 2026"
 - @karimehta05: 112K views — "5 AI Tools I Swear By"
 
-### TikTok + Instagram on ScrapeCreators
+#### TikTok + Instagram on ScrapeCreators
 
 Both TikTok and Instagram are powered by [ScrapeCreators](https://scrapecreators.com) — one API key covers both sources. 100 free credits, then pay-as-you-go.
 
@@ -1050,7 +1050,7 @@ echo 'SCRAPECREATORS_API_KEY=your_key_here' >> ~/.config/last30days/.env
 
 ## What's New in V2.5
 
-### Polymarket prediction markets and Hacker News
+#### Polymarket prediction markets and Hacker News
 
 **The killer feature: see what people are betting real money on.** Polymarket prediction markets are searched for any topic, surfacing live odds, 24-hour volume, liquidity, and price movements alongside what people are saying on Reddit/X/YouTube/HN.
 
@@ -1069,7 +1069,7 @@ Search "Iran War" and you get 15 live prediction markets: US strikes by March (7
 
 No API keys required for either source. Inspired by community PRs from [@ARJ999](https://github.com/ARJ999) ([#12](https://github.com/mvanhorn/last30days-skill/pull/12)) and [@wkbaran](https://github.com/wkbaran) ([#26](https://github.com/mvanhorn/last30days-skill/pull/26)), with [@gbessoni](https://github.com/gbessoni) endorsing HN as the right addition.
 
-### Multi-signal quality-ranked relevance scoring
+#### Multi-signal quality-ranked relevance scoring
 
 **Every result across all seven sources runs through a composite scoring pipeline.** V2.5 doesn't just find more content - it ranks it with significantly higher precision.
 
@@ -1081,7 +1081,7 @@ No API keys required for either source. Inspired by community PRs from [@ARJ999]
 
 **Channel authority weighting** - Boosts results from established creators. Source-specific engagement normalization ensures a 500-upvote Reddit thread and a 5,000-like X post are compared on equal footing.
 
-### Blinded quality comparison
+#### Blinded quality comparison
 
 Ran a 15-way blinded comparison across 5 topics (Claude Code, Seedance, MacBook Pro, rap songs, React vs Svelte). Three versions, labels stripped, randomized as A/B/C:
 
@@ -1093,11 +1093,11 @@ Ran a 15-way blinded comparison across 5 topics (Claude Code, Seedance, MacBook 
 
 Scored on groundedness (30%), specificity (25%), coverage (20%), actionability (15%), format (10%). The relative ranking is meaningful; absolute numbers are LLM-grading-LLM and shouldn't be taken as objective quality scores. The biggest gains came from prediction market data and detecting where sources agree.
 
-### X handle resolution
+#### X handle resolution
 
 Search "Dor Brothers" and the skill resolves their handle (@thedorbrothers), then searches their posts directly with no topic filter. Their viral tweet - "We made a $300M movie starring @LoganPaul with AI in less than 7 days" (5,600+ likes) - never says "Dor Brothers" in the text. Keyword search can't find it. Handle resolution can. Result: 40 X posts (6,900+ likes) instead of 30 (161 likes). Works for people, brands, products, and tools. [Details below.](#x-handle-resolution-details)
 
-### X handle resolution details
+#### X handle resolution details
 
 The problem: when you search a topic on X, you find posts *about* it. But the topic's own account often doesn't mention its own name in tweets. Keyword search can't find those posts.
 
@@ -1121,13 +1121,13 @@ No extra API keys needed - uses the agent's built-in WebSearch (available to 100
 
 ## What's New in V2.1
 
-### Open-class skill with watchlists (v2.1)
+#### Open-class skill with watchlists (v2.1)
 
 **The biggest feature in v2.1 isn't a new source  - it's what happens when you pair /last30days with an always-on bot.** The open variant adds a watchlist, briefings, and history. Add `"Competitor X"` to your watchlist, set it to weekly, and when your bot's cron job fires every Monday, you get a research briefing  - what they shipped, what people said about it, what Reddit and X are discussing. The research accumulates in a local SQLite database, and you can query it anytime with natural language.
 
 **Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on environments.** The watchlist stores schedules as metadata  - you need cron, launchd, or a persistent bot to actually trigger runs. In Claude Code you can still use `run-one` and `run-all` manually.
 
-### YouTube search with transcripts (v2.1)
+#### YouTube search with transcripts (v2.1)
 
 **YouTube is now a 4th research source.** When yt-dlp is installed (`brew install yt-dlp`), /last30days automatically searches YouTube for your topic, fetches view counts and engagement data, and extracts auto-generated transcripts from the top videos. Transcripts give the synthesis engine actual content to work with  - not just titles.
 
@@ -1135,15 +1135,15 @@ YouTube items go through the same scoring pipeline (relevance + recency + engage
 
 Inspired by [Peter Steinberger](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain. Peter's approach of combining yt-dlp for search/metadata with transcript extraction for content analysis was the direct inspiration for this feature.
 
-### Works in OpenAI Codex CLI (v2.1)
+#### Works in OpenAI Codex CLI (v2.1)
 
 **Same skill, different host.** Install to `~/.agents/skills/last30days` and invoke with `$last30days` inside Codex. The `agents/openai.yaml` provides Codex-specific discovery metadata. Same SKILL.md, same Python engine, same four sources.
 
-### Bundled X search (v2.1)
+#### Bundled X search (v2.1)
 
 **X search is fully self-contained** - No external `bird` CLI install needed. /last30days bundles a vendored subset of Bird's Twitter GraphQL client (MIT licensed, by Peter Steinberger). With Node.js 22+ plus `AUTH_TOKEN` and `CT0`, it runs locally without browser-cookie prompts. Falls back to xAI API if bundled auth is not configured.
 
-### Everything else (v2.1)
+#### Everything else (v2.1)
 
 **`--days=N` flag** - Configurable lookback window. `/last30days topic --days=7` for a weekly roundup, `--days=14` for two weeks.
 
@@ -1159,7 +1159,7 @@ Inspired by [Peter Steinberger](https://x.com/steipete)'s yt-dlp + [summarize](h
 
 ## What's New in V2
 
-### Way better X and Reddit results
+#### Way better X and Reddit results
 
 V2 finds significantly more content than V1. Two major improvements:
 
@@ -1169,7 +1169,7 @@ V2 finds significantly more content than V1. Two major improvements:
 
 **Reddit JSON enrichment** - Fetches real upvote and comment counts from Reddit's free API for every thread, giving you actual engagement signals instead of estimates.
 
-### Community contributions
+#### Community contributions
 
 Thanks to the contributors who helped shape V2:
 
@@ -1181,7 +1181,7 @@ Thanks to the contributors who helped shape V2:
 
 ## Security & Privacy
 
-### Data that leaves your machine
+#### Data that leaves your machine
 
 | Destination | Data Sent | API Key Required |
 |------------|-----------|-----------------|
@@ -1198,13 +1198,13 @@ Thanks to the contributors who helped shape V2:
 
 Your research topic is included in all outbound API requests. If you research sensitive topics, be aware that query strings are transmitted to the API providers listed above.
 
-### Data stored locally
+#### Data stored locally
 
 - API keys: `~/.config/last30days/.env` (chmod 600 recommended)
 - Watchlist database: `~/.local/share/last30days/research.db` (SQLite)
 - Briefings: `~/.local/share/last30days/briefs/`
 
-### API key isolation
+#### API key isolation
 
 Each API key is transmitted only to its respective endpoint. Your OpenAI key is never sent to xAI, Brave, or any other provider. Browser cookies for X are read locally and used only for Twitter GraphQL requests.
 

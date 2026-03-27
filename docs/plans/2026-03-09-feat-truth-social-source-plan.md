@@ -45,7 +45,7 @@ Params: q={topic}&type=statuses&limit=40
 
 ## Key Implementation Details
 
-### HTML stripping (`truthsocial.py`)
+#### HTML stripping (`truthsocial.py`)
 
 Truth Social returns HTML content (`<p>Post text</p>`). Strip tags to plain text:
 ```python
@@ -56,11 +56,11 @@ def _strip_html(html: str) -> str:
     return text.strip()
 ```
 
-### Date filtering
+#### Date filtering
 
 Mastodon `created_at` is ISO 8601 (`2026-03-09T12:00:00.000Z`). Use `[:10]` slice for `YYYY-MM-DD` comparison against `from_date`/`to_date`.
 
-### Engagement mapping
+#### Engagement mapping
 
 | Mastodon field | Internal field | Display |
 |---------------|---------------|---------|
@@ -68,7 +68,7 @@ Mastodon `created_at` is ISO 8601 (`2026-03-09T12:00:00.000Z`). Use `[:10]` slic
 | `reblogs_count` | `reposts` | `{N}rp` |
 | `replies_count` | `replies` | `{N}re` |
 
-### Error handling
+#### Error handling
 
 | HTTP Status | Behavior |
 |------------|----------|
@@ -80,7 +80,7 @@ Mastodon `created_at` is ISO 8601 (`2026-03-09T12:00:00.000Z`). Use `[:10]` slic
 
 All errors return empty results gracefully - never crash the research run.
 
-### DEPTH_CONFIG
+#### DEPTH_CONFIG
 
 | Depth | Limit |
 |-------|-------|

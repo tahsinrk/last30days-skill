@@ -21,7 +21,7 @@ Also: hide sources with zero results from the stats box (all sources, not just P
 
 ## Technical Approach
 
-### API Details
+#### API Details
 
 **Endpoint:** `GET https://gamma-api.polymarket.com/public-search?q={topic}&limit={N}`
 
@@ -33,7 +33,7 @@ Also: hide sources with zero results from the stats box (all sources, not just P
 - `volume` and `liquidity` are strings at market level, floats at event level
 - **Price movement fields on every market:** `oneDayPriceChange`, `oneWeekPriceChange`, `oneMonthPriceChange` - these are free, no extra API calls
 
-### Intelligence Layer: Smart Query Expansion
+#### Intelligence Layer: Smart Query Expansion
 
 A single keyword search is dumb. "Iran" should find markets about Iran strikes, nuclear program, sanctions, oil prices, Khamenei. "Arizona Basketball" should find NCAA tournament odds, Big 12 title, March Madness seeding.
 
@@ -71,7 +71,7 @@ def _expand_polymarket_queries(topic: str) -> List[str]:
 
 This is the same approach as YouTube synonym expansion and X handle resolution - cast a wider net, then score by relevance.
 
-### Price Movement Context
+#### Price Movement Context
 
 The API gives us price change data for free. Use it to make the output actually useful:
 
@@ -88,7 +88,7 @@ Will Arizona win the NCAA Tournament?
 
 Show the most significant movement (largest absolute change). Only show if change > 1% to avoid noise.
 
-### Key Design Decisions
+#### Key Design Decisions
 
 **Event-level granularity (not market-level).** Each event becomes one `PolymarketItem` showing its title and top 3 markets by volume. A "Trump" query returns 10 events, not 40+ individual markets. This keeps item counts manageable.
 
@@ -106,9 +106,9 @@ Show the most significant movement (largest absolute change). Only show if chang
 
 **Link to event pages** (not individual market pages) - shows all related markets in context.
 
-### Implementation Plan
+#### Implementation Plan
 
-#### Phase 1: Hide zero-result sources (separate commit)
+##### Phase 1: Hide zero-result sources (separate commit)
 
 - [x] `scripts/lib/render.py` - In `render_source_status()`, skip lines where count is 0
 - [x] `SKILL.md` - Remove "(no results this cycle)" instructions, replace with "omit sources with zero results"
@@ -116,7 +116,7 @@ Show the most significant movement (largest absolute change). Only show if chang
 - [x] `~/.claude/skills/last30daysCROSS/SKILL.md` - Same update (via sync.sh)
 - [x] Test: run a query where HN returns 0, verify it's hidden
 
-#### Phase 2: Polymarket source module
+##### Phase 2: Polymarket source module
 
 - [x] `scripts/lib/polymarket.py` - New file:
   - `DEPTH_CONFIG = {"quick": 5, "default": 10, "deep": 20}` (event count per query)
@@ -135,7 +135,7 @@ Show the most significant movement (largest absolute change). Only show if chang
   - Relevance scoring: markets from raw topic query get 1.0 base, expanded queries get 0.7 base, then decay by position
   - Return `{"items": [...]}` or `{"items": [], "error": "message"}`
 
-#### Phase 3: Schema + normalization + scoring
+##### Phase 3: Schema + normalization + scoring
 
 - [x] `scripts/lib/schema.py` - Add `PolymarketItem` dataclass:
   - `id`, `title` (event title), `question` (top market question), `url` (event URL)
@@ -158,7 +158,7 @@ Show the most significant movement (largest absolute change). Only show if chang
   - `score_polymarket_items()`: standard 45/25/30 weights (relevance/recency/engagement)
   - Update `sort_items()`: Polymarket priority = 4
 
-#### Phase 4: Dedupe + render + UI
+##### Phase 4: Dedupe + render + UI
 
 - [x] `scripts/lib/dedupe.py`:
   - Add `PolymarketItem` to `AnyItem` union
@@ -191,7 +191,7 @@ Show the most significant movement (largest absolute change). Only show if chang
   - Add `start_polymarket()` / `end_polymarket()` methods
   - Update `show_complete()` to accept `polymarket_count`
 
-#### Phase 5: Wire into main pipeline
+##### Phase 5: Wire into main pipeline
 
 - [x] `scripts/last30days.py`:
   - Import `from lib import polymarket`
@@ -207,7 +207,7 @@ Show the most significant movement (largest absolute change). Only show if chang
 
 - [x] `scripts/lib/env.py` - Add `is_polymarket_available()` -> always `True`
 
-#### Phase 6: Documentation + deploy
+##### Phase 6: Documentation + deploy
 
 - [x] `SKILL.md` - Update "6 sources", add Polymarket to stats box template, update Security section with `gamma-api.polymarket.com`
 - [x] `variants/open/references/research.md` - Same source count + stats updates
@@ -215,7 +215,7 @@ Show the most significant movement (largest absolute change). Only show if chang
 - [x] `SPEC.md` - Add `polymarket.py` to architecture list
 - [x] Run `bash scripts/sync.sh` to deploy
 
-#### Phase 7: Tests
+##### Phase 7: Tests
 
 - [x] `tests/test_polymarket.py` - New file:
   - `TestParsePolymarketResponse` - binary markets, multi-outcome, malformed outcomePrices, missing fields

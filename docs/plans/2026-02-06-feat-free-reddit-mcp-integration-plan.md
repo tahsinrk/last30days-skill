@@ -18,7 +18,7 @@ Today, the last30days skill requires an OpenAI API key (`OPENAI_API_KEY`) to sea
 
 ## Research Findings
 
-### Option Analysis
+#### Option Analysis
 
 Five approaches were evaluated. Two stand out:
 
@@ -30,7 +30,7 @@ Five approaches were evaluated. Two stand out:
 | Reddit OAuth (PRAW) | Free but needs registration | Yes | Yes | App registration | 100 req/min, most reliable |
 | RSS feeds | Yes | Basic | **No** | Zero | Least useful, no metrics |
 
-### Top Contender: reddit-mcp-buddy
+#### Top Contender: reddit-mcp-buddy
 
 **GitHub:** [karanb192/reddit-mcp-buddy](https://github.com/karanb192/reddit-mcp-buddy)
 - 371 stars, actively maintained (last update: Jan 29, 2026)
@@ -40,7 +40,7 @@ Five approaches were evaluated. Two stand out:
 - Returns full engagement metrics (score, num_comments, upvote_ratio)
 - TypeScript/Node.js (npx, no Python dependency)
 
-### Strong Alternative: .json URL trick
+#### Strong Alternative: .json URL trick
 
 - Append `.json` to any Reddit URL → full JSON response
 - Search: `https://www.reddit.com/search.json?q=TOPIC&sort=relevance&t=month&limit=100`
@@ -49,7 +49,7 @@ Five approaches were evaluated. Two stand out:
 - ~10 req/min rate limit (sufficient for skill use)
 - Can be called via `curl` or Python `urllib`
 
-### Also Considered
+#### Also Considered
 
 - **Hawstein/mcp-server-reddit** (134 stars, Python, no auth) — **No search tool**, only browse subreddits. Cannot replace OpenAI's keyword search capability.
 - **Arindam200/reddit-mcp** (262 stars, PRAW) — Has search but **requires Reddit OAuth credentials**. Not truly zero-config.
@@ -57,7 +57,7 @@ Five approaches were evaluated. Two stand out:
 
 ## Proposed Solution
 
-### Approach A: MCP-First with .json Fallback (Recommended)
+#### Approach A: MCP-First with .json Fallback (Recommended)
 
 Add a new module `mcp_reddit.py` that:
 
@@ -72,11 +72,11 @@ This gives users three tiers of Reddit access:
 - **Tier 2 (good):** No MCP, no keys → `.json` URL search + enrichment
 - **Tier 3 (existing):** OpenAI key present → existing `openai_reddit.py` still works (backward compat)
 
-### Approach B: .json-Only (Simpler)
+#### Approach B: .json-Only (Simpler)
 
 Skip MCP entirely. Add a `reddit_json.py` module that uses `https://www.reddit.com/search.json` directly. Simpler but misses the MCP ecosystem integration.
 
-### Approach C: MCP-Only (Cleaner)
+#### Approach C: MCP-Only (Cleaner)
 
 Require MCP setup. Simpler code but adds a user setup step (`claude mcp add ...`).
 
@@ -84,7 +84,7 @@ Require MCP setup. Simpler code but adds a user setup step (`claude mcp add ...`
 
 ## Technical Approach
 
-### Architecture
+#### Architecture
 
 ```
 User invokes /last30days "topic"
@@ -99,9 +99,9 @@ User invokes /last30days "topic"
   └─ Normalize → Score → Dedupe → Render (unchanged)
 ```
 
-### New Files
+#### New Files
 
-#### `scripts/lib/reddit_json.py`
+##### `scripts/lib/reddit_json.py`
 - Uses `urllib.request` (stdlib) to call Reddit's `.json` search endpoint
 - URL: `https://www.reddit.com/search.json?q={topic}&sort=relevance&t=month&limit=100`
 - Custom `User-Agent` header (required by Reddit)
@@ -109,20 +109,20 @@ User invokes /last30days "topic"
 - Handles pagination via `after` token if depth=deep (multiple requests)
 - Rate limiting: 1 second delay between requests
 
-#### `scripts/lib/mcp_reddit.py`
+##### `scripts/lib/mcp_reddit.py`
 - Detects MCP availability (check if Reddit MCP tools exist in session)
 - Formats MCP tool calls for `search_reddit` with topic + date filters
 - Normalizes MCP response to match existing `RedditItem` schema
 - Falls back to `reddit_json.py` if MCP unavailable
 
-#### Modified Files
+##### Modified Files
 
 - **`scripts/lib/env.py`** — Add Reddit source detection: MCP → .json → OpenAI
 - **`scripts/last30days.py`** — Route Reddit search through new priority chain
 - **`scripts/lib/normalize.py`** — Add normalizer for `.json` endpoint response format
 - **`SKILL.md`** — Document MCP setup as optional enhancement
 
-### MCP Integration Design
+#### MCP Integration Design
 
 The MCP approach has a subtle challenge: the last30days skill runs as a **Python subprocess** (`python3 last30days.py`), but MCP tools are available to **Claude's session**, not to subprocesses.
 
@@ -141,7 +141,7 @@ SKILL.md workflow:
 
 **Recommendation: Path 2 for MVP, Path 1 as enhancement.** The `.json` approach is self-contained, testable, and doesn't require SKILL.md workflow changes. MCP can be layered on later.
 
-### Source Priority Chain (updated env.py)
+#### Source Priority Chain (updated env.py)
 
 ```python
 def get_reddit_source(config: dict) -> str:
@@ -159,7 +159,7 @@ def get_reddit_source(config: dict) -> str:
 
 For MVP, the `.json` path is **always available** so it becomes the default. OpenAI path remains as opt-in for users who want higher rate limits.
 
-### Data Mapping: .json → RedditItem
+#### Data Mapping: .json → RedditItem
 
 Reddit `.json` search returns `data.children[].data` with:
 
@@ -192,7 +192,7 @@ Maps cleanly to existing `RedditItem`:
 | `selftext` | (used for relevance) | AI relevance scoring needed |
 | `author` | (not in current schema) | Ignore for now |
 
-### Relevance Scoring Without AI
+#### Relevance Scoring Without AI
 
 The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI judges how relevant each result is). With `.json` endpoints, we lose that AI relevance judgment.
 
@@ -206,14 +206,14 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
 
 ## Implementation Phases
 
-### Phase 0: Fork Repository
+#### Phase 0: Fork Repository
 
 - [ ] Create new repo `last30days-free-reddit` (or branch in private repo)
 - [ ] `git clone /Users/mvanhorn/last30days-skill-private /Users/mvanhorn/last30days-free-reddit`
 - [ ] Create feature branch: `feat/free-reddit`
 - [ ] Verify all existing tests pass on the new branch
 
-### Phase 1: reddit_json.py — Core .json Search
+#### Phase 1: reddit_json.py — Core .json Search
 
 - [ ] Create `scripts/lib/reddit_json.py`
   - `search_reddit_json(topic: str, depth: str, date_from: str, date_to: str) -> list[dict]`
@@ -229,7 +229,7 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
 - [ ] Create `fixtures/reddit_json_search_sample.json`
   - Real `.json` search response (sanitized)
 
-### Phase 2: Normalize + Score .json Results
+#### Phase 2: Normalize + Score .json Results
 
 - [ ] Add `normalize_reddit_json()` to `scripts/lib/normalize.py`
   - Convert `.json` response format → `RedditItem` schema
@@ -242,7 +242,7 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
   - No penalty needed (unlike WebSearch which lacks engagement)
 - [ ] Add tests for normalization + scoring of `.json` data
 
-### Phase 3: Integration into Orchestrator
+#### Phase 3: Integration into Orchestrator
 
 - [ ] Update `scripts/lib/env.py`
   - Add `get_reddit_source(config) -> str` returning `'json'`, `'openai'`, or `'none'`
@@ -260,7 +260,7 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
   - Instead: "Reddit search included free! Add OpenAI key for AI-enhanced relevance scoring."
 - [ ] Integration tests: full pipeline with `.json` mock data
 
-### Phase 4: Testing & Polish
+#### Phase 4: Testing & Polish
 
 - [ ] Run all existing tests — ensure backward compatibility
 - [ ] Manual test: invoke `/last30days` with NO API keys → should get Reddit + WebSearch results
@@ -269,7 +269,7 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
 - [ ] Update README.md — document free Reddit access
 - [ ] Update SPEC.md — document new source priority chain
 
-### Phase 5 (Future): MCP Enhancement Layer
+#### Phase 5 (Future): MCP Enhancement Layer
 
 - [ ] Detect Reddit MCP in Claude's session
 - [ ] SKILL.md pre-fetches via MCP `search_reddit` → saves to temp file
@@ -279,7 +279,7 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
 
 ## Acceptance Criteria
 
-### Functional
+#### Functional
 - [ ] `/last30days "any topic"` returns Reddit results with **zero API keys configured**
 - [ ] Reddit results include real engagement metrics (score, comments, upvote_ratio)
 - [ ] Results are properly scored, deduped, and rendered (same quality as OpenAI path)
@@ -287,13 +287,13 @@ The current `openai_reddit.py` gets relevance scores **from OpenAI** (the AI jud
 - [ ] Existing X search (Bird CLI / xAI) is unchanged
 - [ ] Stats box shows correct source indicator ("Reddit (free)" or "Reddit (OpenAI)")
 
-### Non-Functional
+#### Non-Functional
 - [ ] No external Python packages (stdlib only — `urllib.request`, `json`, `time`)
 - [ ] Respects Reddit rate limits (~10 req/min for unauthenticated)
 - [ ] Graceful degradation if Reddit blocks requests (429/403 → empty results + error msg)
 - [ ] All new code has unit tests with fixtures (no live API calls in tests)
 
-### Quality Gates
+#### Quality Gates
 - [ ] All existing tests pass (zero regressions)
 - [ ] New tests cover: search parsing, normalization, scoring, error handling, pagination
 - [ ] Manual smoke test passes with zero API keys
@@ -331,21 +331,21 @@ The new repo is disposable — once the feature is validated, changes merge back
 
 ## References
 
-### Internal
+#### Internal
 - `scripts/lib/openai_reddit.py` — Current Reddit search (to be replaced/supplemented)
 - `scripts/lib/env.py:get_available_sources()` — Source detection logic to update
 - `scripts/lib/normalize.py` — Add `.json` normalizer alongside existing
 - `scripts/lib/reddit_enrich.py` — May be skippable for `.json` results (already have engagement)
 - `scripts/lib/schema.py:RedditItem` — Target schema (unchanged)
 
-### External
+#### External
 - [Reddit .json search endpoint](https://www.reddit.com/search.json?q=test&sort=relevance&t=month&limit=25)
 - [Simon Willison — Scraping Reddit via JSON API](https://til.simonwillison.net/reddit/scraping-reddit-json)
 - [karanb192/reddit-mcp-buddy](https://github.com/karanb192/reddit-mcp-buddy) — Best MCP option for Phase 5
 - [Hawstein/mcp-server-reddit](https://github.com/Hawstein/mcp-server-reddit) — ClaudeLog-recommended MCP (no search though)
 - [Reddit API Rate Limits Guide](https://painonsocial.com/blog/reddit-api-rate-limits-guide)
 
-### Research Sources
+#### Research Sources
 - last30days skill output — community recommendations for Reddit search tools
 - GitHub search — 10+ Reddit MCP repos evaluated
 - npm/PyPI registries — package availability confirmed

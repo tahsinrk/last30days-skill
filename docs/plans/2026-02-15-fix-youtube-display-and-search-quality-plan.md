@@ -18,7 +18,7 @@ YouTube is the v2.1 headline feature but it's broken in two ways: results don't 
 
 ## Root Cause Analysis
 
-### Display Bug — Three compounding causes
+#### Display Bug — Three compounding causes
 
 1. **`2>&1` in SKILL.md bash command** (line 79) merges stderr progress messages into stdout. When Claude Code receives this mixed output, the YouTube section (which renders LAST after Reddit + X) can get lost in the noise or hit the 30K char Bash output limit.
 
@@ -26,7 +26,7 @@ YouTube is the v2.1 headline feature but it's broken in two ways: results don't 
 
 3. **No explicit model instruction to look for YouTube.** The SKILL.md tells Claude to synthesize but doesn't emphasize that YouTube data is in the script output and must be included.
 
-### Search Quality Bug — `--flat-playlist` breaks date filtering
+#### Search Quality Bug — `--flat-playlist` breaks date filtering
 
 The yt-dlp command in `youtube_yt.py:110-116`:
 ```bash
@@ -44,9 +44,9 @@ yt-dlp ytsearch{count}:{query} --dateafter {YYYYMMDD} --flat-playlist --dump-jso
 
 ## Proposed Solution
 
-### Phase 1: Fix Display (Critical — blocks launch)
+#### Phase 1: Fix Display (Critical — blocks launch)
 
-#### 1a. Remove `2>&1` from SKILL.md bash command
+##### 1a. Remove `2>&1` from SKILL.md bash command
 
 **File:** `SKILL.md:79` (both `last30days-skill-private/SKILL.md` and `~/.claude/skills/last30days21/SKILL.md`)
 
@@ -60,7 +60,7 @@ python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact
 
 This removes ~1-5KB of progress spam from the model's input and ensures clean stdout-only output.
 
-#### 1b. Add YouTube-specific synthesis instruction to SKILL.md
+##### 1b. Add YouTube-specific synthesis instruction to SKILL.md
 
 After the "Read the ENTIRE output" instruction, add:
 
@@ -70,13 +70,13 @@ If you see YouTube items in the output, you MUST include them in your synthesis 
 YouTube items look like: `**{video_id}** (score:N) {channel} [N views, N likes]`**
 ```
 
-#### 1c. Verify fix with test run
+##### 1c. Verify fix with test run
 
 Run `/last30days21 youtube thumbnail tips` and confirm YouTube appears in stats.
 
-### Phase 2: Fix Search Quality (High — headline feature quality)
+#### Phase 2: Fix Search Quality (High — headline feature quality)
 
-#### 2a. Remove `--flat-playlist` flag
+##### 2a. Remove `--flat-playlist` flag
 
 **File:** `scripts/lib/youtube_yt.py:110-116`
 
@@ -114,7 +114,7 @@ cmd = [
 search_query = f"{core_topic} {from_date[:4]}"  # e.g., "youtube thumbnail 2026"
 ```
 
-#### 2b. Fix `_extract_core_subject()` for YouTube-relevant terms
+##### 2b. Fix `_extract_core_subject()` for YouTube-relevant terms
 
 **File:** `scripts/lib/youtube_yt.py:67-76`
 
@@ -136,7 +136,7 @@ noise = {
 # are intentionally KEPT — they're YouTube content types
 ```
 
-#### 2c. Clean question marks and trailing punctuation
+##### 2c. Clean question marks and trailing punctuation
 
 **File:** `scripts/lib/youtube_yt.py:48-80`
 
@@ -146,9 +146,9 @@ result = ' '.join(filtered) if filtered else text
 return result.rstrip('?!.')  # Clean trailing punctuation
 ```
 
-### Phase 3: Polish (Medium — nice to have before launch)
+#### Phase 3: Polish (Medium — nice to have before launch)
 
-#### 3a. Increase subprocess timeout for non-flat-playlist mode
+##### 3a. Increase subprocess timeout for non-flat-playlist mode
 
 **File:** `scripts/lib/youtube_yt.py:119-121`
 
@@ -160,7 +160,7 @@ result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
 ```
 
-#### 3b. Add year hint to search query for recency bias
+##### 3b. Add year hint to search query for recency bias
 
 Even with `--dateafter` working, YouTube's search algorithm ranks by relevance not recency. Adding the year helps:
 
@@ -171,7 +171,7 @@ current_year = datetime.datetime.now().year
 search_query = f"{core_topic} {current_year}"
 ```
 
-#### 3c. Reduce compact render item count for YouTube
+##### 3c. Reduce compact render item count for YouTube
 
 The compact render currently shows up to 15 YouTube items. With transcripts, this is too much output. Reduce to 10:
 

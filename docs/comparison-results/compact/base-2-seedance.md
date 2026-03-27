@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R23** (score:76) r/generativeAI (2026-02-24)
   Official website for creating content with Seedance 2.0?
@@ -82,7 +82,7 @@
   https://www.reddit.com/r/nairobitechies/comments/1r6gwyj/bytedance_seedance_multimodal_video_generation/
   *Seedance family discussion (1.0/1.5/2.0) focusing on video generation features and multimodal inputs.*
 
-### X Posts
+#### X Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9likes]
   First Seedance 2.0 Test! 
@@ -169,7 +169,7 @@ This is not real. We don't have a Seedance account, and the links are not offi..
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **F1kWxdfiBNE** (score:73) AI Filmmaking Academy (2026-02-22) [40,982 views, 1,088 likes]
   Seedance 2.0 Claims the AI Video Throne!

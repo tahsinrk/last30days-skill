@@ -16,7 +16,7 @@ Run the same queries through both the public v1 and private v2 of last30days, co
 
 ## How to Run the Comparison
 
-### Setup
+#### Setup
 
 **V1 (public upstream):** Check out upstream SKILL.md temporarily:
 ```bash
@@ -41,7 +41,7 @@ Run same queries in NEW sessions. Save output.
 
 ## ALL Test Queries
 
-### From README Examples (13 documented use cases)
+#### From README Examples (13 documented use cases)
 
 Every single example from the README, in order:
 
@@ -61,7 +61,7 @@ Every single example from the README, in order:
 | 12 | `prompt advice for using suno to make killer songs in simple mode` | PROMPTING | Example: Suno AI Music |
 | 13 | `how do I use Codex with Claude Code on same app to make it better` | HOW-TO | Example: Codex + Claude Code |
 
-### From Plan Documents (4 additional battle-tested queries)
+#### From Plan Documents (4 additional battle-tested queries)
 
 | # | Query | Type | Source |
 |---|-------|------|--------|
@@ -70,7 +70,7 @@ Every single example from the README, in order:
 | 16 | `open claw` | GENERAL | fix-v2-formatting plan, X-heavy sources |
 | 17 | `nano banana pro prompting` | PROMPTING | fix-v2-formatting plan |
 
-### Follow-up Vision Tests (pick 4 from above, ask a follow-up)
+#### Follow-up Vision Tests (pick 4 from above, ask a follow-up)
 
 These test the prompt-generation phase specifically:
 
@@ -85,11 +85,11 @@ These test the prompt-generation phase specifically:
 
 ## FEATURE AUDIT: V1 vs V2
 
-### Section-by-section comparison
+#### Section-by-section comparison
 
 I diffed the full v1 (upstream/main) SKILL.md against the current v2. Here's everything.
 
-#### KEPT (in both versions) ✅
+##### KEPT (in both versions) ✅
 
 | Feature | V1 Location | V2 Location | Notes |
 |---------|------------|------------|-------|
@@ -111,7 +111,7 @@ I diffed the full v1 (upstream/main) SKILL.md against the current v2. Here's eve
 | Output summary footer | Lines 320-340 | Lines 292-302 | Different format |
 | Depth options (quick/default/deep) | Lines 135-139 | Lines 106-109 | Same |
 
-#### ADDED in V2 (improvements) ✨
+##### ADDED in V2 (improvements) ✨
 
 | Feature | What it does | V2 Location |
 |---------|-------------|------------|
@@ -123,7 +123,7 @@ I diffed the full v1 (upstream/main) SKILL.md against the current v2. Here's eve
 | **Reddit 0 results handling** | Explicit instruction for 0-thread line | Line 229 |
 | **Bird CLI in stats** | "(via Bird/xAI)" notation | Line 223 |
 
-#### ❌ MISSING FROM V2 — Features V1 Has That V2 Dropped
+##### ❌ MISSING FROM V2 — Features V1 Has That V2 Dropped
 
 These are the regressions. Some are intentional simplifications, others are real gaps.
 
@@ -207,7 +207,7 @@ These are the regressions. Some are intentional simplifications, others are real
 
 Based on the audit, these should be restored in V2 before it replaces V1:
 
-### Must Fix (affects output quality)
+#### Must Fix (affects output quality)
 
 | # | Missing Feature | Why | Effort |
 |---|----------------|-----|--------|
@@ -216,7 +216,7 @@ Based on the audit, these should be restored in V2 before it replaces V1:
 | 3 | **Self-check instruction** | One-line pre-display validation catches hallucination. | Add 2 lines |
 | 4 | **Context Memory: don't re-search** | Prevents wasting time re-searching on follow-ups. | Add 3 lines |
 
-### Should Fix (polish)
+#### Should Fix (polish)
 
 | # | Missing Feature | Why | Effort |
 |---|----------------|-----|--------|
@@ -224,7 +224,7 @@ Based on the audit, these should be restored in V2 before it replaces V1:
 | 6 | **"IF USER ASKS FOR MORE OPTIONS"** | Prevents prompt dumping. | Add 2 lines |
 | 7 | **Output footer emoji + engagement counts** | More polished footer. | Edit 3 lines |
 
-### Skip for Now (nice-to-have for public release)
+#### Skip for Now (nice-to-have for public release)
 
 | # | Missing Feature | Why Skip |
 |---|----------------|----------|
@@ -237,7 +237,7 @@ Based on the audit, these should be restored in V2 before it replaces V1:
 
 ## Scoring Dimensions (1-5 scale, 7 dimensions)
 
-### 1. Query Parsing Display
+#### 1. Query Parsing Display
 Does the agent show what it understood before starting research?
 
 | Score | Criteria |
@@ -248,7 +248,7 @@ Does the agent show what it understood before starting research?
 | 4 | Shows topic + query type clearly |
 | 5 | Shows topic + query type + reformulated search terms |
 
-### 2. Source Coverage
+#### 2. Source Coverage
 Did it actually use Reddit, X, AND web — or skip sources?
 
 | Score | Criteria |
@@ -259,7 +259,7 @@ Did it actually use Reddit, X, AND web — or skip sources?
 | 4 | All 3 sources returned results |
 | 5 | All 3 sources + good volume (10+ Reddit, 10+ X, 5+ web) |
 
-### 3. Citation Quality
+#### 3. Citation Quality
 Are citations sparse and useful, or verbose and noisy?
 
 | Score | Criteria |
@@ -270,7 +270,7 @@ Are citations sparse and useful, or verbose and noisy?
 | 4 | 1 citation per pattern, short format |
 | 5 | Sparse citations that prove research is real without cluttering |
 
-### 4. Summary Structure
+#### 4. Summary Structure
 Is the "What I learned" section scannable or a wall of text?
 
 | Score | Criteria |
@@ -281,7 +281,7 @@ Is the "What I learned" section scannable or a wall of text?
 | 4 | Bold topic headers with 1-2 sentence explanations |
 | 5 | Clean topic headers + KEY PATTERNS list, easy to scan |
 
-### 5. Stats Box Format
+#### 5. Stats Box Format
 Does the emoji stats tree render correctly?
 
 | Score | Criteria |
@@ -292,7 +292,7 @@ Does the emoji stats tree render correctly?
 | 4 | Correct ├─ └─ │ format with emoji, minor issues |
 | 5 | Perfect emoji tree with accurate counts and top voices |
 
-### 6. Research Grounding
+#### 6. Research Grounding
 Does the synthesis reflect the ACTUAL research, or generic pre-training knowledge?
 
 | Score | Criteria |
@@ -303,7 +303,7 @@ Does the synthesis reflect the ACTUAL research, or generic pre-training knowledg
 | 4 | Clearly grounded in research, minor generic leakage |
 | 5 | Every insight traceable to a specific source from the research |
 
-### 7. Prompt Quality (follow-up tests only)
+#### 7. Prompt Quality (follow-up tests only)
 When user shares vision, is the generated prompt good?
 
 | Score | Criteria |
@@ -347,19 +347,19 @@ Observations:
 
 ## Execution Plan
 
-### Phase 1: Fix the gaps first
+#### Phase 1: Fix the gaps first
 Apply the 7 "Must Fix" + "Should Fix" items from the audit to V2 SKILL.md. This takes ~20 minutes since it's all small text additions.
 
-### Phase 2: Smoke test (4 queries)
+#### Phase 2: Smoke test (4 queries)
 Run queries #14 (kanye west), #2 (best clawdbot use cases), #8 (photorealistic nano banana pro), #10 (DeepSeek R1) on V2 only. Verify the fixes work.
 
-### Phase 3: Full comparison (all 17 queries)
+#### Phase 3: Full comparison (all 17 queries)
 Run all 17 queries on both V1 and V2. Fill scorecards.
 
-### Phase 4: Follow-up vision tests (4 queries)
+#### Phase 4: Follow-up vision tests (4 queries)
 Run the 4 follow-up vision tests. Compare prompt quality — this is where the quality checklist fix matters most.
 
-### Phase 5: Analysis
+#### Phase 5: Analysis
 - Sum scores per version across all queries
 - Identify any dimension where v1 consistently beats v2
 - Decision: ship v2, or fix more gaps first

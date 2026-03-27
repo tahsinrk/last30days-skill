@@ -21,7 +21,7 @@ Four bugs found during v2 testing across 4 queries (kanye west, howie.ai, nano b
 
 ## Proposed Fixes
 
-### Fix 1: Stats Emoji Format Enforcement
+#### Fix 1: Stats Emoji Format Enforcement
 
 **Root cause:** The agent ignores the emoji tree template even with BAD/GOOD examples. The template uses box-drawing characters (├─ └─) that the agent treats as decorative, not mandatory.
 
@@ -48,7 +48,7 @@ NEVER use plain text dashes (-) or pipe (|). ALWAYS use ├─ └─ │ and th
 
 Remove the separate BAD/GOOD section (it adds length without helping).
 
-### Fix 2: Reddit Returning 0 Results
+#### Fix 2: Reddit Returning 0 Results
 
 **Root cause (from code analysis):**
 
@@ -79,7 +79,7 @@ Remove the separate BAD/GOOD section (it adds length without helping).
 - `scripts/lib/score.py` - Soften penalties (lines ~151-157)
 - `scripts/last30days.py` - Add minimum result guarantee (lines ~474-490)
 
-### Fix 3: Citations Too Verbose
+#### Fix 3: Citations Too Verbose
 
 **Root cause:** The SKILL.md instruction says "Every insight MUST cite at least one source" with a GOOD example showing `(per @XXX, 15 likes; r/kanye thread with 200 upvotes)` - this is too much detail per citation and the agent over-applies it.
 
@@ -100,7 +100,7 @@ BAD: "His album is set for March 20 (per @cocoabutterbf; Rolling Stone; HotNewHi
 GOOD: "His album BULLY is set for March 20 via Gamma, per Rolling Stone."
 ```
 
-### Fix 4: Summary Formatting (Wall of Text vs Structured)
+#### Fix 4: Summary Formatting (Wall of Text vs Structured)
 
 **Root cause:** The SKILL.md template for PROMPTING/NEWS/GENERAL shows:
 ```

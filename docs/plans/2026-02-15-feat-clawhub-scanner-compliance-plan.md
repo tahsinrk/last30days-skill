@@ -24,7 +24,7 @@ The current last30days SKILL.md has basic `metadata.clawdbot` but is missing fie
 
 Follow the exact pattern from `clawdbot-skill-xai` and `clawdbot-skill-search-x` (both pass the scanner). Three files need changes.
 
-### Fix 1: SKILL.md Frontmatter
+#### Fix 1: SKILL.md Frontmatter
 
 Add missing scanner fields to the existing frontmatter:
 
@@ -67,7 +67,7 @@ Key additions:
 - `emoji: "📰"` - required display field
 - `files: ["scripts/*"]` - prevents false "instruction-only but has scripts" flag
 
-### Fix 2: Security & Permissions Section in SKILL.md
+#### Fix 2: Security & Permissions Section in SKILL.md
 
 Add to the bottom of SKILL.md (matches xai/search-x pattern exactly):
 
@@ -95,7 +95,7 @@ Add to the bottom of SKILL.md (matches xai/search-x pattern exactly):
 Review scripts before first use to verify behavior.
 ```
 
-### Fix 3: Security & Privacy Section in README.md
+#### Fix 3: Security & Privacy Section in README.md
 
 Add after the "How It Works" section:
 
@@ -127,7 +127,7 @@ Your research topic is included in all outbound API requests. If you research se
 Each API key is transmitted only to its respective endpoint. Your OpenAI key is never sent to xAI, Brave, or any other provider. Browser cookies for X are read locally and used only for Twitter GraphQL requests.
 ```
 
-### Fix 4: Update .claude-plugin Files
+#### Fix 4: Update .claude-plugin Files
 
 **plugin.json** - bump version, add youtube keyword:
 

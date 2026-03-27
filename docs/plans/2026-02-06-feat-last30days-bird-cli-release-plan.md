@@ -32,7 +32,7 @@ Replace the current public `last30days-skill` on GitHub with the new Bird CLI-en
 
 Remove the old skill so only the new one is active. This eliminates ambiguity during testing.
 
-### Steps
+#### Steps
 
 1. **Back up the old skill** (safety net):
    ```bash
@@ -59,7 +59,7 @@ Remove the old skill so only the new one is active. This eliminates ambiguity du
    mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
    ```
 
-### Acceptance Criteria
+#### Acceptance Criteria
 - [ ] Only one `/last30days` appears in Claude Code autocomplete
 - [ ] Old skill preserved at `~/.claude/skills/last30days.backup-v1`
 - [ ] New skill responds to `/last30days` invocation
@@ -70,11 +70,11 @@ Remove the old skill so only the new one is active. This eliminates ambiguity du
 
 These are tests Claude can run autonomously to validate the new skill before the user touches it.
 
-### 1.1 Script-Level Smoke Tests
+#### 1.1 Script-Level Smoke Tests
 
 Run the Python scripts directly to verify core functionality without invoking the full skill.
 
-#### Bird CLI Detection
+##### Bird CLI Detection
 ```bash
 # Test: Bird is installed and authenticated
 python3 -c "
@@ -89,7 +89,7 @@ print('status:', bird_x.get_bird_status())
 - [ ] `is_bird_authenticated()` returns True if logged into X in browser
 - [ ] `get_bird_status()` returns a dict with `installed`, `authenticated`, `available` keys
 
-#### Environment & Source Detection
+##### Environment & Source Detection
 ```bash
 python3 -c "
 import sys; sys.path.insert(0, '/Users/mvanhorn/last30days-skill-private/scripts/lib')
@@ -102,7 +102,7 @@ print('has_openai:', bool(config.get('OPENAI_API_KEY')))
 - [ ] `get_x_source()` returns `'bird'` if Bird available, `'xai'` if API key set, `None` otherwise
 - [ ] Config loads from `~/.config/last30days/.env`
 
-#### Bird Search (Direct)
+##### Bird Search (Direct)
 ```bash
 python3 -c "
 import sys, json; sys.path.insert(0, '/Users/mvanhorn/last30days-skill-private/scripts/lib')
@@ -115,7 +115,7 @@ print(json.dumps(result, indent=2, default=str)[:2000])
 - [ ] No Python tracebacks
 - [ ] Results are from the expected date range
 
-#### Full Research Pipeline (Compact Output)
+##### Full Research Pipeline (Compact Output)
 ```bash
 cd /Users/mvanhorn/last30days-skill-private
 python3 scripts/last30days.py "Claude Code tips" --emit=compact --quick 2>&1 | head -100
@@ -125,11 +125,11 @@ python3 scripts/last30days.py "Claude Code tips" --emit=compact --quick 2>&1 | h
 - [ ] Output includes Reddit results (via OpenAI) if key configured
 - [ ] Stats summary shows source counts
 
-### 1.2 Source Fallback Tests
+#### 1.2 Source Fallback Tests
 
 Verify graceful degradation when sources are unavailable.
 
-#### Bird unavailable, xAI available
+##### Bird unavailable, xAI available
 ```bash
 # Temporarily hide Bird
 PATH_BACKUP="$PATH"
@@ -147,7 +147,7 @@ export PATH="$PATH_BACKUP"
 - [ ] Falls back to `'xai'` when Bird not in PATH
 - [ ] No crash or unhandled exception
 
-#### No X source at all
+##### No X source at all
 ```bash
 python3 -c "
 import sys; sys.path.insert(0, '/Users/mvanhorn/last30days-skill-private/scripts/lib')
@@ -159,7 +159,7 @@ print('x_source (nothing):', env.get_x_source(config))
 - [ ] Returns `None`
 - [ ] No crash
 
-### 1.3 Response Parsing Tests
+#### 1.3 Response Parsing Tests
 
 Validate that Bird responses are correctly normalized to the canonical schema.
 
@@ -191,7 +191,7 @@ print('Author:', parsed[0].get('author_handle'))
 - [ ] Handles both camelCase and snake_case fields
 - [ ] URL, text, author, engagement metrics all present
 
-### 1.4 SKILL.md Validation
+#### 1.4 SKILL.md Validation
 
 ```bash
 # Verify YAML frontmatter parses correctly
@@ -213,7 +213,7 @@ with open('/Users/mvanhorn/last30days-skill-private/SKILL.md') as f:
 - [ ] `agent` is `Explore`
 - [ ] `allowed-tools` includes `Bash`, `WebSearch`
 
-### 1.5 Diff Audit (Old vs New)
+#### 1.5 Diff Audit (Old vs New)
 
 ```bash
 # Verify the only meaningful addition is bird_x.py
@@ -230,7 +230,7 @@ diff -rq ~/.claude/skills/last30days.backup-v1/scripts/lib/ \
 
 These require human judgment - evaluating quality, UX, and real-world behavior.
 
-### 2.1 Basic Invocation (5 min)
+#### 2.1 Basic Invocation (5 min)
 
 Open a fresh Claude Code session after Phase 0 is complete.
 
@@ -241,7 +241,7 @@ Open a fresh Claude Code session after Phase 0 is complete.
 | 3 | Quick mode | `/last30days --quick TypeScript tips` | Faster, fewer results, still valid |
 | 4 | Empty input | `/last30days` | Prompts for topic (doesn't crash) |
 
-### 2.2 Bird CLI Verification (5 min)
+#### 2.2 Bird CLI Verification (5 min)
 
 | # | Test | What to Check |
 |---|------|---------------|
@@ -250,7 +250,7 @@ Open a fresh Claude Code session after Phase 0 is complete.
 | 3 | Bird promo | If Bird NOT installed, shows non-blocking info banner |
 | 4 | Mixed sources | Both Reddit (OpenAI) and X (Bird) results appear |
 
-### 2.3 Fallback Behavior (5 min)
+#### 2.3 Fallback Behavior (5 min)
 
 | # | Test | Setup | Expected |
 |---|------|-------|----------|
@@ -258,7 +258,7 @@ Open a fresh Claude Code session after Phase 0 is complete.
 | 2 | No API keys | Rename `~/.config/last30days/.env` temporarily | WebSearch-only mode works |
 | 3 | Restore | Reinstall bird + restore .env | Full mode returns |
 
-### 2.4 Output Quality (10 min)
+#### 2.4 Output Quality (10 min)
 
 Run 3 real research queries you care about. For each, evaluate:
 
@@ -269,7 +269,7 @@ Run 3 real research queries you care about. For each, evaluate:
 - [ ] Synthesis is grounded in actual results (not hallucinated)
 - [ ] Generated prompts (if requested) are usable
 
-### 2.5 Comparison Test (10 min)
+#### 2.5 Comparison Test (10 min)
 
 Before removing the backup, run the SAME query on both versions:
 
@@ -295,7 +295,7 @@ mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
 
 **Target release date:** March 1, 2026 (conservative buffer before March 8 deadline)
 
-### Week 1: Feb 6-12 - Clean & Test
+#### Week 1: Feb 6-12 - Clean & Test
 
 | Day | Task | Owner |
 |-----|------|-------|
@@ -305,7 +305,7 @@ mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
 | Feb 9 | Phase 2.5: Comparison test | User |
 | Feb 10-12 | Fix any issues found during testing | Claude + User |
 
-### Week 2: Feb 13-19 - Harden
+#### Week 2: Feb 13-19 - Harden
 
 | Day | Task | Owner |
 |-----|------|-------|
@@ -315,7 +315,7 @@ mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
 | Feb 16-17 | Update README.md with Bird CLI setup instructions | Claude |
 | Feb 18-19 | Buffer for fixes | Claude + User |
 
-### Week 3: Feb 20-26 - Pre-Release
+#### Week 3: Feb 20-26 - Pre-Release
 
 | Day | Task | Owner |
 |-----|------|-------|
@@ -326,7 +326,7 @@ mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
 | Feb 24 | Test installation from the branch (fresh `~/.claude/skills/`) | User |
 | Feb 25-26 | Buffer for fixes | Claude + User |
 
-### Week 4: Feb 27 - Mar 1 - Ship
+#### Week 4: Feb 27 - Mar 1 - Ship
 
 | Day | Task | Owner |
 |-----|------|-------|
@@ -335,7 +335,7 @@ mv ~/.claude/skills/last30days.backup-v1 ~/.claude/skills/last30days
 | Mar 1 | Delete backup: `rm -rf ~/.claude/skills/last30days.backup-v1` | User |
 | Mar 1 | Archive private repo (optional) | User |
 
-### Release Checklist (Final Gate)
+#### Release Checklist (Final Gate)
 
 Before merging to `main` on the public repo:
 
@@ -350,7 +350,7 @@ Before merging to `main` on the public repo:
 - [ ] Git history is clean (no "test" or "WIP" commits on main)
 - [ ] Bird CLI failure doesn't break the skill (graceful fallback verified)
 
-### Rollback Plan (Emergency)
+#### Rollback Plan (Emergency)
 
 If something goes wrong after release:
 

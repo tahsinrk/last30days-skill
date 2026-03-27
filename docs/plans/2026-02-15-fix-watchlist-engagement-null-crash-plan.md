@@ -43,7 +43,7 @@ Three other locations are already safe — they use `isinstance(eng_raw, dict)`:
 
 Apply the `or {}` idiom (as suggested by reporter):
 
-### scripts/watchlist.py:188
+#### scripts/watchlist.py:188
 
 ```python
 # Before
@@ -52,7 +52,7 @@ Apply the `or {}` idiom (as suggested by reporter):
 "engagement_score": (item.get("engagement") or {}).get("likes", 0),
 ```
 
-### scripts/lib/normalize.py:177
+#### scripts/lib/normalize.py:177
 
 ```python
 # Before

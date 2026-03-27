@@ -16,7 +16,7 @@ ByteDance's **Seedance 2.0** has dominated AI video discussion this month, with 
 
 **Multi-shot narrative is the real breakthrough.** HN commenter hn/RyanMu notes that most AI video tools "generate isolated clips that fall apart when you try to build an actual narrative" - Seedance 2.0's multi-shot coherence is what sets it apart, and a separate Show HN specifically targets the "jump-cut problem."
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Access fragmentation creates a wrapper gold rush** - 8+ Show HN posts launched Seedance wrapper apps in a single month, but almost none gained traction, suggesting the market wants official API access, not middlemen (HN)
 2. **Platform musical chairs** - added to CapCut, removed from ElevenLabs, broken on Jimeng, promised on Atlas Cloud - the access surface is shifting weekly, making production workflows unreliable (r/singularity)

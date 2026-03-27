@@ -40,7 +40,7 @@ The fix: **satisfy the WebSearch citation requirement INSIDE the stats block**, 
 
 **Two-part SKILL.md edit only. No Python changes.**
 
-### Part 1: Update the Step 2 instruction (line 214)
+#### Part 1: Update the Step 2 instruction (line 214)
 
 **Current:**
 ```
@@ -54,7 +54,7 @@ The fix: **satisfy the WebSearch citation requirement INSIDE the stats block**, 
   This satisfies the WebSearch tool's citation requirement inline without a trailing section.
 ```
 
-### Part 2: Update the stats block format to include web source links
+#### Part 2: Update the stats block format to include web source links
 
 **Current stats line:**
 ```

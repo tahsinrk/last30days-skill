@@ -12,7 +12,7 @@ Seedance 2.0 from ByteDance has erupted onto the AI video scene in the last 30 d
 
 **The wrapper app gold rush is already underway.** HN saw 8+ "Show HN" posts for Seedance 2.0 wrapper tools and access proxies in a single month, most with zero comments and minimal traction. SeeVideo offers subscription-free access. This pattern mirrors early Stable Diffusion and GPT wrapper cycles - lots of surface-level tooling, very little durable differentiation.
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Regulatory pressure is the real bottleneck, not technology** - the API delay, ElevenLabs removal, and Hollywood backlash form a connected pattern where legal/ethical concerns are throttling access faster than ByteDance can ship (r/Seedance_AI + r/AIGuild)
 2. **Access fragmentation creates parallel economies** - CapCut for consumers, Atlas Cloud for enterprise, Jimeng for China, third-party wrappers for everyone else, scam sites for the desperate - all serving the same model through different channels with different reliability

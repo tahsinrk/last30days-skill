@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R23** (score:77) r/Seedance_AI (2026-02-25)
   Looking for a real Seedance website that actually works (not scams, SJINN is too expensive)
@@ -82,7 +82,7 @@
   https://www.reddit.com/r/HiggsfieldAI/comments/1r1barb/
   *Discussion focused on Seedance 2.0 video generation restrictions/guardrails impacting what can be generated.*
 
-### X Posts
+#### X Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9likes]
   First Seedance 2.0 Test! 
@@ -169,7 +169,7 @@ This is not real. We don't have a Seedance account, and the links are not offi..
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **F1kWxdfiBNE** (score:75) AI Filmmaking Academy (2026-02-22) [40,982 views, 1,088 likes]
   Seedance 2.0 Claims the AI Video Throne!
@@ -224,7 +224,7 @@ This is not real. We don't have a Seedance account, and the links are not offi..
   https://www.youtube.com/watch?v=kJ0NAVmd4f4
   *YouTube: Seedance 2.0 Changes Filmmaking Forever | New Original Serie*
 
-### Hacker News Stories
+#### Hacker News Stories
 
 **HN8** (score:75) hn/Alisaqqt (2026-02-09) [7pts, 7cmt]
   Seedance 2.0 preview: The best video model of 2026, outperforming Sora 2

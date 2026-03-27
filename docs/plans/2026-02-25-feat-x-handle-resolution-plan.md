@@ -34,7 +34,7 @@ When a user searches for a person, brand, or creator (e.g., "Dor Brothers", "Jas
 
 Move handle resolution to the **SKILL.md agent layer**. The agent (Claude or OpenClaw) already has `WebSearch` as an allowed tool. It does a single WebSearch before running the Python script, extracts the handle, and passes it as a CLI argument.
 
-### Architecture
+#### Architecture
 
 ```
 SKILL.md Agent Flow (revised):
@@ -48,7 +48,7 @@ SKILL.md Agent Flow (revised):
 7. Synthesize (existing)
 ```
 
-### Why agent-level, not Python-level
+#### Why agent-level, not Python-level
 
 | Approach | Works for | Problem |
 |----------|-----------|---------|
@@ -66,7 +66,7 @@ The agent approach wins because:
 
 The ~5-8 second latency is negligible against the 2-3 minute script runtime.
 
-### SKILL.md Changes (Claude Code variant)
+#### SKILL.md Changes (Claude Code variant)
 
 Add between intent parsing and Step 1:
 
@@ -94,11 +94,11 @@ Skip this step if:
 - Using --quick depth
 ```
 
-### OpenClaw Variant Changes
+#### OpenClaw Variant Changes
 
 Same instruction added to `variants/open/references/research.md` (or inline in the open SKILL.md routing). OpenClaw agents also have WebSearch available.
 
-### Python Script Changes
+#### Python Script Changes
 
 **`last30days.py` - Add `--x-handle` argument:**
 
@@ -148,13 +148,13 @@ def search_handles(handles, topic, from_date, count_per=5):
             query = f"from:{handle} since:{from_date}"
 ```
 
-### Why no topic filter for resolved handles
+#### Why no topic filter for resolved handles
 
 This is the key insight. When you resolve that @DorBrothers IS the Dor Brothers, you want ALL their recent posts - not just ones that literally contain "Dor Brothers." Their post about the Logan Paul collab says "our new AI film with @LoganPaul" - no mention of "Dor Brothers" anywhere. With topic filtering, you'd miss it. Without it, you get their full recent activity, which is exactly what the user wants.
 
 ## Technical Considerations
 
-### Handle resolution requires Bird or xAI for Phase 2
+#### Handle resolution requires Bird or xAI for Phase 2
 
 The `--x-handle` is only useful if the script can search `from:{handle}`. Currently:
 - **Bird:** supports `from:handle` via Twitter GraphQL (free)
@@ -166,11 +166,11 @@ If the user only has xAI (no Bird), the resolved handle can't be searched in Pha
 
 For v1, accept this limitation. Bird is free and most X-enabled users have it.
 
-### Relevance scoring for unfiltered handle posts
+#### Relevance scoring for unfiltered handle posts
 
 Bird-parsed items default to `relevance: 0.7`. Unfiltered resolved-handle posts have no topic-keyword signal. Set `relevance: 0.5` for these so engagement and recency drive ranking, preventing off-topic viral posts from the entity from outranking genuinely relevant Phase 1 results.
 
-### Stats block display
+#### Stats block display
 
 When `--x-handle` is used and produces results, show it in the stats:
 
@@ -180,7 +180,7 @@ When `--x-handle` is used and produces results, show it in the stats:
 
 Add `resolved_x_handle` field to `Report` schema for this.
 
-### Skip conditions for the agent
+#### Skip conditions for the agent
 
 The SKILL.md instruction tells the agent to skip handle resolution when:
 - Topic is clearly not an entity (multi-word generic phrases)
@@ -207,7 +207,7 @@ The agent's judgment here is a feature, not a bug. Claude is good at deciding "D
 
 ## Test Plan
 
-### Manual test cases
+#### Manual test cases
 
 | # | Query | Expected | What it tests |
 |---|-------|----------|---------------|
@@ -219,7 +219,7 @@ The agent's judgment here is a feature, not a bug. Claude is good at deciding "D
 | 6 | "Dor Brothers" with `--quick` | No handle resolution | Skip condition |
 | 7 | "Dor Brothers" with xAI only (no Bird) | Handle resolved but Phase 2 skips it | Graceful degradation |
 
-### Automated tests (`tests/`)
+#### Automated tests (`tests/`)
 
 ```python
 # test_bird_x.py - new tests
@@ -243,7 +243,7 @@ def test_resolved_handle_relevance_set_lower():
     """Items from resolved handle search get relevance 0.5, not 0.7."""
 ```
 
-### E2E validation
+#### E2E validation
 
 ```bash
 # Run with explicit handle to test Python-side changes

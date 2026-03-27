@@ -25,7 +25,7 @@ They share ~80% of the same `scripts/lib/` files but are drifting apart. Maintai
 
 Use `last30days-skill-private` as the base (it's 4 days newer with better code) and port the OpenClaw-exclusive features in:
 
-### What gets ported from OpenClaw
+#### What gets ported from OpenClaw
 
 | File | What it does | Destination |
 |------|-------------|-------------|
@@ -40,7 +40,7 @@ Use `last30days-skill-private` as the base (it's 4 days newer with better code) 
 | `references/briefing.md` | Briefing mode instructions | `variants/open/references/briefing.md` |
 | `references/history.md` | History query instructions | `variants/open/references/history.md` |
 
-### What gets upgraded in the ported code
+#### What gets upgraded in the ported code
 
 - **`store.py`**: No changes needed — it's self-contained SQLite, works as-is
 - **`watchlist.py`**: Remove OpenClaw cron-specific code, make cron setup generic (launchd on macOS, systemd on Linux, or manual cron)
@@ -48,7 +48,7 @@ Use `last30days-skill-private` as the base (it's 4 days newer with better code) 
 - **`scripts/lib/env.py`**: Merge OpenClaw's web search key support (`PARALLEL_API_KEY`, `BRAVE_API_KEY`, `OPENROUTER_API_KEY`) and `has_web_search_keys()` / `get_web_search_source()` functions into main's env.py. Drop the OpenClaw config loader (`~/.openclaw/openclaw.json`) — just use env vars and `~/.config/last30days/.env`
 - **`scripts/last30days.py`**: Add OpenClaw's `_search_web()` function so the script can do web search natively when API keys are available (instead of always delegating to the assistant)
 
-### What gets DROPPED from OpenClaw
+#### What gets DROPPED from OpenClaw
 
 | File | Why |
 |------|-----|
@@ -56,7 +56,7 @@ Use `last30days-skill-private` as the base (it's 4 days newer with better code) 
 | OpenClaw config loader in `env.py` | `~/.openclaw/openclaw.json` path is platform-specific. Use env vars instead. |
 | `.clawhubignore` | OpenClaw marketplace artifact, not needed in unified repo |
 
-### New file: Open variant SKILL.md
+#### New file: Open variant SKILL.md
 
 Create `variants/open/SKILL.md` — the multi-mode skill with command routing:
 
@@ -73,13 +73,13 @@ variants/open/
 
 The open variant's SKILL.md points to `{baseDir}/scripts/last30days.py` (same engine) but adds the router and reference file system. It also adds the `--store` flag for persistence.
 
-### How YouTube and Bird CLI get added to the open variant
+#### How YouTube and Bird CLI get added to the open variant
 
 They're already in `scripts/lib/youtube_yt.py` and `scripts/lib/vendor/bird/`. The open variant's SKILL.md just needs to mention YouTube in its description and the research.md reference file gets the YouTube stats line in the output format. No code changes needed — the Python engine already supports all four sources.
 
 ## Technical Considerations
 
-### File Structure After Merge
+#### File Structure After Merge
 
 ```
 last30days-skill-private/
@@ -109,7 +109,7 @@ last30days-skill-private/
 └── README.md                         # Updated with open variant docs
 ```
 
-### Installation for open variant users
+#### Installation for open variant users
 
 ```bash
 # Claude Code (main skill — unchanged)
@@ -122,7 +122,7 @@ git clone https://github.com/mvanhorn/last30days-skill.git ~/.claude/skills/last
 ln -sf ~/.claude/skills/last30days/variants/open/SKILL.md ~/.claude/skills/last30days-open/SKILL.md
 ```
 
-### env.py merge strategy
+#### env.py merge strategy
 
 Main's `env.py` is the base. Add from OpenClaw:
 - Three new key names: `PARALLEL_API_KEY`, `BRAVE_API_KEY`, `OPENROUTER_API_KEY`
@@ -130,7 +130,7 @@ Main's `env.py` is the base. Add from OpenClaw:
 - `get_web_search_source()` function — returns `'parallel'`, `'brave'`, or `'openrouter'`
 - `get_available_sources()` update to include web-search-capable modes
 
-### last30days.py merge strategy
+#### last30days.py merge strategy
 
 Main's `last30days.py` is the base. Add from OpenClaw:
 - `_search_web()` function that calls the appropriate web search backend
@@ -145,7 +145,7 @@ Keep main's:
 - Better error handling
 - Minimum result guarantee
 
-### Portable path resolution (already done)
+#### Portable path resolution (already done)
 
 The main SKILL.md already has portable path resolution (from Codex compat work):
 ```bash
@@ -186,7 +186,7 @@ The open variant's SKILL.md uses `{baseDir}` which resolves to the skill root. B
 
 ## Files to Create/Modify
 
-### New Files
+#### New Files
 - `variants/open/SKILL.md` — Open variant router (~100 lines)
 - `variants/open/references/research.md` — One-shot research instructions (from openclaw, updated with YouTube)
 - `variants/open/references/watchlist.md` — Watchlist management instructions (from openclaw)
@@ -200,21 +200,21 @@ The open variant's SKILL.md uses `{baseDir}` which resolves to the skill root. B
 - `scripts/lib/parallel_search.py` — Parallel AI search (from openclaw)
 - `scripts/lib/openrouter_search.py` — OpenRouter/Sonar Pro search (from openclaw)
 
-### Modified Files
+#### Modified Files
 - `scripts/lib/env.py` — Add web search key support (~30 lines added)
 - `scripts/last30days.py` — Add `_search_web()`, `--store`, `--diagnose` (~80 lines added)
 - `README.md` — Add open variant section (~20 lines)
 
-### Total scope: ~12 new files (mostly copied), ~130 lines of new code in existing files.
+#### Total scope: ~12 new files (mostly copied), ~130 lines of new code in existing files.
 
 ## References
 
-### Internal
+#### Internal
 - OpenClaw plan: `/Users/mvanhorn/last30days-openclaw/docs/plans/2026-02-10-feat-openclaw-last30days-skill-plan.md` (989 lines, comprehensive spec)
 - Codex compat plan: `docs/plans/2026-02-14-feat-codex-skill-compatibility-plan.md` (portable paths, platform-neutral text)
 - OpenClaw source: `/Users/mvanhorn/last30days-openclaw/`
 
-### Key files to port
+#### Key files to port
 - `store.py`: `/Users/mvanhorn/last30days-openclaw/scripts/store.py` (20KB, SQLite with FTS5)
 - `watchlist.py`: `/Users/mvanhorn/last30days-openclaw/scripts/watchlist.py` (10KB)
 - `briefing.py`: `/Users/mvanhorn/last30days-openclaw/scripts/briefing.py` (8KB)

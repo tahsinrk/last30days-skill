@@ -25,7 +25,7 @@ The killer angle: **last30days markets itself by running itself.** The Content C
 
 A Paperclip company called **"last30days Marketing"** with 4 agent roles, all draft-then-approve.
 
-### Company Structure
+#### Company Structure
 
 ```
 last30days Marketing (Company)
@@ -60,7 +60,7 @@ last30days Marketing (Company)
     - Heartbeat: daily at 11 PM PT (collect), weekly Monday 9 AM (digest)
 ```
 
-### Draft-Then-Approve Flow
+#### Draft-Then-Approve Flow
 
 ```
 Agent creates draft
@@ -73,7 +73,7 @@ Agent creates draft
 
 ## Technical Approach
 
-### Phase 1: Infrastructure (Day 1-2)
+#### Phase 1: Infrastructure (Day 1-2)
 
 Set up Paperclip and external API access.
 
@@ -104,7 +104,7 @@ Set up Paperclip and external API access.
    - Mission: "Grow last30days to 10K GitHub stars"
    - Monthly budget cap: $50 (mostly API token costs)
 
-### Phase 2: Content Creator Pipeline (Day 3-5)
+#### Phase 2: Content Creator Pipeline (Day 3-5)
 
 The core marketing engine. Uses last30days to market itself.
 
@@ -155,7 +155,7 @@ Rules:
 - Keep threads to 1-2 tweets max for daily showcases
 - Save longer threads (3-6 tweets) for releases
 
-### Phase 3: Release Manager Pipeline (Day 5-6)
+#### Phase 3: Release Manager Pipeline (Day 5-6)
 
 **How it works:**
 
@@ -181,7 +181,7 @@ Tweet 5: Contributor shoutouts
 Tweet 6: Install instructions
 ```
 
-### Phase 4: Community Manager Pipeline (Day 6-7)
+#### Phase 4: Community Manager Pipeline (Day 6-7)
 
 **How it works:**
 
@@ -224,7 +224,7 @@ Shoutout to @{author} for [what they did] in last30days v{version}!
 github.com/mvanhorn/last30days-skill/pull/{number}
 ```
 
-### Phase 5: Analytics Pipeline (Day 7-8)
+#### Phase 5: Analytics Pipeline (Day 7-8)
 
 **How it works:**
 
@@ -274,7 +274,7 @@ CREATE TABLE tweet_performance (
 
 ## Technical Considerations
 
-### API Costs
+#### API Costs
 
 | Service | Usage | Est. Monthly Cost |
 |---------|-------|-------------------|
@@ -285,7 +285,7 @@ CREATE TABLE tweet_performance (
 | Claude API | Marketing Director agent | ~$20 |
 | **Total** | | **~$35/month** |
 
-### Security
+#### Security
 
 - API keys stored in `marketing/.env` (gitignored, never committed)
 - X API tokens scoped to @slashlast30days only (not personal account)
@@ -293,7 +293,7 @@ CREATE TABLE tweet_performance (
 - All posts go through human approval gate - no autonomous posting
 - GitHub token uses existing `gh auth` session
 
-### Failure Modes
+#### Failure Modes
 
 - **last30days script fails** - Content Creator skips that day, logs error, tries again tomorrow with new topic
 - **X API rate limit** - Queue drafts and retry on next heartbeat cycle
@@ -301,7 +301,7 @@ CREATE TABLE tweet_performance (
 - **Bad topic selection** - Marketing Director agent filters topics before research (no politics, no NSFW)
 - **Stale approval queue** - If drafts pile up >3 days unapproved, send a nudge notification
 
-### Topic Selection Criteria
+#### Topic Selection Criteria
 
 The discover_topics.py script should filter for topics that:
 1. Are trending NOW (Wikipedia pageview spike, HN front page, Reddit r/all)

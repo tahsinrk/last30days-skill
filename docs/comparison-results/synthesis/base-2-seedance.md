@@ -16,7 +16,7 @@ ByteDance's **Seedance 2.0** has erupted across AI video communities this month,
 
 **Phishing scams exploit the hype.** @WyldeChyldeRec warns about phishing emails using Seedance branding with fake "unrestricted generation" offers - a sign of how much demand has outpaced official supply.
 
-### KEY PATTERNS
+#### KEY PATTERNS
 
 1. **Access demand far exceeds official supply** - the gap between Seedance 2.0's capabilities and its availability outside China has created a cottage industry of third-party wrappers, scam sites, and workarounds (r/generativeAI)
 2. **Platform musical chairs** - Seedance 2.0 gets added to CapCut, removed from ElevenLabs, and claimed by NemoVideo all within weeks, making the ecosystem unstable for anyone building workflows (@grok)

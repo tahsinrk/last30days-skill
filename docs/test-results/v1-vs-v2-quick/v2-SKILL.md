@@ -136,7 +136,7 @@ Read the research output carefully. Pay attention to:
 
 **ANTI-PATTERN TO AVOID**: If user asks about "clawdbot skills" and research returns ClawdBot content (self-hosted AI agent), do NOT synthesize this as "Claude Code skills" just because both involve "skills". Read what the research actually says.
 
-### If QUERY_TYPE = RECOMMENDATIONS
+#### If QUERY_TYPE = RECOMMENDATIONS
 
 **CRITICAL: Extract SPECIFIC NAMES, not generic patterns.**
 
@@ -152,7 +152,7 @@ When user asks "best X" or "top X", they want a LIST of specific things:
 **GOOD synthesis for "best Claude Code skills":**
 > "Most mentioned skills: /commit (5 mentions), remotion skill (4x), git-worktree (3x), /pr (3x). The Remotion announcement got 16K likes on X."
 
-### For all QUERY_TYPEs
+#### For all QUERY_TYPEs
 
 Identify from the ACTUAL RESEARCH OUTPUT:
 - **PROMPT FORMAT** - Does research recommend JSON, structured params, natural language, keywords?
@@ -257,20 +257,20 @@ After showing the stats summary with your invitation, **STOP and wait** for the 
 
 Based on what they want to create, write a **single, highly-tailored prompt** using your research expertise.
 
-### CRITICAL: Match the FORMAT the research recommends
+#### CRITICAL: Match the FORMAT the research recommends
 
 **If research says to use a specific prompt FORMAT, YOU MUST USE THAT FORMAT.**
 
 **ANTI-PATTERN**: Research says "use JSON prompts with device specs" but you write plain prose. This defeats the entire purpose of the research.
 
-### Quality Checklist (run before delivering):
+#### Quality Checklist (run before delivering):
 - [ ] **FORMAT MATCHES RESEARCH** - If research said JSON/structured/etc, prompt IS that format
 - [ ] Directly addresses what the user said they want to create
 - [ ] Uses specific patterns/keywords discovered in research
 - [ ] Ready to paste with zero edits (or minimal [PLACEHOLDERS] clearly marked)
 - [ ] Appropriate length and style for TARGET_TOOL
 
-### Output Format:
+#### Output Format:
 
 ```
 Here's your prompt for {TARGET_TOOL}:

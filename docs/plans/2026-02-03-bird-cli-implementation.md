@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Create bird_x.py - Detection Functions
+#### Task 1: Create bird_x.py - Detection Functions
 
 **Files:**
 - Create: `scripts/lib/bird_x.py`
@@ -82,7 +82,7 @@ git commit -m "feat(bird): add detection functions for Bird CLI"
 
 ---
 
-### Task 2: Add Bird Installation Functions
+#### Task 2: Add Bird Installation Functions
 
 **Files:**
 - Modify: `scripts/lib/bird_x.py`
@@ -151,7 +151,7 @@ git commit -m "feat(bird): add installation and status functions"
 
 ---
 
-### Task 3: Add Bird Search Function
+#### Task 3: Add Bird Search Function
 
 **Files:**
 - Modify: `scripts/lib/bird_x.py`
@@ -244,7 +244,7 @@ git commit -m "feat(bird): add search_x function"
 
 ---
 
-### Task 4: Add Bird Response Parser
+#### Task 4: Add Bird Response Parser
 
 **Files:**
 - Modify: `scripts/lib/bird_x.py`
@@ -355,7 +355,7 @@ git commit -m "feat(bird): add response parser matching xai_x format"
 
 ---
 
-### Task 5: Add UI Functions for Bird Prompts
+#### Task 5: Add UI Functions for Bird Prompts
 
 **Files:**
 - Modify: `scripts/lib/ui.py`
@@ -463,7 +463,7 @@ git commit -m "feat(ui): add Bird CLI install prompts and auth help"
 
 ---
 
-### Task 6: Update env.py with X Source Detection
+#### Task 6: Update env.py with X Source Detection
 
 **Files:**
 - Modify: `scripts/lib/env.py`
@@ -546,7 +546,7 @@ git commit -m "feat(env): add X source detection with Bird priority"
 
 ---
 
-### Task 7: Update __init__.py to Export bird_x
+#### Task 7: Update __init__.py to Export bird_x
 
 **Files:**
 - Modify: `scripts/lib/__init__.py`
@@ -574,7 +574,7 @@ git commit -m "feat(lib): export bird_x module"
 
 ---
 
-### Task 8: Integrate Bird into Main Script - Part 1 (Setup Phase)
+#### Task 8: Integrate Bird into Main Script - Part 1 (Setup Phase)
 
 **Files:**
 - Modify: `scripts/last30days.py`
@@ -663,7 +663,7 @@ git commit -m "feat(main): add Bird setup function"
 
 ---
 
-### Task 9: Integrate Bird into Main Script - Part 2 (Search Dispatch)
+#### Task 9: Integrate Bird into Main Script - Part 2 (Search Dispatch)
 
 **Files:**
 - Modify: `scripts/last30days.py`
@@ -784,7 +784,7 @@ git commit -m "feat(main): dispatch X search to Bird or xAI"
 
 ---
 
-### Task 10: Integrate Bird into Main Script - Part 3 (Main Function)
+#### Task 10: Integrate Bird into Main Script - Part 3 (Main Function)
 
 **Files:**
 - Modify: `scripts/last30days.py`
@@ -870,7 +870,7 @@ git commit -m "feat(main): integrate Bird setup into main flow"
 
 ---
 
-### Task 11: Test End-to-End with Mock Mode
+#### Task 11: Test End-to-End with Mock Mode
 
 **Files:**
 - None (testing only)
@@ -900,7 +900,7 @@ git commit -m "feat(bird): complete Bird CLI integration
 
 ---
 
-### Task 12: Push to Private Repo
+#### Task 12: Push to Private Repo
 
 **Files:**
 - None (git only)

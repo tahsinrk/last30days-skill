@@ -13,35 +13,35 @@ CROSS won all 5 topics. No regressions.
 
 ## Per-Dimension Analysis
 
-### Groundedness (30% weight)
+#### Groundedness (30% weight)
 | Pipeline | Avg | Pattern |
 |----------|-----|---------|
 | CROSS | 4.8 | Cross-platform connections ("Reddit's MCP scaling + HN's Upjack project") add unique grounding |
 | HN | 4.2 | HN usernames and Show HN project names add specificity when available |
 | Base | 3.8 | Solid citations but narrower source pool limits grounding depth |
 
-### Specificity (25% weight)
+#### Specificity (25% weight)
 | Pipeline | Avg | Pattern |
 |----------|-----|---------|
 | CROSS | 4.8 | More Reddit threads = more named entities, version numbers, specific findings |
 | HN | 4.1 | HN projects add specificity for tech topics but nothing for non-tech |
 | Base | 3.6 | Fewer data points = more padding between specific findings |
 
-### Coverage (20% weight)
+#### Coverage (20% weight)
 | Pipeline | Avg | Pattern |
 |----------|-----|---------|
 | CROSS | 4.9 | Best coverage - most Reddit threads AND HN items naturally woven in |
 | HN | 3.9 | Good when HN fires (Topics 1-2), matches Base when HN=0 (Topics 3-5) |
 | Base | 3.5 | Reddit + X + YouTube only, no HN dimension |
 
-### Actionability (15% weight)
+#### Actionability (15% weight)
 | Pipeline | Avg | Pattern |
 |----------|-----|---------|
 | CROSS | 4.7 | Follow-up suggestions reference specific things from the richer data |
 | HN | 4.0 | Decent suggestions but less material to draw from |
 | Base | 3.6 | Generic suggestions due to thinner research base |
 
-### Format Compliance (10% weight)
+#### Format Compliance (10% weight)
 | Pipeline | Avg | Pattern |
 |----------|-----|---------|
 | CROSS | 4.6 | Stats blocks most complete (cross-ref counts), invitations most specific |
@@ -58,19 +58,19 @@ CROSS won all 5 topics. No regressions.
 
 ## Where CROSS Still Falls Short (Improvement Opportunities)
 
-### 1. Cross-source linking barely fires (3/178 items linked)
+#### 1. Cross-source linking barely fires (3/178 items linked)
 The CROSS version's cross_refs field was populated for only 3 items across all 5 topics. The Jaccard 0.5 threshold is too strict. With the hybrid fix (token+trigram at 0.40), this would go from 3 to 26 items.
 
-### 2. Cross-ref rendering is cryptic
+#### 2. Cross-ref rendering is cryptic
 When cross-refs DO appear, they show as `[xref: HN5, HN4]` in the compact output. This means nothing to the synthesis agent. Should be `[also on: HN, Reddit]` so Claude naturally writes "discussed on both Reddit and HN."
 
-### 3. YouTube synonym gap
+#### 3. YouTube synonym gap
 "Lit Hip Hop Mix 2026" scored 0.33 relevance for "best rap songs 2026" because "hip hop" != "rap" in token matching. Needs synonym awareness.
 
-### 4. HN search too narrow for framework topics
+#### 4. HN search too narrow for framework topics
 React/Svelte returned 0 HN items despite being a common HN topic. Need OR queries for multi-keyword topics.
 
-### 5. Synthesis instructions don't mention cross-refs
+#### 5. Synthesis instructions don't mention cross-refs
 SKILL.md has zero instructions about using cross-ref data in the synthesis. Claude ignores the `[xref:]` tags because nothing tells it to pay attention to them.
 
 ## Recommended GOAT Improvements (Priority Order)
@@ -87,7 +87,7 @@ SKILL.md has zero instructions about using cross-ref data in the synthesis. Clau
 
 After implementing all 5 GOAT improvements (hybrid cross-source linking, human-readable tags, SKILL.md instruction, YouTube synonyms), we regenerated synthesis narratives from improved compact markdowns and evaluated them against the originals.
 
-### Improved CROSS Results
+#### Improved CROSS Results
 
 | Topic | Original CROSS | Improved CROSS | Delta |
 |-------|:-:|:-:|:-:|
@@ -100,7 +100,7 @@ After implementing all 5 GOAT improvements (hybrid cross-source linking, human-r
 
 Improved CROSS wins 4/5 topics. The one regression (Seedance, -0.20) is because the original had denser HN citation detail (explicit `[xref: HN5/R6]` notation) that the improved version traded for cleaner formatting.
 
-### Per-Dimension Deltas (Improved - Original)
+#### Per-Dimension Deltas (Improved - Original)
 
 | Dimension | Original Avg | Improved Avg | Delta |
 |-----------|:-:|:-:|:-:|
@@ -112,14 +112,14 @@ Improved CROSS wins 4/5 topics. The one regression (Seedance, -0.20) is because 
 
 **Biggest gains:** Specificity (+0.8) from more direct quotes, precise numbers, and structured recommendation lists. Format compliance (+1.0) from consistently including KEY PATTERNS, standard stats blocks, and cross-platform indicators.
 
-### What the improvements actually did
+#### What the improvements actually did
 
 1. **`[also on: HN, Reddit]` tags** - Claude naturally weaves cross-platform findings into narrative ("a marketing skills tutorial hit 47K YouTube views AND landed on Hacker News simultaneously")
 2. **YouTube synonyms** - "Lit Hip Hop Mix 2026" now scores 0.71 (was 0.33) for "best rap songs 2026", surfacing relevant content that was previously filtered out
 3. **Hybrid similarity at 0.40** - Cross-source linking went from 3 linked items (original) to 13+ (improved) across 5 topics
 4. **SKILL.md instruction #7** - "Cross-platform signals are the strongest evidence" directs Claude to lead with multi-platform findings
 
-### Cross-source linking validation
+#### Cross-source linking validation
 
 | Topic | Original links | Improved links |
 |-------|:-:|:-:|

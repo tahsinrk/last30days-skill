@@ -35,7 +35,7 @@ Each `claude --print` call:
 
 ## Implementation
 
-### File: `scripts/test-v1-vs-v2.sh`
+#### File: `scripts/test-v1-vs-v2.sh`
 
 ```bash
 #!/bin/bash

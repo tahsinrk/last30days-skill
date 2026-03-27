@@ -36,7 +36,7 @@ On startup:
 
 ## New Module: `scripts/lib/bird_x.py`
 
-### Functions
+#### Functions
 
 - `is_bird_installed()` → checks `which bird`, returns bool
 - `is_bird_authenticated()` → runs `bird whoami`, returns username or None
@@ -44,7 +44,7 @@ On startup:
 - `search_x(topic, from_date, to_date, depth)` → runs `bird search` with JSON output
 - `parse_bird_response(json)` → converts to same format as `xai_x.parse_x_response()`
 
-### Search Command
+#### Search Command
 
 ```bash
 bird search "Claude Code skills" --since 2026-01-04 -n 30 --json
@@ -54,7 +54,7 @@ bird search "Claude Code skills" --since 2026-01-04 -n 30 --json
 - `-n 30` controls result count (maps to depth: quick=12, default=30, deep=60)
 - `--json` gives machine-readable output
 
-### Output Mapping
+#### Output Mapping
 
 | Bird field | Our field |
 |------------|-----------|

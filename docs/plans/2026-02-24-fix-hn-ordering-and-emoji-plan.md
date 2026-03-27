@@ -35,34 +35,34 @@ The canonical format (established in commit `7c36866`) is:
 
 ## Technical Approach
 
-### Files to Modify
+#### Files to Modify
 
-#### `scripts/lib/score.py` - sort_items()
+##### `scripts/lib/score.py` - sort_items()
 
 - [x] Swap HN and YouTube priority in `sort_items()`:
   - YouTube: priority 2 (was 3)
   - HN: priority 3 (was 2)
 
-#### `scripts/lib/render.py` - render_source_status()
+##### `scripts/lib/render.py` - render_source_status()
 
 - [x] Move HN section (lines ~318-324) to AFTER YouTube section (lines ~326-334)
 - [x] Verify render_compact() already has correct order (YouTube before HN) - no change expected
 
-#### `SKILL.md` (private repo root)
+##### `SKILL.md` (private repo root)
 
 - [x] Move the 🟡 HN stats line AFTER the 🔴 YouTube stats line in the template
 - [x] Move HN line after YouTube in the footer summary template too
 
-#### `~/.claude/skills/last30daysHN/SKILL.md` (test skill)
+##### `~/.claude/skills/last30daysHN/SKILL.md` (test skill)
 
 - [x] Restore full emoji + box-drawing stats template with correct ordering
 - [x] Use canonical format: ✅ ├─ 🟠 🔵 🔴 🟡 🌐 🗣️ └─ │
 
-#### `scripts/lib/ui.py` - show_complete()
+##### `scripts/lib/ui.py` - show_complete()
 
 - [x] Move HN output after YouTube in both TTY and non-TTY code paths
 
-### Files that are already correct (no change needed)
+#### Files that are already correct (no change needed)
 
 - `render_compact()` in render.py - already YouTube before HN
 - `render_context_snippet()` - score-based ordering, no fixed order

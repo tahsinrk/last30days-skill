@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R1** (score:57) r/edranked (2026-02-01)
   Reddit Ranked: Hip Hop ‘26
@@ -62,7 +62,7 @@
   https://www.reddit.com/r/KendrickLamar/comments/1qtczjl/68th_annual_grammy_awards_live_megathread/
   *Live discussion around Grammys 2026 including rap categories; good for discovering what Reddit called the best tracks.*
 
-### X Posts
+#### X Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [12likes, 5rt]
   Talking about meaningful rap songs...
@@ -141,7 +141,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **d1melQQVp6s** (score:71) DJ Noize (2026-02-14) [42,713 views, 761 likes]
   New Rap Songs 2026 Mix February | Trap Tape #127 | New Hip Hop 2026 Mixtape | DJ Noize

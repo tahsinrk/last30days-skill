@@ -22,7 +22,7 @@ Two output quality improvements for the last30days monthiversary:
 
 ## Technical Approach
 
-### Feature 1: YouTube Relevance Scoring
+#### Feature 1: YouTube Relevance Scoring
 
 **Where:** `youtube_yt.py` (compute), `normalize.py` (pass through - already works)
 
@@ -61,21 +61,21 @@ def _compute_relevance(query: str, title: str) -> float:
 
 **Files to modify:**
 
-#### `scripts/lib/youtube_yt.py`
+##### `scripts/lib/youtube_yt.py`
 
 - [x] Add `STOPWORDS` set and `_compute_relevance(query, title)` function
 - [x] In `search_youtube()`, replace `"relevance": 0.7` (line 186) with `"relevance": _compute_relevance(core_topic, video.get("title", ""))`
 - [x] Update `"why_relevant"` to be more descriptive: `f"YouTube: {title_excerpt}"`
 
-#### `scripts/lib/normalize.py`
+##### `scripts/lib/normalize.py`
 
 - No changes needed - already passes through `item.get("relevance", 0.7)` at line 196
 
-#### `scripts/lib/score.py`
+##### `scripts/lib/score.py`
 
 - No changes needed - `score_youtube_items()` already reads `item.relevance` correctly
 
-### Feature 2: Cross-Source Linking
+#### Feature 2: Cross-Source Linking
 
 **Where:** `dedupe.py` (new function), `schema.py` (new field), `render.py` (display), `last30days.py` (call site)
 
@@ -94,13 +94,13 @@ def _compute_relevance(query: str, title: str) -> float:
 
 **Files to modify:**
 
-#### `scripts/lib/schema.py`
+##### `scripts/lib/schema.py`
 
 - [x] Add `cross_refs: List[str] = field(default_factory=list)` to all 5 item types (RedditItem, XItem, YouTubeItem, HackerNewsItem, WebSearchItem)
 - [x] Update `to_dict()` on each item type to include `cross_refs` (only when non-empty)
 - [x] Update `Report.from_dict()` to deserialize `cross_refs` for each item type
 
-#### `scripts/lib/dedupe.py`
+##### `scripts/lib/dedupe.py`
 
 - [x] Update `get_item_text()` type hints to include `WebSearchItem` and handle it (use `item.title`)
 - [x] Add `get_cross_source_text()` function - same as `get_item_text()` but truncates X text to 100 chars
@@ -143,7 +143,7 @@ def cross_source_link(
                     all_items[j].cross_refs.append(all_items[i].id)
 ```
 
-#### `scripts/last30days.py`
+##### `scripts/last30days.py`
 
 - [x] After the dedupe step (after line ~1107), call `dedupe.cross_source_link()`:
 
@@ -154,7 +154,7 @@ dedupe.cross_source_link(
 )
 ```
 
-#### `scripts/lib/render.py`
+##### `scripts/lib/render.py`
 
 - [x] In `render_compact()`, append `[xref: ...]` to items that have cross_refs:
 
@@ -165,14 +165,14 @@ if hasattr(item, 'cross_refs') and item.cross_refs:
     line += f" [xref: {xref_str}]"
 ```
 
-#### `SKILL.md`
+##### `SKILL.md`
 
 - [x] Add a note in the synthesis instructions about cross-refs:
   "Items tagged `[xref: ...]` reference the same story on another platform. Use these to triangulate: 'This was widely discussed - Reddit thread (R3) with 142 comments, HN discussion (HN5) with 89 points, and several X posts (X12).'"
 
-### Tests
+#### Tests
 
-#### `tests/test_youtube_relevance.py` (new)
+##### `tests/test_youtube_relevance.py` (new)
 
 - [x] Test exact match: query "Claude Code" vs title "Claude Code" = 1.0
 - [x] Test partial match: query "Claude Code" vs title "Claude Code Tutorial" = 1.0 (ratio)
@@ -182,7 +182,7 @@ if hasattr(item, 'cross_refs') and item.cross_refs:
 - [x] Test stopword handling: query "how to use Claude" vs title "Using Claude" = high match
 - [x] Test integration: search_youtube returns varied relevance scores (mock yt-dlp)
 
-#### `tests/test_cross_source.py` (new)
+##### `tests/test_cross_source.py` (new)
 
 - [x] Test no cross-refs: unrelated items across sources
 - [x] Test bidirectional: matching Reddit + HN items both get cross_refs

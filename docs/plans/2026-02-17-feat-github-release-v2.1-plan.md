@@ -28,9 +28,9 @@ Create the first GitHub Release (v2.1.0) on the **public** repo using existing m
 
 ## Implementation Steps
 
-### Phase 1: Tag and Release
+#### Phase 1: Tag and Release
 
-#### 1. Create CHANGELOG.md
+##### 1. Create CHANGELOG.md
 
 Create `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Source material already exists:
 
@@ -90,7 +90,7 @@ Three headline features...
 Initial public release. Reddit + X search via OpenAI and xAI APIs.
 ```
 
-#### 2. Create annotated tag on the public repo
+##### 2. Create annotated tag on the public repo
 
 ```bash
 cd /Users/mvanhorn/last30days-skill-private
@@ -108,7 +108,7 @@ Use annotated tag (not lightweight) because:
 - Propagates to forks (317 forks)
 - Supports GPG signing if desired later
 
-#### 3. Craft release notes
+##### 3. Craft release notes
 
 Assemble from existing copy. The release body should follow this structure:
 
@@ -192,7 +192,7 @@ git clone https://github.com/mvanhorn/last30days-skill ~/.claude/skills/last30da
 **Full Changelog**: https://github.com/mvanhorn/last30days-skill/commits/v2.1.0
 ```
 
-#### 4. Create the GitHub Release
+##### 4. Create the GitHub Release
 
 ```bash
 gh release create v2.1.0 \
@@ -204,9 +204,9 @@ gh release create v2.1.0 \
 
 No binary assets needed - this is an interpreted skill, and GitHub auto-generates source archives.
 
-### Phase 2: Future Automation (Optional)
+#### Phase 2: Future Automation (Optional)
 
-#### 5. Add `.github/release.yml` for auto-generated notes on future releases
+##### 5. Add `.github/release.yml` for auto-generated notes on future releases
 
 ```yaml
 changelog:

@@ -14,7 +14,7 @@ Root cause: `_extract_core_subject()` in `bird_x.py` produces overly specific qu
 
 ## Three Bugs Found
 
-### Bug 1: Multi-word noise phrases never match
+#### Bug 1: Multi-word noise phrases never match
 
 ```python
 # Current code (bird_x.py:24-38)
@@ -27,14 +27,14 @@ result = [w for w in words if w not in noise]  # compares "what" against "what a
 
 The multi-word entries (`"what are"`, `"how to"`, `"tips for"`, `"use cases"`) are dead code. They never match because `.split()` creates individual words but the noise list has multi-word strings.
 
-### Bug 2: Missing meta/research words
+#### Bug 2: Missing meta/research words
 
 The noise list has `"prompting"` but not `"prompt"`, `"prompts"`, `"techniques"`, `"tips"`, `"tricks"`, `"methods"`, etc.
 
 - `"vibe motion best prompt techniques"` → `"vibe motion prompt techniques"` (4 words, should be 2)
 - `"nano banana pro prompts for gemini"` → `"nano banana pro prompts"` (4 words, should be 3)
 
-### Bug 3: No retry on 0 results
+#### Bug 3: No retry on 0 results
 
 Reddit has multi-stage retry: full query → simplified core → subreddit fallback. X search runs once and accepts whatever comes back, even 0 results.
 
@@ -42,7 +42,7 @@ Reddit has multi-stage retry: full query → simplified core → subreddit fallb
 
 All changes in `scripts/lib/bird_x.py`.
 
-### Step 1: Fix `_extract_core_subject()` — strip phrases first, then words
+#### Step 1: Fix `_extract_core_subject()` — strip phrases first, then words
 
 ```python
 def _extract_core_subject(topic: str) -> str:
@@ -90,7 +90,7 @@ def _extract_core_subject(topic: str) -> str:
 | `best claude code skills` | `claude code skills` | `claude code skills` |
 | `kanye west` | `kanye west` | `kanye west` |
 
-### Step 2: Add retry with simplified query on 0 results
+#### Step 2: Add retry with simplified query on 0 results
 
 In `search_x()`, after the initial search, if 0 items returned, retry with just the first 2 words of the core subject:
 
@@ -115,7 +115,7 @@ def search_x(topic, from_date, to_date, depth="default"):
     return response  # or merged response
 ```
 
-### Step 3 (optional): Cross-pollinate Reddit entities into X Phase 2
+#### Step 3 (optional): Cross-pollinate Reddit entities into X Phase 2
 
 When X Phase 1 returns 0 results but Reddit found threads, extract brand/product names from Reddit thread titles and use them as X search fallback queries. This is lower priority — Steps 1-2 should fix most cases.
 

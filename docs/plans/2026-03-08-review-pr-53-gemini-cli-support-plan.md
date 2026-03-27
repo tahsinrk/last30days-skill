@@ -23,7 +23,7 @@ PR #53 by @alexferrari88 adds Gemini CLI extension support. The intent is good a
 
 ## Critical Issues
 
-### 1. Duplicated SKILL.md (BLOCKER)
+#### 1. Duplicated SKILL.md (BLOCKER)
 
 The PR creates `skills/last30days/SKILL.md` as a **full 693-line copy** of the root `SKILL.md`. This is the exact problem we just spent hours debugging - PR merges on March 7 regressed v2.9.4's save-section removal because branches had stale copies. A second SKILL.md guarantees this happens again.
 
@@ -34,7 +34,7 @@ The Codex compatibility work (see `docs/plans/2026-02-14-feat-codex-skill-compat
 - (b) Use the root SKILL.md directly and configure `contextFileName` in gemini-extension.json to point to it
 - (c) Have `skills/last30days/SKILL.md` be a thin wrapper that says "See root SKILL.md" (least ideal)
 
-### 2. Based on v2.9.1, not v2.9.5 (BLOCKER)
+#### 2. Based on v2.9.1, not v2.9.5 (BLOCKER)
 
 The PR's copy of SKILL.md is based on v2.9.1 and includes:
 - The "Save Research to Documents" section (removed in v2.9.4, re-removed in v2.9.5)
@@ -44,7 +44,7 @@ The PR's copy of SKILL.md is based on v2.9.1 and includes:
 
 **Fix:** Rebase on current main (v2.9.5).
 
-### 3. "Or" tool name scattering (REJECT)
+#### 3. "Or" tool name scattering (REJECT)
 
 The PR adds `WebSearch or google_web_search(...)` and similar patterns throughout SKILL.md. This is the wrong approach because:
 
@@ -54,7 +54,7 @@ The PR adds `WebSearch or google_web_search(...)` and similar patterns throughou
 
 **Fix:** Remove all "or" alternatives. Keep Claude Code tool names in the SKILL.md body (they work as intent descriptions). If Gemini needs explicit tool mapping, that belongs in `GEMINI.md` (Gemini CLI's context file), not scattered through the skill instructions.
 
-### 4. `allowed-tools` pollution (RISKY)
+#### 4. `allowed-tools` pollution (RISKY)
 
 Adding `run_shell_command, read_file, write_file, ask_user, google_web_search` to `allowed-tools`:
 
@@ -70,7 +70,7 @@ allowed-tools: Bash, Read, Write, AskUserQuestion, WebSearch, run_shell_command,
 
 ## What to Accept
 
-### 1. gemini-extension.json (with fixes)
+#### 1. gemini-extension.json (with fixes)
 
 The manifest file is the right approach. However:
 
@@ -78,7 +78,7 @@ The manifest file is the right approach. However:
 - [ ] **Update version** from `2.9.1` to `2.9.5`
 - [ ] **Consider adding `contextFileName`** to point to root SKILL.md instead of duplicating
 
-### 2. Path resolution additions
+#### 2. Path resolution additions
 
 Adding these to the bash `for` loop is correct and low-risk:
 
@@ -90,13 +90,13 @@ Adding these to the bash `for` loop is correct and low-risk:
 
 This should be in both `SKILL.md` and `variants/open/SKILL.md`.
 
-### 3. README.md install section
+#### 3. README.md install section
 
 Clean and appropriate. Adding Gemini CLI install command before Claude Code section.
 
 ## Proposed Changes to Request from Contributor
 
-### Must-fix (before merge)
+#### Must-fix (before merge)
 
 1. **Delete `skills/last30days/SKILL.md`** - no duplicate. Either symlink or use `contextFileName` in manifest.
 2. **Rebase on main** (v2.9.5) - the PR is based on stale code.
@@ -104,7 +104,7 @@ Clean and appropriate. Adding Gemini CLI install command before Claude Code sect
 4. **Remove Gemini tool names from `allowed-tools`** in all SKILL.md files.
 5. **Verify `gemini-extension.json` settings format** against current Gemini CLI docs (array vs object).
 
-### Nice-to-have
+#### Nice-to-have
 
 6. **Add a `GEMINI.md` context file** (optional) - can include a short note like "When this skill references 'WebSearch', use `google_web_search`. When it references 'Bash', use `run_shell_command`." This is the clean way to handle tool name translation.
 7. **Update sync.sh** to optionally deploy to `~/.gemini/extensions/last30days/` (debatable - Gemini users may prefer `gemini extensions install` instead).

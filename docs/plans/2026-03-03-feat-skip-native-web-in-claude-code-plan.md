@@ -20,19 +20,19 @@ Update SKILL.md invocation to include the flag.
 
 ## Changes
 
-### 1. `scripts/last30days.py`
+#### 1. `scripts/last30days.py`
 - [ ] Add `--no-native-web` argument to argparse (store_true, default False)
 - [ ] When `args.no_native_web` is True, force `web_backend = None` regardless of API keys
 - [ ] This naturally triggers `web_needed = True` → emits `### WEBSEARCH REQUIRED ###` signal
 - [ ] Update diagnostic banner to show "Web: deferred to assistant" when flag is active
 
-### 2. `SKILL.md`
+#### 2. `SKILL.md`
 - [ ] Add `--no-native-web` to the invocation command on line 168:
   ```
   python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact --no-native-web
   ```
 
-### 3. OpenClaw / `--agent` mode
+#### 3. OpenClaw / `--agent` mode
 - [ ] No changes needed — OpenClaw invocations don't read SKILL.md, they call the script directly without `--no-native-web`, so Parallel AI/Brave/OpenRouter still work
 
 ## Acceptance Criteria

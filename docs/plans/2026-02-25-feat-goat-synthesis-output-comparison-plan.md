@@ -27,14 +27,14 @@ We need to see what Base, HN, and CROSS actually produce as narratives, side-by-
 
 ## Approach: Controlled Synthesis Comparison
 
-### Why not re-run `claude --print "/last30days X"` 15 times?
+#### Why not re-run `claude --print "/last30days X"` 15 times?
 
 Three problems:
 1. **WebSearch non-determinism** - Claude's WebSearch tool returns different results per run, confounding version comparison
 2. **QUERY_TYPE non-determinism** - Claude classifies "best rap songs 2026" as RECOMMENDATIONS one run and GENERAL the next, producing structurally different outputs
 3. **Reddit API non-determinism** - The existing JSON data shows Base got 4 Reddit items for Claude Code while CROSS got 10, purely from API timing
 
-### The controlled approach
+#### The controlled approach
 
 Reuse the 15 JSON files already captured (same-day, topic-sequential, verified clean). For each:
 
@@ -58,9 +58,9 @@ This gives us 15 synthesis narratives produced from identical underlying data, w
 
 ## Technical Approach
 
-### Phase 1: Setup and Data Preservation
+#### Phase 1: Setup and Data Preservation
 
-#### 1a. Copy JSON data to repo (CRITICAL - `/tmp` is ephemeral)
+##### 1a. Copy JSON data to repo (CRITICAL - `/tmp` is ephemeral)
 
 ```bash
 mkdir -p docs/comparison-results/json
@@ -70,7 +70,7 @@ cp /tmp/last30days-comparison/full/*.json docs/comparison-results/json/
 - [x] Copy all 15 JSON files to `docs/comparison-results/json/`
 - [x] Verify all 15 files are present and non-empty
 
-#### 1b. Build JSON-to-compact converter
+##### 1b. Build JSON-to-compact converter
 
 The render pipeline differs per version. We need each version's `render_compact()` to produce the compact markdown that version would actually show Claude.
 
@@ -107,7 +107,7 @@ Problem: `render_compact()` differs across Base/HN/CROSS. Solution: run the conv
 - [x] Run on CROSS checkout for `cross-*.json` files -> `docs/comparison-results/compact/cross-*.md`
 - [x] Clean `__pycache__` between every git checkout
 
-#### 1c. Extract synthesis prompts from each version's SKILL.md
+##### 1c. Extract synthesis prompts from each version's SKILL.md
 
 Each version's SKILL.md contains the instructions Claude uses to synthesize the compact data into the narrative. These differ across versions (CROSS has cross-ref instructions, HN has HN citation rules, etc.).
 
@@ -116,9 +116,9 @@ Each version's SKILL.md contains the instructions Claude uses to synthesize the 
 - [x] Check out CROSS (feat/youtube-relevance-cross-source), copy to `docs/comparison-results/prompts/cross-synthesis-prompt.md`
 - [x] For each, prepend the hardcoded QUERY_TYPE and topic name
 
-### Phase 2: Generate 15 Synthesis Outputs
+#### Phase 2: Generate 15 Synthesis Outputs
 
-#### 2a. Write the synthesis runner
+##### 2a. Write the synthesis runner
 
 **Script: `scripts/run-synthesis-comparison.py`**
 
@@ -186,7 +186,7 @@ Now synthesize this research into your expert narrative following these instruct
 - [x] Run it (15 API calls, ~2-3 min total)
 - [x] Verify all 15 synthesis files exist and are non-empty
 
-#### 2b. Quality check synthesis outputs
+##### 2b. Quality check synthesis outputs
 
 Spot-check 3 outputs (one per version) for:
 - Did Claude actually produce a "What I learned" narrative?
@@ -199,9 +199,9 @@ If any output is broken (e.g., Claude refused or produced meta-commentary instea
 - [x] Spot-check `cross-1-claude-code.md`, `hn-2-seedance.md`, `base-4-rap.md`
 - [x] Fix any prompt issues and re-run failed outputs
 
-### Phase 3: Evaluate - Which Version Produces the Best Output?
+#### Phase 3: Evaluate - Which Version Produces the Best Output?
 
-#### 3a. Define evaluation rubric (BEFORE reading any outputs)
+##### 3a. Define evaluation rubric (BEFORE reading any outputs)
 
 Score each synthesis 1-5 on these dimensions:
 
@@ -215,7 +215,7 @@ Score each synthesis 1-5 on these dimensions:
 
 Total: weighted average, 1.0 to 5.0
 
-#### 3b. LLM-as-judge evaluation (blinded)
+##### 3b. LLM-as-judge evaluation (blinded)
 
 **Script: `scripts/evaluate-synthesis.py`**
 
@@ -280,7 +280,7 @@ for topic in TOPICS:
 - [x] Run evaluation (5 API calls, one per topic)
 - [x] Collect scores into summary table
 
-#### 3c. Human spot-check
+##### 3c. Human spot-check
 
 Read 3 synthesis outputs yourself (one per version, same topic) and verify the LLM evaluation makes sense. If the LLM scores don't match your gut, investigate.
 
@@ -288,7 +288,7 @@ Read 3 synthesis outputs yourself (one per version, same topic) and verify the L
 - [x] Read all 3 versions for topic 2 (Seedance) side-by-side
 - [x] Verify LLM scores align with human judgment
 
-#### 3d. Compile verdict
+##### 3d. Compile verdict
 
 | Topic | Base | HN | CROSS | Winner |
 |-------|------|-----|-------|--------|
@@ -310,11 +310,11 @@ Plus per-dimension breakdown:
 - [x] Identify per-dimension winners
 - [x] Write verdict paragraph
 
-### Phase 4: Make CROSS the GOAT
+#### Phase 4: Make CROSS the GOAT
 
 Based on the evaluation, identify the specific synthesis weaknesses and fix them. Changes fall into two buckets:
 
-#### Bucket A: Data pipeline changes (score.py, dedupe.py, render.py, youtube_yt.py)
+##### Bucket A: Data pipeline changes (score.py, dedupe.py, render.py, youtube_yt.py)
 
 These affect what compact markdown Claude sees. From the previous JSON analysis, known issues:
 
@@ -338,7 +338,7 @@ These affect what compact markdown Claude sees. From the previous JSON analysis,
    - File: `scripts/lib/hackernews.py` (or wherever HN search lives)
    - Expected impact: Framework debate topics get HN coverage
 
-#### Bucket B: Synthesis instruction changes (SKILL.md)
+##### Bucket B: Synthesis instruction changes (SKILL.md)
 
 These affect how Claude interprets the data. Specific changes to discover from the 15-output comparison:
 
@@ -361,7 +361,7 @@ Changes 5-10 are discovered from Phase 3 analysis. They may or may not apply.
 - [x] Implement Bucket B changes (SKILL.md synthesis instruction improvements)
 - [x] Run `bash scripts/sync.sh` to deploy updated skill
 
-### Phase 5: Validate
+#### Phase 5: Validate
 
 Re-run 5 synthesis outputs (one per topic, CROSS-after only) using the improved CROSS code, and compare against CROSS-before.
 
@@ -435,21 +435,21 @@ scripts/
 
 ## Technical Considerations
 
-### Why Anthropic API instead of `claude --print`?
+#### Why Anthropic API instead of `claude --print`?
 
 1. **Controlled environment** - Same model, same temperature, same max_tokens for all 15
 2. **No WebSearch confound** - API calls don't have tool access unless we grant it
 3. **Reproducible** - Can re-run with different models or prompts
 4. **Faster** - API call takes ~10s vs ~3min for full `claude --print` with tools
 
-### Why reuse JSON data instead of re-running the pipeline?
+#### Why reuse JSON data instead of re-running the pipeline?
 
 1. **Eliminates temporal non-determinism** - Same Reddit/X/YouTube data for all comparisons
 2. **No rate limiting** - Zero API calls to source platforms
 3. **Already validated** - 15 files verified clean, zero errors
 4. **Still tests rendering differences** - Each version's render_compact() runs on its checkout
 
-### What about the WebSearch step?
+#### What about the WebSearch step?
 
 The full skill pipeline includes Claude doing WebSearch after the Python script. We deliberately exclude this because:
 1. WebSearch results vary per run (different web results each time)

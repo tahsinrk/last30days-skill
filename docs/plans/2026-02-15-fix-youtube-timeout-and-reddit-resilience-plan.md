@@ -25,7 +25,7 @@ Observed failures across 6 test runs:
 
 ## Proposed Solution
 
-### Fix 1: Bump YouTube future timeout (NOT YET DONE)
+#### Fix 1: Bump YouTube future timeout (NOT YET DONE)
 
 **File:** `scripts/last30days.py:40-44`
 
@@ -55,7 +55,7 @@ youtube_timeout = timeouts.get("youtube_future", timeouts["future"])
 youtube_items, youtube_error = youtube_future.result(timeout=youtube_timeout)
 ```
 
-### Fix 2: Reddit 429 fail-fast (ALREADY DONE — needs commit)
+#### Fix 2: Reddit 429 fail-fast (ALREADY DONE — needs commit)
 
 **Status:** Implemented in working tree, uncommitted. Changes across 4 files:
 

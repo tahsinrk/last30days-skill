@@ -20,7 +20,7 @@ documentation to match reality.
 
 ## Problem Statement
 
-### 1. The flag was removed but the behavior is still broken
+#### 1. The flag was removed but the behavior is still broken
 
 Removing `disable-model-invocation: true` lets agents call the skill. But the skill still:
 
@@ -31,7 +31,7 @@ Removing `disable-model-invocation: true` lets agents call the skill. But the sk
 When an agent calls `/last30days plaud granola`, it needs a **completed research report
 returned to it**, not a half-executed interactive session.
 
-### 2. The Security section has a false statement
+#### 2. The Security section has a false statement
 
 Line 558 of SKILL.md still reads:
 
@@ -41,14 +41,14 @@ Line 558 of SKILL.md still reads:
 
 This is now wrong. It actively misleads users and agents reading the skill docs.
 
-### 3. No documented path for agent callers
+#### 3. No documented path for agent callers
 
 Users who want to call `last30days` from another skill (e.g., "research this topic and then
 build a plan") have no guidance on how to do it or what format to expect back.
 
 ## Proposed Solution
 
-### Agent Mode: `--agent` flag
+#### Agent Mode: `--agent` flag
 
 Add an `--agent` execution mode that skips all interactive elements and returns a structured
 research report. Calling agents pass the flag explicitly:
@@ -57,7 +57,7 @@ research report. Calling agents pass the flag explicitly:
 /last30days plaud granola --agent
 ```
 
-### Agent Mode Behavior
+#### Agent Mode Behavior
 
 In agent mode, the skill:
 
@@ -83,7 +83,7 @@ Generated: {date} | Sources: Reddit, X, YouTube, HN, Polymarket, Web
 {The existing stats block}
 ```
 
-### Security Section Rewrite
+#### Security Section Rewrite
 
 Remove the false statement. Replace with:
 
@@ -92,13 +92,13 @@ Remove the false statement. Replace with:
 - Pass `--agent` flag for non-interactive report output
 ```
 
-### Version Bump
+#### Version Bump
 
 `version: "2.5"` → `version: "2.6"` in SKILL.md frontmatter.
 
 ## Technical Considerations
 
-### Implementation: SKILL.md instructions only
+#### Implementation: SKILL.md instructions only
 
 Add a section to SKILL.md that reads:
 ```

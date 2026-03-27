@@ -16,7 +16,7 @@ Add TikTok as the 7th research source alongside Reddit, X, YouTube, HN, Polymark
 
 ## Proposed Solution
 
-### Architecture: Shared Apify Client + Per-Source Modules
+#### Architecture: Shared Apify Client + Per-Source Modules
 
 ```
 scripts/lib/
@@ -29,7 +29,7 @@ scripts/lib/
 
 This design means adding Facebook or Instagram later is just a new `facebook.py` module — the Apify client setup, token validation, and error handling are already done.
 
-### Data Flow
+#### Data Flow
 
 ```
 User topic + date range
@@ -65,7 +65,7 @@ User topic + date range
 
 ## Technical Approach
 
-### Phase 1: Apify Client Wrapper (`scripts/lib/apify_client_wrapper.py`)
+#### Phase 1: Apify Client Wrapper (`scripts/lib/apify_client_wrapper.py`)
 
 Shared module for all Apify-backed sources. Keeps TikTok, Facebook, Instagram from duplicating client setup.
 
@@ -113,7 +113,7 @@ def run_actor_sync(
 - `run_actor_sync()` wraps the call+wait+fetch pattern used by every Apify actor
 - `max_items` param provides cost control (important with $5 free credits)
 
-### Phase 2: TikTok Search Module (`scripts/lib/tiktok.py`)
+#### Phase 2: TikTok Search Module (`scripts/lib/tiktok.py`)
 
 ```python
 """TikTok search via Apify clockworks/tiktok-scraper."""
@@ -197,7 +197,7 @@ def parse_tiktok_response(response):
 
 This is cheaper than YouTube transcripts (no second yt-dlp call needed for the basic case).
 
-### Phase 3: Schema + Normalization
+#### Phase 3: Schema + Normalization
 
 **`scripts/lib/schema.py` — add TikTokItem dataclass:**
 
@@ -234,7 +234,7 @@ class TikTokItem:
 - Create TikTokItem objects
 - Hard date filter (like Reddit/X, not soft like YouTube)
 
-### Phase 4: Scoring
+#### Phase 4: Scoring
 
 **`scripts/lib/score.py` — add TikTok scoring:**
 
@@ -253,7 +253,7 @@ def score_tiktok_items(items):
     0.45*relevance + 0.25*recency + 0.30*engagement"""
 ```
 
-### Phase 5: Deduplication + Cross-Source Linking
+#### Phase 5: Deduplication + Cross-Source Linking
 
 **`scripts/lib/dedupe.py`:**
 
@@ -267,7 +267,7 @@ def dedupe_tiktok(items, threshold=0.7):
 - Add `tiktok` to `cross_source_link()` — compare TikTok items with all other sources
 - Cross-ref prefix: `"TK"` (e.g., `TK3` for TikTok item 3)
 
-### Phase 6: Rendering
+#### Phase 6: Rendering
 
 **`scripts/lib/render.py` — add TikTok section:**
 
@@ -286,7 +286,7 @@ def dedupe_tiktok(items, threshold=0.7):
 ├─ 🎵 TikTok: {N} videos │ {N} views │ {N} with captions
 ```
 
-### Phase 7: Environment + Config
+#### Phase 7: Environment + Config
 
 **`scripts/lib/env.py` — add Apify support:**
 
@@ -309,7 +309,7 @@ APIFY_API_TOKEN=apify_api_xxxxxxxxxxxxx
 
 Or get free token: Sign up at https://console.apify.com → Settings → Integrations → Personal API Token.
 
-### Phase 8: Orchestrator Integration
+#### Phase 8: Orchestrator Integration
 
 **`scripts/last30days.py` changes:**
 
@@ -324,14 +324,14 @@ Or get free token: Sign up at https://console.apify.com → Settings → Integra
 6. Add tiktok to return tuple + progress display
 7. Wire tiktok into normalize → score → dedupe → cross-link → render pipeline in main
 
-### Phase 9: SKILL.md Updates
+#### Phase 9: SKILL.md Updates
 
 1. Add TikTok to stats box template
 2. Add TikTok citation rule: `@creator on TikTok`
 3. Add TikTok to source weight guidance (rank between YouTube and HN)
 4. Document `APIFY_API_TOKEN` in setup section
 
-### Phase 10: Dependency
+#### Phase 10: Dependency
 
 ```bash
 pip install apify-client
@@ -343,7 +343,7 @@ pip install apify-client
 
 ## Files to Create / Modify
 
-### New Files
+#### New Files
 | File | Purpose |
 |---|---|
 | `scripts/lib/apify_client_wrapper.py` | Shared Apify client init + `run_actor_sync()` helper |
@@ -351,7 +351,7 @@ pip install apify-client
 | `tests/test_tiktok.py` | Unit tests for TikTok module |
 | `fixtures/tiktok_search.json` | Mock Apify response for testing |
 
-### Modified Files
+#### Modified Files
 | File | Changes |
 |---|---|
 | `scripts/lib/schema.py` | Add `TikTokItem` dataclass, `shares` to Engagement, `tiktok`/`tiktok_error` to Report |

@@ -37,7 +37,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 ## Alternatives Evaluated
 
-### RECOMMENDED: ScrapeCreators — Best True Pay-As-You-Go
+#### RECOMMENDED: ScrapeCreators — Best True Pay-As-You-Go
 
 | Attribute | Details |
 |-----------|---------|
@@ -51,7 +51,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 **Why it's the best fit:** $10 literally lasts over a year at our volume. No subscription, no expiring credits. The lack of a Python SDK is irrelevant — it's a single `requests.get()` call.
 
-### Runner-up: EnsembleData — Best SDK, But Subscription
+#### Runner-up: EnsembleData — Best SDK, But Subscription
 
 | Attribute | Details |
 |-----------|---------|
@@ -65,7 +65,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 **Verdict:** Best data quality and SDK, but $100/mo is absurd for our ~150-300 requests/month. Same subscription problem as Apify.
 
-### Backup: tikwm.com — Free but Risky
+#### Backup: tikwm.com — Free but Risky
 
 | Attribute | Details |
 |-----------|---------|
@@ -79,7 +79,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 **Verdict:** Great for development/testing. Too risky as sole production backend. Could be a zero-cost fallback.
 
-### Not Recommended
+#### Not Recommended
 
 | Service | Why Not |
 |---------|---------|
@@ -91,7 +91,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 ## Recommended Approach
 
-### Option A: ScrapeCreators as primary (Recommended)
+#### Option A: ScrapeCreators as primary (Recommended)
 
 - [ ] Sign up for ScrapeCreators, get free credits
 - [ ] Test the "Search by Keyword" endpoint to verify it returns all required fields
@@ -101,14 +101,14 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 - [ ] Update README, SKILL.md installation instructions
 - [ ] Buy $10 credits after confirming it works
 
-### Option B: tikwm.com as primary (Zero cost, higher risk)
+#### Option B: tikwm.com as primary (Zero cost, higher risk)
 
 - [ ] Test tikwm.com search endpoint to verify response schema
 - [ ] If it returns engagement metrics, implement as primary backend
 - [ ] Add ScrapeCreators as paid fallback when tikwm fails
 - [ ] No API key required — simplest user setup
 
-### Option C: Keep Apify, document the subscription requirement
+#### Option C: Keep Apify, document the subscription requirement
 
 - [ ] Update README to clarify Apify requires a paid plan
 - [ ] Add note about the free $5/mo credits tier (if it still works without subscription)
@@ -116,14 +116,14 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 
 ## Implementation Plan (Option A)
 
-### Phase 1: Validate ScrapeCreators API
+#### Phase 1: Validate ScrapeCreators API
 
 - [ ] Sign up and get API key
 - [ ] Test keyword search endpoint: `GET /tiktok/search?keyword={topic}&count=20`
 - [ ] Verify response contains: video ID, play count, likes, comments, shares, author, hashtags, date, description
 - [ ] Test caption/subtitle availability (or confirm description text is sufficient)
 
-### Phase 2: Swap the Backend
+#### Phase 2: Swap the Backend
 
 - [ ] Create `scripts/lib/scrapecreators_client.py` (simple REST wrapper, ~40 lines)
 - [ ] Refactor `tiktok.py:search_tiktok()` to call ScrapeCreators instead of Apify
@@ -132,7 +132,7 @@ What we need is a **TikTok-specific API** that returns structured JSON with enga
 - [ ] Update `env.py` to read `SCRAPECREATORS_API_KEY` (keep `APIFY_API_TOKEN` for backward compat)
 - [ ] Update `scripts/lib/ui.py` spinner messages if needed
 
-### Phase 3: Update Docs & Ship
+#### Phase 3: Update Docs & Ship
 
 - [ ] Update README.md installation section (new API key)
 - [ ] Update SKILL.md

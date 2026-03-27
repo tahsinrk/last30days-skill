@@ -19,16 +19,16 @@ The skill currently covers Reddit, X, YouTube, and web. Hacker News is missing �
 
 Add `scripts/lib/hackernews.py` following the exact same pattern as `youtube_yt.py` (the simplest existing source — no API key, just HTTP calls). Use the Algolia HN Search API for discovery, then optionally fetch top comments from high-scoring stories for enrichment (like Reddit enrichment, but using the `/items/:id` endpoint instead of Reddit's JSON API).
 
-### Two-phase approach (matches existing Reddit pattern):
+#### Two-phase approach (matches existing Reddit pattern):
 
 1. **Phase 1 — Search**: Query Algolia for stories matching the topic within the date range. Get titles, URLs, points, comment counts.
 2. **Phase 2 — Enrichment** (optional, top N stories): Fetch the `/items/:id` endpoint for the highest-scoring stories to get top-level comments. This gives "comment_insights" like Reddit enrichment does.
 
 ## Technical Approach
 
-### Files to Create
+#### Files to Create
 
-#### `scripts/lib/hackernews.py`
+##### `scripts/lib/hackernews.py`
 
 The main source module. Pattern matches `youtube_yt.py` (simplest source).
 
@@ -72,7 +72,7 @@ Key functions:
 
 - `_date_to_unix(date_str: str) -> int` — Helper, converts YYYY-MM-DD to Unix timestamp
 
-#### `tests/test_hackernews.py`
+##### `tests/test_hackernews.py`
 
 Standard unittest pattern matching existing tests.
 
@@ -82,9 +82,9 @@ Standard unittest pattern matching existing tests.
 - Test enrichment parsing
 - Test score integration with `score.py`
 
-### Files to Modify
+#### Files to Modify
 
-#### `scripts/lib/schema.py`
+##### `scripts/lib/schema.py`
 
 - [x] Add `HackerNewsItem` dataclass:
   ```python
@@ -109,14 +109,14 @@ Standard unittest pattern matching existing tests.
 - [x] Add `hackernews_error: Optional[str] = None` to `Report`
 - [x] Update `Report.to_dict()` and `Report.from_dict()`
 
-#### `scripts/lib/normalize.py`
+##### `scripts/lib/normalize.py`
 
 - [x] Add `normalize_hackernews_items(items: List[Dict], from_date, to_date) -> List[schema.HackerNewsItem]`
   - Maps raw dicts to `HackerNewsItem` dataclass instances
   - Sets `date_confidence = "high"` (Algolia provides `created_at_i` exact timestamps)
   - Converts `engagement` dict to `schema.Engagement(score=points, num_comments=num_comments)`
 
-#### `scripts/lib/score.py`
+##### `scripts/lib/score.py`
 
 - [x] Add `compute_hackernews_engagement_raw(engagement) -> float`
   - Formula: `0.55 * log1p(points) + 0.45 * log1p(num_comments)`
@@ -127,13 +127,13 @@ Standard unittest pattern matching existing tests.
   - Source priority: Reddit > X > **HN** > YouTube > WebSearch
   - HN slots between X and YouTube: higher signal than YouTube (curated upvotes vs raw views), but X has real-time pulse
 
-#### `scripts/lib/dedupe.py`
+##### `scripts/lib/dedupe.py`
 
 - [x] Add `dedupe_hackernews(items, threshold=0.7) -> List[schema.HackerNewsItem]`
 - [x] Update `get_item_text()` to handle `HackerNewsItem` (return `title`)
 - [x] Consider cross-source dedup: HN stories often link to the same URLs that appear in web search results. Dedupe by URL match across `hackernews` and `websearch` items.
 
-#### `scripts/lib/render.py`
+##### `scripts/lib/render.py`
 
 - [x] Add HN section to `render_compact()`:
   ```
@@ -151,7 +151,7 @@ Standard unittest pattern matching existing tests.
 - [x] Add to `render_full_report()` and `render_context_snippet()`
 - [x] Update `_assess_data_freshness()` to include HN items
 
-#### `scripts/last30days.py`
+##### `scripts/last30days.py`
 
 - [x] Import: `from lib import hackernews`
 - [x] Add `_search_hackernews(topic, from_date, to_date, depth) -> (items, error)` wrapper function
@@ -174,14 +174,14 @@ Standard unittest pattern matching existing tests.
 - [x] Assign to `report.hackernews` and `report.hackernews_error`
 - [x] Update status UI: add `⏳ 🟡 HN Searching Hacker News...` and `✓ 🟡 HN Found {N} stories`
 
-#### `scripts/lib/env.py`
+##### `scripts/lib/env.py`
 
 - [x] HN is always available (no API key, no binary dependency)
 - [x] Update `get_available_sources()` to include HN in the source list
 - [x] Update `validate_sources()` to accept `hn` as a valid source name
 - [x] Add `hn` to the `--search` flag documentation
 
-#### `SKILL.md`
+##### `SKILL.md`
 
 - [x] Update description: "Sources: Reddit, X, YouTube, **Hacker News**, and web"
 - [x] Add HN to stats block template:

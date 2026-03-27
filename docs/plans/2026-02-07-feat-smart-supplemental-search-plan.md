@@ -22,7 +22,7 @@ The product works great today. This is about squeezing 20-30% more high-quality 
 
 ## Proposed Solution
 
-### Architecture: Two-Phase Search
+#### Architecture: Two-Phase Search
 
 ```
 CURRENT (Phase 1 — unchanged):
@@ -41,7 +41,7 @@ NEW (Phase 2 — supplemental):
 
 Phase 2 only runs if Phase 1 returned results (entities need to come from somewhere). Phase 2 results are merged and deduped against Phase 1 — the existing `dedupe.py` handles this.
 
-### Feature 1: Entity Extraction Module (NEW FILE)
+#### Feature 1: Entity Extraction Module (NEW FILE)
 
 **File: `scripts/lib/entity_extract.py`**
 
@@ -73,7 +73,7 @@ A lightweight module that parses Phase 1 results and extracts:
 - Skip generic handles (@elonmusk, @OpenAI) that appear everywhere — maintain a small exclusion list of "too common" handles (< 20 entries)
 - Skip the original topic's "obvious" subreddit if it was already searched
 
-### Feature 2: Supplemental X Search (Bird)
+#### Feature 2: Supplemental X Search (Bird)
 
 **File: modify `scripts/lib/bird_x.py`**
 
@@ -103,7 +103,7 @@ tools = [{
 }]
 ```
 
-### Feature 3: Supplemental Reddit Search
+#### Feature 3: Supplemental Reddit Search
 
 **File: modify `scripts/lib/openai_reddit.py`**
 
@@ -130,7 +130,7 @@ def search_subreddit_json(subreddit: str, topic: str) -> list:
 
 This is free, requires no API key, and gives us structured data. The `.json` endpoint trick is well-documented and widely used.
 
-### Feature 4: Orchestration Changes
+#### Feature 4: Orchestration Changes
 
 **File: modify `scripts/last30days.py`**
 
@@ -174,7 +174,7 @@ if reddit_items or x_items:
 | default | Run Phase 2 with caps: 3 handles, 3 subreddits, 3 results each |
 | `--deep` | Run Phase 2 with caps: 5 handles, 5 subreddits, 5 results each |
 
-### Feature 5: Thread Expansion for High-Engagement Posts (stretch goal)
+#### Feature 5: Thread Expansion for High-Engagement Posts (stretch goal)
 
 **File: modify `scripts/lib/bird_x.py`**
 
@@ -191,23 +191,23 @@ This surfaces the discussion around viral posts — often more valuable than the
 
 ## Technical Considerations
 
-### Performance
+#### Performance
 - Phase 2 adds 2-5 seconds for Bird (5 subprocess calls) and 3-8 seconds for Reddit subreddit search (1 API call)
 - On `--quick` mode, Phase 2 is skipped entirely — zero performance impact
 - Phase 2 runs AFTER Phase 1, not in parallel with it (needs Phase 1 results for entity extraction)
 
-### Cost
+#### Cost
 - Reddit subreddit search: 1 additional OpenAI API call (~$0.005) OR free via `.json` endpoint
 - X handle search via Bird: Free (uses your X login)
 - X handle search via xAI (fallback): 1 additional API call (~$0.005)
 - Thread expansion: Free via Bird
 
-### No New Dependencies
+#### No New Dependencies
 - Entity extraction is string parsing — no NLP libraries needed
 - Reddit `.json` endpoint uses existing `http.py` transport
 - Bird CLI calls use existing subprocess pattern from `bird_x.py`
 
-### Backward Compatibility
+#### Backward Compatibility
 - Phase 2 is purely additive — all existing behavior unchanged
 - If Phase 2 finds nothing, output is identical to current
 - Deduplication handles any overlap between Phase 1 and Phase 2
@@ -236,21 +236,21 @@ This surfaces the discussion around viral posts — often more valuable than the
 
 ## Research Sources
 
-### Reddit Search Techniques
+#### Reddit Search Techniques
 - [reddit-research-mcp](https://github.com/king-of-the-grackles/reddit-research-mcp) — MCP server with semantic subreddit discovery via 20K+ pre-indexed communities
 - [anvaka/sayit](https://github.com/anvaka/sayit) — Subreddit similarity graph via collaborative filtering (Jaccard similarity on user overlap)
 - [YARS](https://github.com/datavorous/yars) — No-API-key Reddit scraper using `.json` endpoint trick
 - Reddit's free JSON search endpoint: `reddit.com/r/{sub}/search/.json?q=QUERY&restrict_sr=on` — no auth needed
 - Reddit search operators: `subreddit:`, `title:`, `selftext:`, `author:`, `flair:` (Lucene-style)
 
-### X/Twitter Search Techniques
+#### X/Twitter Search Techniques
 - [igorbrigadir/twitter-advanced-search](https://github.com/igorbrigadir/twitter-advanced-search) — Canonical reference of all X search operators
 - Bird CLI supports all X operators: `from:`, `to:`, `conversation_id:`, `min_retweets:`, `#hashtag`, `list:`
 - xAI x_search `allowed_x_handles` parameter — filter to max 10 specific handles
 - xAI x_search semantic search — finds conceptually related content without exact keyword matches
 - [Bellingcat OSINT Toolkit](https://bellingcat.gitbook.io/toolkit) — Multi-pass handle discovery methodology
 
-### Key Insight
+#### Key Insight
 The biggest gap in the current implementation is that **neither X nor Reddit search does entity extraction from initial results to inform follow-up queries.** Every tool/project researched that achieves better-than-basic results does some form of "discover entities → search entities" two-pass strategy.
 
 ## What We're NOT Doing

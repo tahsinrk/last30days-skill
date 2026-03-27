@@ -8,9 +8,9 @@
 
 ## Part 1: Head-to-Head -- "kanye west" (NEWS Query)
 
-### Dimension-by-Dimension Scoring
+#### Dimension-by-Dimension Scoring
 
-#### 1. Query Parsing Display
+##### 1. Query Parsing Display
 
 Does it show the `🔍 **{TOPIC}** · {QUERY_TYPE}` line before running tools?
 
@@ -25,7 +25,7 @@ Possible cause: The parsing display is supposed to appear *before* tools are cal
 
 ---
 
-#### 2. Source Coverage (Reddit/X/Web counts)
+##### 2. Source Coverage (Reddit/X/Web counts)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -36,7 +36,7 @@ Possible cause: The parsing display is supposed to appear *before* tools are cal
 
 ---
 
-#### 3. Citation Quality (sparse vs every-sentence)
+##### 3. Citation Quality (sparse vs every-sentence)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -50,7 +50,7 @@ V2 quote (cited): `"Ye is headlining a brand-new festival at the 103,000-capacit
 
 ---
 
-#### 4. Summary Structure (bold topic headers, organized sections)
+##### 4. Summary Structure (bold topic headers, organized sections)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -64,7 +64,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-#### 5. Stats Box Format (emoji tree vs plain text)
+##### 5. Stats Box Format (emoji tree vs plain text)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -75,7 +75,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-#### 6. Research Grounding (actual research vs generic knowledge)
+##### 6. Research Grounding (actual research vs generic knowledge)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -86,7 +86,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-#### 7. Prompt Quality (invitation to share vision, not dumping prompts)
+##### 7. Prompt Quality (invitation to share vision, not dumping prompts)
 
 | Version | Score | Evidence |
 |---------|-------|----------|
@@ -97,7 +97,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-### Head-to-Head Scorecard
+#### Head-to-Head Scorecard
 
 | Dimension | V1 | V2 | Winner |
 |-----------|----|----|--------|
@@ -116,7 +116,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ## Part 2: V1-Only Outputs Analysis
 
-### Output 1: "open claw" (GENERAL query)
+#### Output 1: "open claw" (GENERAL query)
 
 **What V1 does well:**
 - Strong research grounding. Mentions exact numbers: "145,000+ GitHub stars," "20,000+ forks," "700+ skills," "341 malicious skills." These are clearly from research.
@@ -135,7 +135,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-### Output 2: "nano banana pro prompting" (PROMPTING query)
+#### Output 2: "nano banana pro prompting" (PROMPTING query)
 
 **What V1 does well:**
 - Correctly identifies two prompting styles (JSON structured vs. natural language "Creative Director") and explains when each works best. This is excellent PROMPTING-type synthesis.
@@ -154,7 +154,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-### Output 3: "how to best setup clawdbot" (HOW-TO query)
+#### Output 3: "how to best setup clawdbot" (HOW-TO query)
 
 **What V1 does well:**
 - This is the best V1 output of the batch. It goes beyond synthesis and actually delivers a **Quick-Start guide** with numbered steps, a **Security Hardening** checklist, and a **Budget Option** -- all grounded in research.
@@ -173,7 +173,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ---
 
-### Patterns Across All V1 Outputs
+#### Patterns Across All V1 Outputs
 
 **Consistent strengths:**
 1. Research grounding is solid across all three. V1 does not hallucinate -- the facts are clearly from the research output, not pre-training.
@@ -192,7 +192,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ## Part 3: SKILL.md Feature Diff
 
-### Features in V2 but NOT V1
+#### Features in V2 but NOT V1
 
 | Feature | V2 Lines | Impact |
 |---------|----------|--------|
@@ -205,7 +205,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 | **Bird CLI / xAI notation** in stats | 223 | LOW -- cosmetic transparency about data source. |
 | **Step 2 phrasing: "DO WEBSEARCH WHILE SCRIPT RUNS"** | 71-73 | LOW -- execution optimization, no output impact. |
 
-### Features in V1 but NOT V2
+#### Features in V1 but NOT V2
 
 | Feature | V1 Lines | Impact | Should Restore? |
 |---------|----------|--------|-----------------|
@@ -221,7 +221,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 | **Context Memory: explicit "don't re-search" instructions** | 342-358 | MEDIUM | YES |
 | **Output footer emoji + engagement counts** | 366-380 | LOW | YES |
 
-### Features in BOTH (Shared)
+#### Features in BOTH (Shared)
 
 | Feature | Notes |
 |---------|-------|
@@ -241,7 +241,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 | Depth options (quick/default/deep) | Same |
 | "After each prompt: Stay in Expert Mode" | Same |
 
-### Overall Assessment
+#### Overall Assessment
 
 **V2 is a clear upgrade in output formatting and citation quality.** The three features V2 adds (query parsing display, sparse citation rules, bold topic headers) directly address the three biggest weaknesses seen across all V1 outputs. The Kanye West head-to-head proves it: V2 scores 29/35 vs V1's 20/35.
 
@@ -251,7 +251,7 @@ V2 structure: 6 bold topic cards, each self-contained -> no KEY THEMES list (but
 
 ## Part 4: Verdict
 
-### Ship V2 or Not?
+#### Ship V2 or Not?
 
 **Ship V2 -- but restore the guardrails first.**
 
@@ -259,7 +259,7 @@ V2 is unambiguously better on every formatting dimension. The citation quality i
 
 But V2 dropped 6 guardrail features from V1 that cost almost nothing to include and protect against real failure modes. These should be restored before V2 goes public.
 
-### Remaining Gaps
+#### Remaining Gaps
 
 **Must fix before shipping (affects correctness):**
 
@@ -283,7 +283,7 @@ But V2 dropped 6 guardrail features from V1 that cost almost nothing to include 
 9. Web-only mode stats template -- lower priority, most testers have API keys.
 10. TARGET_TOOL question template -- agent handles this naturally.
 
-### Query Parsing Display: Investigate
+#### Query Parsing Display: Investigate
 
 Both V1 and V2 scored 1/5 on query parsing display. V2 has the feature in its SKILL.md but the agent did not render it in the captured output. This could mean:
 - The display was shown during execution but not captured (likely -- it appears before tools run, and the output files may only contain post-research content).
@@ -291,11 +291,11 @@ Both V1 and V2 scored 1/5 on query parsing display. V2 has the feature in its SK
 
 **Recommendation:** Verify in a live session whether the parsing display actually appears. If it does not, strengthen the instruction (e.g., "This line MUST be the first thing you output, before any tool calls").
 
-### Total Effort
+#### Total Effort
 
 Restoring all 7 priority items: approximately 25 lines added to V2 SKILL.md. Under 15 minutes of work. The V2 formatting wins are substantial and proven; the V1 guardrails are small and proven. Combining both produces the best version.
 
-### Final Score Summary
+#### Final Score Summary
 
 | | V1 (Kanye) | V2 (Kanye) | Delta |
 |--|-----------|-----------|-------|

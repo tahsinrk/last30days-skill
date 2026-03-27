@@ -89,7 +89,7 @@ Rules:
 
 **Ground synthesis in ACTUAL research, not pre-existing knowledge.**
 
-### Citation Rules
+#### Citation Rules
 
 - Cite sparingly: 1-2 sources per topic
 - Priority: @handles > r/subreddits > YouTube channels > web sources

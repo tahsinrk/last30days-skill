@@ -23,7 +23,7 @@ The /last30days skill has 2,747 GitHub stars but no public-facing showcase. User
 
 The skill has **no existing trending discovery mechanism** - it's entirely query-driven. Here are the available sources, ranked by practicality.
 
-### Tier 1: Free, High Signal, Zero Friction
+#### Tier 1: Free, High Signal, Zero Friction
 
 | Source | What It Returns | Auth | Cost | Best For |
 |--------|----------------|------|------|----------|
@@ -33,7 +33,7 @@ The skill has **no existing trending discovery mechanism** - it's entirely query
 | **Google News RSS** | Top headlines, algorithmically curated | None | Free | Mainstream news |
 | **YouTube mostPopular** | Top 50 trending videos by region | API key | Free (10K units/day) | Pop culture, entertainment |
 
-### Tier 2: Very Cheap, High Value
+#### Tier 2: Very Cheap, High Value
 
 | Source | What It Returns | Auth | Cost | Best For |
 |--------|----------------|------|------|----------|
@@ -41,7 +41,7 @@ The skill has **no existing trending discovery mechanism** - it's entirely query
 | **Google Trends (pytrends)** | Daily trending Google searches | None | Free but flaky | What people are actually searching |
 | **Bird `getNews()`** | X Explore page trending topics | Browser cookies | Free | Real-time Twitter/X conversation |
 
-### Tier 3: Paid, Skip for MVP
+#### Tier 3: Paid, Skip for MVP
 
 | Source | Cost | Why Skip |
 |--------|------|----------|
@@ -49,7 +49,7 @@ The skill has **no existing trending discovery mechanism** - it's entirely query
 | Exploding Topics | $249/month | Overkill for daily trends |
 | TikTok | Gated, requires approval | Application process |
 
-### Existing Codebase Hooks
+#### Existing Codebase Hooks
 
 Several pieces already exist in the codebase that could be leveraged:
 
@@ -63,7 +63,7 @@ Several pieces already exist in the codebase that could be leveraged:
 
 ## Proposed Architecture
 
-### Topic Discovery Pipeline (daily cron)
+#### Topic Discovery Pipeline (daily cron)
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -109,7 +109,7 @@ Several pieces already exist in the codebase that could be leveraged:
 └─────────────────────────────────────────────────┘
 ```
 
-### Topic Clustering Strategy
+#### Topic Clustering Strategy
 
 The hardest part is deduplicating across sources. "Pope Francis Dies" (Google News), "Pope_Francis" (Wikipedia #1 viewed), and a r/worldnews post are all the same topic. Approaches:
 
@@ -122,7 +122,7 @@ Extract keywords, compute pairwise similarity, agglomerative clustering. No API 
 **Option C: Embedding similarity**
 Embed all titles, cluster by cosine distance. Better than TF-IDF, costs a few cents per day.
 
-### Website Architecture
+#### Website Architecture
 
 **Option A: Static site (recommended for MVP)**
 - Daily cron generates JSON + static HTML
@@ -139,7 +139,7 @@ Embed all titles, cluster by cosine distance. Better than TF-IDF, costs a few ce
 - Database-backed, real-time updates, user accounts
 - Overkill for MVP
 
-### Cost Estimate (daily operation)
+#### Cost Estimate (daily operation)
 
 | Item | Cost |
 |------|------|
@@ -152,7 +152,7 @@ Embed all titles, cluster by cosine distance. Better than TF-IDF, costs a few ce
 
 ## Implementation Phases
 
-### Phase 1: Topic Discovery Script (MVP)
+#### Phase 1: Topic Discovery Script (MVP)
 
 Build `scripts/discover_trending.py` that:
 - Fetches Wikipedia Pageviews, HN top stories, Reddit hot, Google News RSS in parallel
@@ -168,7 +168,7 @@ Build `scripts/discover_trending.py` that:
 - [ ] Runs in < 60 seconds
 - [ ] No paid API keys required for discovery (only LLM clustering)
 
-### Phase 2: Research Automation
+#### Phase 2: Research Automation
 
 Wire discovered topics into the existing /last30days engine:
 - Top 3-5 topics: `python3 scripts/last30days.py "$TOPIC" --emit=json --deep`
@@ -182,7 +182,7 @@ Wire discovered topics into the existing /last30days engine:
 - [ ] Total daily runtime < 30 minutes
 - [ ] Handles timeouts/failures gracefully (skip topic, continue)
 
-### Phase 3: Website Generation
+#### Phase 3: Website Generation
 
 Build a static site generator that reads the daily JSON and produces Last30Days.com:
 - Homepage: today's trending topics grid (title, category, key stat, source badges)
@@ -200,7 +200,7 @@ Build a static site generator that reads the daily JSON and produces Last30Days.
 - [ ] RSS feed for daily updates
 - [ ] Mobile responsive
 
-### Phase 4: Bird Trending Integration (bonus)
+#### Phase 4: Bird Trending Integration (bonus)
 
 Wire up the already-vendored Bird `getNews()` for X trending:
 - Create `scripts/lib/vendor/bird-search/bird-news.mjs` (~30 lines)
@@ -214,17 +214,17 @@ Wire up the already-vendored Bird `getNews()` for X trending:
 
 ## Alternative Approaches Considered
 
-### Perplexity-only approach
+#### Perplexity-only approach
 Just ask Perplexity Sonar "what are the top 20 trending topics today?" daily. Simpler, but:
 - Single point of failure
 - Less transparent (can't show "sourced from Reddit, Wikipedia, HN")
 - Model may hallucinate or miss niche topics
 - **Verdict:** Good fallback, not primary.
 
-### Curated topics (manual)
+#### Curated topics (manual)
 Manually pick topics each day. Defeats the purpose of automation. Could supplement for "editorial picks."
 
-### Social listening tools (Brandwatch, Sprout Social, etc.)
+#### Social listening tools (Brandwatch, Sprout Social, etc.)
 Expensive ($500+/month), enterprise-focused, overkill.
 
 ## Technical Considerations
@@ -255,20 +255,20 @@ Expensive ($500+/month), enterprise-focused, overkill.
 
 ## References
 
-### Trending APIs (free)
+#### Trending APIs (free)
 - Wikipedia Pageviews: `wikimedia.org/api/rest_v1/metrics/pageviews/top/{project}/{access}/{year}/{month}/{day}`
 - Hacker News: `hacker-news.firebaseio.com/v0/topstories.json`
 - Reddit: `oauth.reddit.com/r/all/hot` (or `reddit.com/r/all/hot.json` unauthenticated)
 - Google News RSS: `news.google.com/rss`
 - YouTube: `googleapis.com/youtube/v3/videos?chart=mostPopular`
 
-### Existing codebase hooks
+#### Existing codebase hooks
 - Bird `getNews()`: `scripts/lib/vendor/bird-search/vendor/package/dist/lib/twitter-client-news.js`
 - Store trending: `scripts/store.py:559` (`get_trending()`)
 - Scoring: `scripts/lib/score.py` (engagement formulas)
 - Brave Trending API: not implemented, available in Brave docs
 
-### Inspiration
+#### Inspiration
 - [Keep a Changelog](https://keepachangelog.com/) - clean daily update format
 - [Hacker News front page](https://news.ycombinator.com/) - minimal trending UI
 - [Exploding Topics](https://explodingtopics.com/) - trending topic showcase (paid, $249/mo)

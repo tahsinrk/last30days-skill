@@ -19,12 +19,12 @@ Push all V2 changes from the private development repo to the public GitHub repo,
 
 ## Steps
 
-### Step 1: Clean up private repo
+#### Step 1: Clean up private repo
 
 - [ ] Review untracked files - make sure nothing sensitive gets pushed
 - [ ] Decide: commit the untracked docs/plans or leave them out of the push
 
-### Step 2: Push to public
+#### Step 2: Push to public
 
 ```bash
 cd /Users/mvanhorn/last30days-skill-private
@@ -33,7 +33,7 @@ git push upstream main
 
 This pushes all 52 commits from private `main` to public `main`. Since the private repo was forked from public, history is shared - this is a fast-forward push.
 
-### Step 3: Sync installed skill
+#### Step 3: Sync installed skill
 
 ```bash
 # Update the installed copy that Claude Code actually uses
@@ -41,7 +41,7 @@ cd ~/.claude/skills/last30days
 git pull origin main
 ```
 
-### Step 4: Verify
+#### Step 4: Verify
 
 - [ ] Check `https://github.com/mvanhorn/last30days-skill` shows V2 README with new examples
 - [ ] Check SKILL.md has the new argument-hint and timing disclaimer

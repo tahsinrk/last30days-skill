@@ -55,7 +55,7 @@ At session start, read `${SKILL_ROOT}/variants/open/context.md` for user prefere
 - **API keys**: `~/.config/last30days/.env` or environment variables
 - **Key priority**: env vars > config file
 
-### API Keys
+#### API Keys
 
 | Key | Required | Purpose |
 |---|---|---|

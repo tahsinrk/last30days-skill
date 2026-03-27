@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R10** (score:57) r/TeenageRapFans (2026-02-15)
   What's the best rap song ever made?
@@ -37,7 +37,7 @@
   https://www.reddit.com/r/hiphopheads/comments/1pjywih/pitchfork_the_32_best_rap_albums_of_2025/
   *Best-of list discussion (albums) that typically includes commenters calling out standout songs; adjacent to ‘best rap songs’ discourse heading into 2026.*
 
-### X Posts
+#### X Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [11likes, 5rt]
   Talking about meaningful rap songs...
@@ -116,7 +116,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **ZUExyc50ZVU** (score:63) West Coast Finest (2026-01-29) [407,260 views, 4,228 likes]
   Lit Hip Hop Mix 2026🔥🔥🔥Tyga, Quavo, Iggy Azalea, Wiz Khalifa, Juicy J, 50 Cent

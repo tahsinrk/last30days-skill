@@ -12,7 +12,7 @@ Make /last30days work as a Codex CLI skill alongside Claude Code. Both platforms
 
 ## Research Findings
 
-### How Codex Skills Work (from [official docs](https://developers.openai.com/codex/skills))
+#### How Codex Skills Work (from [official docs](https://developers.openai.com/codex/skills))
 
 **Format:** Identical to Claude Code — `SKILL.md` with YAML frontmatter + Markdown body.
 
@@ -52,7 +52,7 @@ dependencies:
 
 **Scripts:** Put executable code in `scripts/`. These can run without being loaded into context — good for our Python research engine.
 
-### What Real Codex Skills Look Like (from [openai/skills catalog](https://github.com/openai/skills))
+#### What Real Codex Skills Look Like (from [openai/skills catalog](https://github.com/openai/skills))
 
 **openai-docs skill** — Uses MCP tools (`mcp__openaiDeveloperDocs__search_openai_docs`). Has a workflow section, fallback instructions if MCP isn't set up, and quality rules. Clean and focused.
 
@@ -60,7 +60,7 @@ dependencies:
 
 **skill-creator** — The meta-skill. Emphasizes "the context window is a public good" and treating the LLM as "already very smart — only add information it genuinely lacks." Has 6 creation steps, validation scripts, and naming conventions.
 
-### Key Insight: Frontmatter Compatibility Problem
+#### Key Insight: Frontmatter Compatibility Problem
 
 Claude Code SKILL.md uses:
 ```yaml
@@ -77,7 +77,7 @@ Codex wants only `name` and `description`. The question: does Codex error on unk
 
 **Our approach:** Keep one SKILL.md with Claude-specific fields. If Codex chokes, we add a thin wrapper. This is pragmatic — maintaining two SKILL.md files defeats the purpose of cross-platform compatibility.
 
-### PR #24 Analysis (el-analista)
+#### PR #24 Analysis (el-analista)
 
 Good ideas to incorporate:
 - Portable script path resolution (repo → Claude → Codex → agents)
@@ -90,7 +90,7 @@ Not applicable to v2.1:
 - Based on v2.0 codebase — doesn't have YouTube, vendored Bird, or pipeline changes
 - We'll cherry-pick the ideas, not the code
 
-### PR #5 Analysis (jblwilliams)
+#### PR #5 Analysis (jblwilliams)
 
 Not needed:
 - Codex JWT auth — our OpenAI API calls work natively in Codex already
@@ -101,7 +101,7 @@ Not needed:
 
 Five changes, all additive — zero impact on existing Claude Code behavior:
 
-### 1. Add `agents/openai.yaml` for Codex discovery
+#### 1. Add `agents/openai.yaml` for Codex discovery
 
 ```yaml
 interface:
@@ -114,7 +114,7 @@ policy:
   allow_implicit_invocation: true
 ```
 
-### 2. Make SKILL.md script path portable
+#### 2. Make SKILL.md script path portable
 
 Replace the hardcoded Claude path with a lookup that checks multiple install locations:
 
@@ -137,7 +137,7 @@ fi
 python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact 2>&1
 ```
 
-### 3. Platform-neutral Python output text
+#### 3. Platform-neutral Python output text
 
 Replace "Claude" with "assistant" in LLM-facing output strings only. Human-facing docs (README, etc.) stay as-is.
 
@@ -146,7 +146,7 @@ Files:
 - `scripts/lib/render.py` — docstrings + web-only banner (~4 lines)
 - `scripts/lib/http.py` — User-Agent string (~1 line)
 
-### 4. Sandbox-friendly cache/output dirs
+#### 4. Sandbox-friendly cache/output dirs
 
 Codex runs sandboxed. Add env var overrides + tempdir fallback (from PR #24):
 
@@ -158,7 +158,7 @@ Codex runs sandboxed. Add env var overrides + tempdir fallback (from PR #24):
 - Check `LAST30DAYS_OUTPUT_DIR` env var
 - Catch `PermissionError`, fall back to `tempfile.gettempdir()/last30days/out`
 
-### 5. README + installation docs
+#### 5. README + installation docs
 
 Add a "Codex Compatibility" section to README:
 
@@ -195,10 +195,10 @@ The `agents/openai.yaml` provides Codex-specific discovery metadata.
 
 ## Files to Create/Modify
 
-### New Files
+#### New Files
 - `agents/openai.yaml` — Codex discovery metadata (~10 lines)
 
-### Modified Files
+#### Modified Files
 - `SKILL.md` — Portable script path resolution (~15 lines changed)
 - `README.md` — Add "Codex Compatibility" section (~15 lines)
 - `scripts/last30days.py` — "Claude" → "assistant" in output strings (~3 lines)
@@ -206,7 +206,7 @@ The `agents/openai.yaml` provides Codex-specific discovery metadata.
 - `scripts/lib/cache.py` — Cache dir env override + fallback (~12 lines)
 - `scripts/lib/http.py` — User-Agent string (~1 line)
 
-### Total scope: ~70 lines changed across 7 files. Small, additive, low risk.
+#### Total scope: ~70 lines changed across 7 files. Small, additive, low risk.
 
 ## Dependencies & Risks
 
@@ -221,23 +221,23 @@ The `agents/openai.yaml` provides Codex-specific discovery metadata.
 
 ## References
 
-### Community PRs
+#### Community PRs
 - [PR #24](https://github.com/mvanhorn/last30days-skill/pull/24) (el-analista) — Codex compatibility, portable paths, platform-neutral text
 - [PR #5](https://github.com/mvanhorn/last30days-skill/pull/5) (jblwilliams) — Codex auth support
 
-### Official Codex Docs
+#### Official Codex Docs
 - [Agent Skills](https://developers.openai.com/codex/skills) — SKILL.md format, discovery, installation paths
 - [AGENTS.md Guide](https://developers.openai.com/codex/guides/agents-md/) — Custom instructions, hierarchical loading
 - [Codex CLI Features](https://developers.openai.com/codex/cli/features/) — Overview of CLI capabilities
 - [Configuration Reference](https://developers.openai.com/codex/config-reference/) — config.toml, skill enable/disable
 
-### Examples
+#### Examples
 - [openai/skills catalog](https://github.com/openai/skills) — Official curated skills
 - [skill-creator](https://github.com/openai/skills/blob/main/skills/.system/skill-creator/SKILL.md) — Meta-skill for creating skills, best practices
 - [pdf skill](https://github.com/openai/skills/blob/main/skills/.curated/pdf/SKILL.md) — Example of skill that runs external scripts
 - [openai-docs skill](https://github.com/openai/skills/blob/main/skills/.curated/openai-docs/SKILL.md) — Example of MCP-backed skill
 
-### Community Analysis
+#### Community Analysis
 - [Skills in OpenAI Codex](https://blog.fsck.com/2025/12/19/codex-skills/) — Jesse Vincent's deep dive on skill internals
 - [Simon Willison on skills adoption](https://simonw.substack.com/p/openai-are-quietly-adopting-skills) — Cross-platform skill format analysis
 - [SkillsMP marketplace](https://skillsmp.com/) — Community marketplace supporting both Claude Code and Codex skills

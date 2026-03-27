@@ -28,7 +28,7 @@ The root cause is that ANY tool call after the invitation creates unavoidable Cl
 
 ## Proposed Solutions
 
-### Option A: Remove auto-save entirely (Recommended)
+#### Option A: Remove auto-save entirely (Recommended)
 
 Remove the entire "Save Research to Documents" section from SKILL.md. The research lives in the conversation. Zero extra tool calls, zero extra lines, zero cogitation.
 
@@ -42,7 +42,7 @@ Remove the entire "Save Research to Documents" section from SKILL.md. The resear
 **What users lose:** Auto-saved .md files in `~/Documents/Last30Days/`
 **What users gain:** Clean output ending exactly at the invitation block
 
-### Option B: Move save into Python script
+#### Option B: Move save into Python script
 
 Add `--save-dir` flag to `last30days.py`. The script saves its raw output during its existing Bash call (which already runs). Zero extra tool calls.
 
@@ -53,7 +53,7 @@ Add `--save-dir` flag to `last30days.py`. The script saves its raw output during
 **What users lose:** Saved file contains raw research data, not Claude's synthesis
 **What users gain:** Zero extra lines, data is still preserved
 
-### Option C: Opt-in save via follow-up command
+#### Option C: Opt-in save via follow-up command
 
 Remove auto-save. Add a note to the invitation: "Say 'save' to save this research." When user says "save", run the Bash heredoc then.
 

@@ -39,7 +39,7 @@ AT Protocol auth flow:
 
 ## Implementation Steps
 
-### 1. `scripts/lib/env.py`
+#### 1. `scripts/lib/env.py`
 
 - Add `BSKY_HANDLE` and `BSKY_APP_PASSWORD` to the env var loading in `get_config()`
 - Update `is_bluesky_available()`:
@@ -48,14 +48,14 @@ AT Protocol auth flow:
       return bool(config.get('BSKY_HANDLE') and config.get('BSKY_APP_PASSWORD'))
   ```
 
-### 2. `scripts/lib/bluesky.py`
+#### 2. `scripts/lib/bluesky.py`
 
 - Add `_create_session(handle, app_password)` that POSTs to `https://bsky.social/xrpc/com.atproto.server.createSession`
 - Cache the access token for the lifetime of the search (module-level or passed through)
 - Update `search_bluesky()` to accept config dict, extract creds, create session, add `Authorization: Bearer {token}` header
 - On auth failure, return `{"posts": [], "error": "Bluesky auth failed"}` (don't raise)
 
-### 3. `scripts/last30days.py`
+#### 3. `scripts/last30days.py`
 
 - Change `do_bluesky` default from `True` to checking `is_bluesky_available(config)`:
   ```python
@@ -65,13 +65,13 @@ AT Protocol auth flow:
 - Update both diagnostic dicts: `"bluesky": True` -> `"bluesky": has_bluesky`
 - Pass `config` to `_search_bluesky()` so it can extract auth creds
 
-### 4. `tests/test_bluesky.py`
+#### 4. `tests/test_bluesky.py`
 
 - Test `_create_session` with mocked HTTP response
 - Test `search_bluesky` with auth header injection
 - Existing parse/normalize tests don't change (they don't hit the network)
 
-### 5. `SKILL.md`
+#### 5. `SKILL.md`
 
 - Add Bluesky to the optional env vars section (near AUTH_TOKEN/CT0):
   ```

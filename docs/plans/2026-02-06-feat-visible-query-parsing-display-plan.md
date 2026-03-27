@@ -47,7 +47,7 @@ Add an explicit "Display your parsing" instruction between the "Parse User Inten
 
 ## Implementation
 
-### SKILL.md Change
+#### SKILL.md Change
 
 **File:** `/Users/mvanhorn/last30days-skill-private/SKILL.md`
 
@@ -70,7 +70,7 @@ If TARGET_TOOL is known, mention it: "...for nano banana pro prompting technique
 This text MUST appear before you call any tools. It confirms to the user that you understood their request.
 ```
 
-### Sync
+#### Sync
 
 After editing SKILL.md:
 ```bash

@@ -28,19 +28,19 @@ Plus: **Instagram Reels** (v2.8), **Polymarket prediction markets** (v2.5), **Yo
 
 ## What's New
 
-### Added
+#### Added
 - ScrapeCreators Reddit backend with keyword search and subreddit discovery
 - Smart subreddit discovery with relevance-weighted scoring
 - Utility subreddit blocklist (`UTILITY_SUBS`)
 - Top comment scoring (10% engagement weight) and prominent rendering
 - Comment excerpts increased to 400 chars, insights raised to 10
 
-### Changed
+#### Changed
 - `primaryEnv` → `SCRAPECREATORS_API_KEY` (one key for Reddit, TikTok, Instagram)
 - Reddit engagement scoring: `0.55/0.40/0.05` → `0.50/0.35/0.05/0.10`
 - SKILL.md synthesis instructions emphasize quoting top comments
 
-### Fixed
+#### Fixed
 - Utility sub noise in subreddit discovery
 - Reddit no longer requires `OPENAI_API_KEY`
 

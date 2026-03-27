@@ -28,7 +28,7 @@ python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact --no-n
 
 Two coordinated changes:
 
-### 1. Remove quotes around `$ARGUMENTS` in SKILL.md
+#### 1. Remove quotes around `$ARGUMENTS` in SKILL.md
 
 **File:** `SKILL.md:168`
 
@@ -42,7 +42,7 @@ python3 "${SKILL_ROOT}/scripts/last30days.py" $ARGUMENTS --emit=compact --no-nat
 
 Now bash word-splits the expansion: `python3 script.py AI video tools --store --emit=compact`
 
-### 2. Change argparse `topic` from `nargs="?"` to `nargs="*"`
+#### 2. Change argparse `topic` from `nargs="?"` to `nargs="*"`
 
 **File:** `scripts/last30days.py:1040`
 
@@ -71,7 +71,7 @@ args.topic = " ".join(args.topic) if args.topic else None
 | `script.py "AI video tools" --store` (direct CLI) | `["AI video tools"]` + `--store` | `"AI video tools"` |
 | `script.py --store` (no topic) | `[]` + `--store` | `None` |
 
-### 3. Document missing flags in SKILL.md Options section
+#### 3. Document missing flags in SKILL.md Options section
 
 **File:** `SKILL.md:223-227`
 

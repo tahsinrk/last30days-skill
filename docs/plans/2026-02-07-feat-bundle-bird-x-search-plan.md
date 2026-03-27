@@ -30,7 +30,7 @@ This is the minimal-change approach:
 - Extract only the search-related code from Bird (not posting, bookmarks, lists, etc.)
 - Cookie auth stays the same (environment variables or browser extraction)
 
-### Why not rewrite in pure Python?
+#### Why not rewrite in pure Python?
 
 Bird's search client uses Twitter's internal GraphQL API with:
 - Rotating QueryIDs (hardcoded + runtime refresh from x.com)
@@ -42,7 +42,7 @@ Porting all of this to Python is ~1000 lines of fragile reverse-engineering. Ven
 
 ## Technical Approach
 
-### What we need from Bird
+#### What we need from Bird
 
 Only 8 files from `dist/lib/` (out of 30+):
 
@@ -59,11 +59,11 @@ Plus:
 - `features.json` - GraphQL feature flags
 - `query-ids.json` - Hardcoded QueryID fallbacks
 
-### What we DON'T need
+#### What we DON'T need
 
 Posting, bookmarks, lists, timelines, engagement, follow, media, news, user lookup, user tweets - all the non-search mixins. This cuts the vendored code roughly in half.
 
-### Architecture
+#### Architecture
 
 ```
 scripts/
@@ -90,9 +90,9 @@ scripts/
         LICENSE             # Bird's MIT license (required by MIT terms)
 ```
 
-### Implementation
+#### Implementation
 
-#### 1. Create `bird-search.mjs` wrapper (~40 lines)
+##### 1. Create `bird-search.mjs` wrapper (~40 lines)
 
 A minimal Node.js script that:
 - Accepts: `node bird-search.mjs <query> --count <n> --json`
@@ -104,7 +104,7 @@ A minimal Node.js script that:
 
 This replaces the full `bird` CLI binary. Same interface, fraction of the code.
 
-#### 2. Modify `bird_x.py` - change subprocess target
+##### 2. Modify `bird_x.py` - change subprocess target
 
 ```python
 # BEFORE (current)
@@ -117,7 +117,7 @@ cmd = ["node", bird_search, query, "--count", str(count), "--json"]
 
 Same subprocess pattern. Same JSON output format. Minimal diff.
 
-#### 3. Update auth check functions
+##### 3. Update auth check functions
 
 ```python
 # BEFORE
@@ -134,7 +134,7 @@ def is_bird_installed() -> bool:
 
 `install_bird()` becomes a no-op (already vendored) or removes itself entirely.
 
-#### 4. Vendor sweet-cookie
+##### 4. Vendor sweet-cookie
 
 `@steipete/sweet-cookie` is the only runtime dependency. It handles browser cookie extraction on macOS/Linux. Options:
 
@@ -144,7 +144,7 @@ def is_bird_installed() -> bool:
 
 Recommend Option A - vendor it.
 
-#### 5. Update user-facing docs
+##### 5. Update user-facing docs
 
 - `README.md` - Remove "Install Bird CLI" section, replace with "Requires Node.js 22+"
 - `SKILL.md` - Remove Bird CLI installation instructions

@@ -19,7 +19,7 @@ All 9 open issues and 2 open PRs on `mvanhorn/last30days-skill` were commented o
 
 ## Actions
 
-### Close as fixed (6 issues)
+#### Close as fixed (6 issues)
 
 ```bash
 gh issue close 40 --repo mvanhorn/last30days-skill --reason completed
@@ -30,13 +30,13 @@ gh issue close 29 --repo mvanhorn/last30days-skill --reason completed
 gh issue close 4  --repo mvanhorn/last30days-skill --reason completed
 ```
 
-### Close superseded PR (#26)
+#### Close superseded PR (#26)
 
 ```bash
 gh pr close 26 --repo mvanhorn/last30days-skill
 ```
 
-### Keep open (no action needed)
+#### Keep open (no action needed)
 
 - #36 - SKILL.md flag forwarding (investigating)
 - #31 - skills.sh audit scores (needs review)

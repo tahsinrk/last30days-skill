@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R2** (score:76) r/ClaudeCode (2026-02-22)
   We 3x'd our team's Claude Code skill usage in 2 weeks — here's how
@@ -27,7 +27,7 @@
   https://www.reddit.com/r/ClaudeCode/comments/1r0l549/i_built_12_seo_skills_for_claude_code_open_source/
   *Concrete example of building and sharing Claude Code skills.*
 
-### X Posts
+#### X Posts
 
 **X6** (score:86) @zeeg (2026-02-25) [4likes, 1rt]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -98,7 +98,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **X8afcX2s2Mo** (score:74) Grace Leung (2026-02-21) [47,474 views, 1,900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)

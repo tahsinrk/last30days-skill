@@ -18,7 +18,7 @@ The skill's name is "last30days" - users expect ONLY content from the last 30 da
 
 ## Proposed Solution
 
-### Strategy: "Hard Filter, Not Soft Penalty"
+#### Strategy: "Hard Filter, Not Soft Penalty"
 
 Instead of penalizing old content, **exclude it entirely**. If it's not from the last 30 days, it shouldn't appear.
 
@@ -30,7 +30,7 @@ Instead of penalizing old content, **exclude it entirely**. If it's not from the
 
 ## Technical Approach
 
-### Phase 1: Fix Reddit Date Filtering
+#### Phase 1: Fix Reddit Date Filtering
 
 **File: `scripts/lib/openai_reddit.py`**
 
@@ -54,7 +54,7 @@ If you cannot find enough recent threads, return fewer results rather than older
 2. Inject dates into `REDDIT_SEARCH_PROMPT` like X does
 3. Update caller in `last30days.py` to pass dates
 
-### Phase 2: Add Hard Date Filtering (Post-Processing)
+#### Phase 2: Add Hard Date Filtering (Post-Processing)
 
 **File: `scripts/lib/normalize.py`**
 
@@ -97,7 +97,7 @@ def filter_by_date_range(
     return result
 ```
 
-### Phase 3: WebSearch Date Intelligence
+#### Phase 3: WebSearch Date Intelligence
 
 WebSearch CAN find recent content - Medium posts have dates, GitHub has commit timestamps, news sites have publication dates. We should **extract and prioritize** these signals.
 
@@ -235,13 +235,13 @@ def score_websearch_items(items):
 
 **Result**: WebSearch results with verifiable recent dates rank well. Results with no dates are heavily penalized but still appear as supplementary context. Old verified content is excluded entirely.
 
-### Phase 4: Update Statistics Display
+#### Phase 4: Update Statistics Display
 
 Only count Reddit and X in "from the last 30 days" claim. WebSearch should be clearly labeled as supplementary.
 
 ## Acceptance Criteria
 
-### Functional Requirements
+#### Functional Requirements
 
 - [x] Reddit search prompt includes explicit `from_date` and `to_date`
 - [x] Items with dates before `from_date` are EXCLUDED, not just penalized
@@ -252,13 +252,13 @@ Only count Reddit and X in "from the last 30 days" claim. WebSearch should be cl
 - [x] WebSearch with no date signals gets -20 penalty (but still appears)
 - [x] WebSearch with verified OLD dates is EXCLUDED
 
-### Non-Functional Requirements
+#### Non-Functional Requirements
 
 - [ ] No increase in API latency
 - [ ] Graceful handling when few recent results exist (return fewer, not older)
 - [ ] Clear user messaging when results are limited due to strict filtering
 
-### Quality Gates
+#### Quality Gates
 
 - [ ] Test: Reddit search returns 0% results older than 30 days
 - [ ] Test: X search continues to return 100% recent results
@@ -275,7 +275,7 @@ Only count Reddit and X in "from the last 30 days" claim. WebSearch should be cl
 
 ## Testing Plan
 
-### Before/After Test
+#### Before/After Test
 
 Run same query before and after fix:
 ```
@@ -288,7 +288,7 @@ Run same query before and after fix:
 **Expected After:**
 - Reddit: 100% within 30 days (or fewer results if not enough recent content)
 
-### Edge Case Tests
+#### Edge Case Tests
 
 | Scenario | Expected Behavior |
 |----------|-------------------|
@@ -296,7 +296,7 @@ Run same query before and after fix:
 | Topic with 5 recent results | Return 5 results (not pad with old ones) |
 | Mixed old/new results | Only return new ones |
 
-### WebSearch Date Extraction Tests
+#### WebSearch Date Extraction Tests
 
 | URL/Snippet | Expected Date | Confidence |
 |-------------|---------------|------------|
@@ -316,13 +316,13 @@ Run same query before and after fix:
 
 ## References
 
-### Internal References
+#### Internal References
 - Reddit search: `scripts/lib/openai_reddit.py:25-63`
 - X search (working example): `scripts/lib/xai_x.py:26-55`
 - Date confidence: `scripts/lib/dates.py:62-90`
 - Scoring penalties: `scripts/lib/score.py:149-153`
 - Normalization: `scripts/lib/normalize.py:49,99`
 
-### External References
+#### External References
 - OpenAI Responses API lacks native date filtering
 - Must rely on prompt engineering + post-processing

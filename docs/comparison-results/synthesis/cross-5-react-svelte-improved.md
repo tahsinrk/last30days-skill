@@ -10,7 +10,7 @@ The React-vs-Svelte debate in early 2026 has shifted from "which is better" to "
 
 **Post-framework thinking is emerging.** @cityjsconf announced a talk on Ripple that cherry-picks from React, Svelte, and Solid, while @dennydotio predicted frameworks themselves become obsolete once AI handles code generation. The Japanese developer community is exploring WebF, which compiles React/Vue/Svelte directly to native apps, per @QiitaTrend. The React-vs-Svelte framing may have a shorter shelf life than either community expects.
 
-### CONTRADICTIONS
+#### CONTRADICTIONS
 
 The biggest contradiction sits at the center of the Svelte community itself. Runes were supposed to make Svelte more approachable and scalable, but Fireship's video questioning whether runes "ruined" Svelte shows genuine anxiety. Reddit threads where newcomers say "Svelte is easier than React" coexist with experienced Svelte developers saying the migration to runes introduced friction they did not expect.
 

@@ -18,7 +18,7 @@ Currently `/last30days` requires at least one API key (OpenAI or xAI) to functio
 
 ## Proposed Solution
 
-### Weighting Strategy: "Engagement-Adjusted Scoring"
+#### Weighting Strategy: "Engagement-Adjusted Scoring"
 
 **Current formula** (same for Reddit/X):
 ```
@@ -40,7 +40,7 @@ score = 0.45*relevance + 0.25*recency + 0.30*engagement - penalties
 - `-15 point source penalty` ensures WebSearch ranks below comparable Reddit/X items
 - High-quality WebSearch can still surface (score 60-70) but won't dominate (Reddit/X score 70-85)
 
-### Mode Behavior
+#### Mode Behavior
 
 | API Keys Available | Default Behavior | `--include-web` |
 |--------------------|------------------|-----------------|
@@ -53,7 +53,7 @@ score = 0.45*relevance + 0.25*recency + 0.30*engagement - penalties
 
 ## Technical Approach
 
-### Architecture
+#### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -76,9 +76,9 @@ score = 0.45*relevance + 0.25*recency + 0.30*engagement - penalties
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Implementation Phases
+#### Implementation Phases
 
-#### Phase 1: Schema & Core Infrastructure
+##### Phase 1: Schema & Core Infrastructure
 
 **Files to create/modify:**
 
@@ -165,7 +165,7 @@ class WebSearchItem:
         }
 ```
 
-#### Phase 2: Scoring System Updates
+##### Phase 2: Scoring System Updates
 
 ```python
 # scripts/lib/score.py - ADD websearch scoring
@@ -211,7 +211,7 @@ def score_websearch_items(items: List[schema.WebSearchItem]) -> List[schema.WebS
     return items
 ```
 
-#### Phase 3: Orchestrator Integration
+##### Phase 3: Orchestrator Integration
 
 ```python
 # scripts/last30days.py - UPDATE run_research()
@@ -246,7 +246,7 @@ def run_research(...) -> tuple:
             raw_websearch, reddit_error, x_error, web_error)
 ```
 
-#### Phase 4: CLI & Environment Updates
+##### Phase 4: CLI & Environment Updates
 
 ```python
 # scripts/last30days.py - ADD CLI flag
@@ -276,7 +276,7 @@ def get_available_sources(config: dict) -> str:
 
 ## Acceptance Criteria
 
-### Functional Requirements
+#### Functional Requirements
 
 - [x] Skill works with zero API keys (WebSearch-only mode)
 - [x] `--include-web` flag adds WebSearch to Reddit/X searches
@@ -285,13 +285,13 @@ def get_available_sources(config: dict) -> str:
 - [x] Date filtering uses natural language ("last 30 days") in prompt
 - [x] Output clearly labels source type: `[WEB]`, `[Reddit]`, `[X]`
 
-### Non-Functional Requirements
+#### Non-Functional Requirements
 
 - [x] WebSearch adds <10s latency to total research time (0s - deferred to Claude)
 - [x] Graceful degradation if WebSearch fails
 - [ ] Cache includes WebSearch results appropriately
 
-### Quality Gates
+#### Quality Gates
 
 - [x] Before/after testing shows WebSearch doesn't dominate rankings (via -15pt penalty)
 - [x] Test: 10 Reddit + 10 X + 10 WebSearch → WebSearch avg score 15-20pts lower (scoring formula verified)
@@ -299,7 +299,7 @@ def get_available_sources(config: dict) -> str:
 
 ## Testing Plan
 
-### Before/After Comparison Script
+#### Before/After Comparison Script
 
 ```python
 # tests/test_websearch_weighting.py
@@ -345,7 +345,7 @@ def test_websearch_weighting():
         assert web_in_top_5 <= 2, f"Too many WebSearch items in top 5: {web_in_top_5}"
 ```
 
-### Manual Test Scenarios
+#### Manual Test Scenarios
 
 | Scenario | Expected Outcome |
 |----------|------------------|
@@ -378,18 +378,18 @@ def test_websearch_weighting():
 
 ## References
 
-### Internal References
+#### Internal References
 - Scoring algorithm: `scripts/lib/score.py:8-15`
 - Source detection: `scripts/lib/env.py:57-72`
 - Schema patterns: `scripts/lib/schema.py:76-138`
 - Orchestrator: `scripts/last30days.py:54-164`
 
-### External References
+#### External References
 - Claude WebSearch docs: https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool
 - WebSearch pricing: $10/1K searches + token costs
 - Date filtering limitation: No explicit date params, use natural language
 
-### Research Findings
+#### Research Findings
 - Reddit upvotes are ~12% of ranking value in SEO (strong signal)
 - E-E-A-T framework: Engagement metrics = trust signal
 - MSA2C2 approach: Dynamic weight learning for multi-source aggregation

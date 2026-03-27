@@ -2,24 +2,24 @@
 
 ## 0.8.0 — 2026-01-19
 
-### Added
+#### Added
 - `bookmarks` thread expansion controls (`--expand-root-only`, `--author-chain`, `--author-only`, `--full-chain-only`, `--include-ancestor-branches`, `--include-parent`, `--thread-meta`, `--sort-chronological`) for richer context exports (#55) — thanks @kkretschmer2.
 - `--chrome-profile-dir` to point at Chromium profile directories or cookie DB files (Arc/Brave/etc) for cookie extraction (#16) — thanks @tekumara.
 - `about` command to report account origin/location metadata (#51) — thanks @pjtf93.
 - `follow`/`unfollow` commands to manage follows (#54) — thanks @citizenlee.
 - Twitter client now supports like/unlike/retweet/unretweet/bookmark via the engagement mixin (#53) — thanks @the-vampiire.
 
-### Fixed
+#### Fixed
 - `bookmarks` expanded JSON now preserves pagination `nextCursor`, and full-chain filtering only includes ancestor branches when requested.
 - Follow/unfollow REST fallback now supports cursor pagination for followers/following (#54).
 - About account live coverage now verifies data extraction paths (#51) — thanks @pjtf93.
 
-### Tests
+#### Tests
 - Live tests now exercise engagement mutations (opt-in) (#53) — thanks @the-vampiire.
 
 ## 0.7.0 — 2026-01-12
 
-### Added
+#### Added
 - `home` command for the "For You" and "Following" home timelines (#31) — thanks @odysseus0.
 - `news`/`trending` command for Explore tabs with AI-curated headlines (#39) — thanks @aavetis.
 - `user-tweets` command to fetch a user's profile timeline (#34) — thanks @crcatala.
@@ -30,10 +30,10 @@
 - Rich text output now shows article previews, quoted tweets, and media links (#32) — thanks @odysseus0.
 - Long-form article tweets now render rich Draft.js content blocks/entities (#36) — thanks @crcatala.
 
-### Changed
+#### Changed
 - Library typing: `SearchResult` is now a discriminated union (so `error` only exists when `success: false`).
 
-### Fixed
+#### Fixed
 - Lists GraphQL feature flags updated to prevent 400s (#27) — thanks @zheli.
 - Lists feature overrides now scope new GraphQL flags correctly (#50) — thanks @ryanh-ai.
 - Tweet detail parsing now tolerates partial GraphQL errors when usable data exists (#48) — thanks @jsholmes.
@@ -44,46 +44,46 @@
 - Terminal hyperlinks now sanitize control characters before emitting OSC 8 sequences (#29) — thanks @mafulafunk.
 - `pnpm run build:dist` now succeeds after tightening JSON/pagination option typing in tweet output commands.
 
-### Tests
+#### Tests
 - Following: split following/likes tests + cover cursor handling (#33) — thanks @VACInc.
 
 ## 0.6.0 — 2026-01-05
 
-### Added
+#### Added
 - Bookmark exports now support pagination (`--all`, `--max-pages`) with retries (#15) — thanks @Nano1337.
 - `lists` + `list-timeline` commands for Twitter Lists (#21) — thanks @harperreed
 - Tweet JSON output now includes media items (photos, videos, GIFs) (#14) — thanks @Hormold
 - Bookmarks can resume pagination from a cursor (#26) — thanks @leonho
 - `unbookmark` command to remove bookmarked tweets (#22) — thanks @mbelinky.
 
-### Changed
+#### Changed
 - Feature flags can be overridden at runtime via `features.json` (refreshable via `query-ids`).
 
-### Fixed
+#### Fixed
 - GraphQL feature flags now include `post_ctas_fetch_enabled` to avoid 400s (#38) — thanks @philipp-spiess.
 
 ## 0.5.1 — 2026-01-01
 
-### Changed
+#### Changed
 - `bird --help` now includes explicit “Shortcuts” and “JSON Output” sections (documents `bird <tweet-id-or-url>` shorthand + `--json`).
 - Release docs now include explicit npm publish verification steps.
 
-### Fixed
+#### Fixed
 - `pnpm bird --help` now works (dev script runs the CLI entrypoint, not the library entrypoint).
 - `following`/`followers` now fall back to internal v1.1 REST endpoints when GraphQL returns `404`.
 
-### Tests
+#### Tests
 - Add root help output regression test.
 - Add opt-in live CLI test suite (real GraphQL calls; skipped by default; gated via `BIRD_LIVE=1`).
 
 ## 0.5.0 — 2026-01-01
 
-### Added
+#### Added
 - `likes` command to list your liked tweets (thanks @swairshah).
 - Quoted tweet data in JSON output + `--quote-depth` (thanks @alexknowshtml).
 - `following`/`followers` commands to list users (thanks @lockmeister).
 
-### Changed
+#### Changed
 - Query ID updater now tracks the Likes GraphQL operation.
 - Query ID updater now tracks Following/Followers GraphQL operations.
 - Query ID updater now tracks BookmarkFolderTimeline and keeps bookmark query IDs seeded.
@@ -94,55 +94,55 @@
 
 ## 0.4.1 — 2025-12-31
 
-### Added
+#### Added
 - `bookmarks` command to list your bookmarked tweets.
 - `bookmarks --folder-id` to fetch bookmark folders (thanks @tylerseymour).
 
-### Changed
+#### Changed
 - Cookie extraction now uses `@steipete/sweet-cookie` (drops `sqlite3` CLI + custom browser readers in `bird`).
 - Query ID updater now tracks the Bookmarks GraphQL operation.
 - Lint rules stricter (block statements, no-negation-else, useConst/useTemplate, top-level regex, import extension enforcement).
 - `pnpm lint` now runs both Biome and oxlint (type-aware).
 
-### Tests
+#### Tests
 - Coverage thresholds raised to 90% statements/lines/functions (80% branches).
 - Added targeted Twitter client coverage suites.
 
 ## 0.4.0 — 2025-12-26
 
-### Added
+#### Added
 - Cookie source selection: `--cookie-source safari|chrome|firefox` (repeatable) + `cookieSource` config (string or array).
 
-### Fixed
+#### Fixed
 - `tweet`/`reply`: fallback to `statuses/update.json` when GraphQL `CreateTweet` returns error 226 (“automated request”).
 
-### Breaking
+#### Breaking
 - Remove `allowSafari`/`allowChrome`/`allowFirefox` config toggles in favor of `cookieSource` ordering.
 
 ## 0.3.0 — 2025-12-26
 
-### Added
+#### Added
 - Safari cookie extraction (`Cookies.binarycookies`) + `allowSafari` config toggle.
 
-### Changed
+#### Changed
 - Removed the Sweetistics engine + fallback. `bird` is GraphQL-only.
 - Browser cookie fallback order: Safari → Chrome → Firefox.
 
-### Tests
+#### Tests
 - Enforce coverage thresholds (>= 70% statements/branches/functions/lines) + expand unit coverage for version/output/Twitter client branches.
 
 ## 0.2.0 — 2025-12-26
 
-### Added
+#### Added
 - Output controls: `--plain`, `--no-emoji`, `--no-color` (respects `NO_COLOR`).
 - `help` command: `bird help <command>`.
 - Runtime GraphQL query ID refresh: `bird query-ids --fresh` (cached on disk; auto-retry on 404; override cache via `BIRD_QUERY_IDS_CACHE`).
 - GraphQL media uploads via `--media` (up to 4 images/GIFs, or 1 video).
 
-### Fixed
+#### Fixed
 - CLI `--version`: read version from `package.json`/`VERSION` (no hardcoded string) + append git sha when available.
 
-### Changed
+#### Changed
 - `mentions`: no hardcoded user; defaults to authenticated user or accepts `--user @handle`.
 - GraphQL query ID updater: correctly pairs `operationName` ↔ `queryId` (CreateTweet/CreateRetweet/etc).
 - `build:dist`: copies `src/lib/query-ids.json` into `dist/lib/query-ids.json` (keeps `dist/` in sync).
@@ -150,18 +150,18 @@
 
 ## 0.1.1 — 2025-12-26
 
-### Changed
+#### Changed
 - Engine default now `auto` (GraphQL primary; Sweetistics only on fallback when configured).
 
-### Tests
+#### Tests
 - Add engine resolution tests for auto/default behavior.
 
-### Fixed
+#### Fixed
 - GraphQL read: rotate TweetDetail query IDs with fallback to avoid 404s.
 
 ## 0.1.0 — 2025-12-20
 
-### Added
+#### Added
 - CLI commands: `tweet`, `reply`, `read`, `replies`, `thread`, `search`, `mentions`, `whoami`, `check`.
 - URL/ID shorthand for `read`, plus `--json` output where supported.
 - GraphQL engine with cookie auth from Firefox/Chrome/env/flags (macOS browsers).

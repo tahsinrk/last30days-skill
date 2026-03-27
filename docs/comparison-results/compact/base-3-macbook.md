@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R1** (score:0) r/macbookpro (2025-04-09) [date:low]
   M4 Macbook Pro 14’ 1 month review
@@ -22,7 +22,7 @@
   https://www.reddit.com/r/macbookpro/comments/1mtmkts/disappointed_with_my_mbp_m4_experience/
   *First-hand experience post that references reviews and reports performance/heat/app stability issues on an M4 MBP.*
 
-### X Posts
+#### X Posts
 
 **X1** (score:86) @bhphoto (2026-02-25) [3likes]
   If you are in the market for a new MacBook Pro and you’re wondering what the real differences are between Apple’s M3 and M4 silicon, you’ve come to the right place ⬇️
@@ -134,7 +134,7 @@ The linked Newsroom search returns zero matching results—it's just unrelated a
   https://x.com/grok/status/2026727605517394283
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **9HQx5pgUoiY** (score:61) Marques Brownlee (2024-11-18) [4,010,567 views, 105,606 likes]
   M4 Max MacBook Pro: I'm Convinced!

@@ -29,7 +29,7 @@ Both searches run **in parallel** using Python's `ThreadPoolExecutor(max_workers
 
 ## Reddit Search
 
-### How it works
+#### How it works
 
 Reddit search uses the **OpenAI Responses API** with the `web_search` tool, domain-filtered to `reddit.com` only.
 
@@ -60,7 +60,7 @@ The prompt asks the model to:
 **Model fallback chain:** `gpt-5.2 → gpt-5.1 → gpt-5 → gpt-4.1 → gpt-4o → gpt-4o-mini`
 Triggers on HTTP 400/403 with access error keywords.
 
-### Enrichment (the secret sauce)
+#### Enrichment (the secret sauce)
 
 After search, each thread gets **enriched** by hitting Reddit's free JSON API:
 
@@ -81,7 +81,7 @@ No API key needed. This returns the actual thread data:
 
 **This is why Reddit results have real engagement metrics** — the enrichment step fetches actual upvote/comment data, not AI estimates.
 
-### Depth settings
+#### Depth settings
 
 | Depth | Threads requested | Timeout |
 |---|---|---|
@@ -95,7 +95,7 @@ No API key needed. This returns the actual thread data:
 
 X search has **two backends** — the skill auto-detects which to use.
 
-### Priority: Bundled Bird (env auth) → xAI API (paid)
+#### Priority: Bundled Bird (env auth) → xAI API (paid)
 
 ```python
 if node_available and AUTH_TOKEN and CT0:
@@ -106,7 +106,7 @@ else:
     skip X entirely     # No X results
 ```
 
-### Backend 1: xAI API
+#### Backend 1: xAI API
 
 **API Call:**
 ```
@@ -130,7 +130,7 @@ The prompt asks grok to return JSON with:
 
 **Engagement data comes from grok's x_search tool** - it has direct access to X's data.
 
-### Backend 2: Bundled Bird client (free alternative)
+#### Backend 2: Bundled Bird client (free alternative)
 
 The repo vendors a search-only subset of Bird's Twitter GraphQL client and shells out to it with Node.js. No global `bird` install is required. The Python wrapper passes `AUTH_TOKEN` and `CT0` via env, which keeps normal local runs headless and avoids browser-cookie prompts.
 
@@ -144,7 +144,7 @@ The repo vendors a search-only subset of Bird's Twitter GraphQL client and shell
 | Author handle | Real | Real |
 | Relevance score | Default 0.7 (re-ranked by score.py) | AI-assessed 0.0-1.0 |
 
-### Depth settings
+#### Depth settings
 
 | Depth | xAI posts | Bundled Bird results | xAI timeout | Bird timeout |
 |---|---|---|---|---|

@@ -19,20 +19,20 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 
 ## Problem Statement
 
-### 1. Comments are undervalued
+#### 1. Comments are undervalued
 - ScrapeCreators returns real comment data with scores, but top comments only appear as `Insights:` text under each Reddit item
 - The top comment (often the funniest/cleverest reply) gets no special treatment — it's just one of 3 comment excerpts
 - Reddit's value IS the comments — upvoted replies are the distilled crowd wisdom
 - Currently `comment_insights` are truncated at 150 chars and only 3 are shown per item in compact output
 - No scoring bonus for posts that have high-quality comment threads
 
-### 2. Subreddit discovery picks wrong subs for ambiguous queries
+#### 2. Subreddit discovery picks wrong subs for ambiguous queries
 - "best rap songs lately" discovered `r/NameThatSong` and `r/findthatsong` (utility subs for identifying songs) instead of discussion subs like `r/hiphopheads` or `r/rap`
 - "Kanye West" picked `r/ConcertsIndia_` as second sub — tangential at best
 - The current heuristic is pure frequency count on `subreddit` field from global results, with no relevance weighting
 - Utility/meta subs often dominate because the same query matches many "help me find X" posts
 
-### 3. Onboarding still suggests OpenAI as the primary Reddit method
+#### 3. Onboarding still suggests OpenAI as the primary Reddit method
 - SKILL.md metadata says `primaryEnv: OPENAI_API_KEY` and `requires.env: [OPENAI_API_KEY]`
 - The web-only mode banner mentions "OPENAI_API_KEY or codex login → Reddit threads"
 - `env.py` error messages direct users to OpenAI for Reddit access
@@ -43,7 +43,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 
 ## Implementation Plan
 
-### Task 1: Elevate Top Comments in Scoring and Rendering
+#### Task 1: Elevate Top Comments in Scoring and Rendering
 
 **Goal:** Give Reddit posts a scoring bonus when they have highly-engaged comment threads, and render the #1 comment with special treatment.
 
@@ -53,7 +53,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 - `scripts/lib/render.py` — render top comment with special formatting
 - `scripts/lib/schema.py` — add `top_comment_excerpt` field to RedditItem (optional, may just use existing `top_comments[0]`)
 
-#### 1a. Comment enrichment improvements (`scripts/lib/reddit.py`)
+##### 1a. Comment enrichment improvements (`scripts/lib/reddit.py`)
 
 - [x] In `enrich_with_comments()`, after sorting comments by score, tag the item with:
   - `top_comment_excerpt`: The highest-scored comment's body (up to 200 chars)
@@ -63,7 +63,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 - [x] Increase `comment_insights` limit from 7 → 10 (we have the data, show it)
 - [x] For posts with enriched comments, store the comment count ratio: `top_comment_score / post_score` — a high ratio means the comment outshines the post (Reddit gold)
 
-#### 1b. Scoring bonus for comment quality (`scripts/lib/score.py`)
+##### 1b. Scoring bonus for comment quality (`scripts/lib/score.py`)
 
 - [x] In `compute_reddit_engagement_raw()`, add a comment quality signal:
   - Current formula: `0.55*log1p(score) + 0.40*log1p(num_comments) + 0.05*(upvote_ratio*10)`
@@ -75,7 +75,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
   - Option B: Read from `item.top_comments[0].score` during scoring (no schema change)
   - **Recommend Option B** to avoid schema bloat — scoring can peek at `top_comments`
 
-#### 1c. Render top comment prominently (`scripts/lib/render.py`)
+##### 1c. Render top comment prominently (`scripts/lib/render.py`)
 
 - [x] In `render_compact()` Reddit section, after the `Insights:` block, add a "Top Comment:" line for items that have top_comments:
   ```
@@ -92,7 +92,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 - [x] Truncate at 200 chars with `...` if needed
 - [x] Also update `render_full_report()` to include the top comment prominently
 
-#### 1d. Update SKILL.md synthesis instructions
+##### 1d. Update SKILL.md synthesis instructions
 
 - [x] In the "Judge Agent: Synthesize All Sources" section, add guidance:
   ```
@@ -102,14 +102,14 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 
 ---
 
-### Task 2: Improve Subreddit Discovery Heuristic
+#### Task 2: Improve Subreddit Discovery Heuristic
 
 **Goal:** Find topical discussion subs rather than utility/meta subs.
 
 **Files to modify:**
 - `scripts/lib/reddit.py` — improve `discover_subreddits()` logic
 
-#### 2a. Add relevance-weighted subreddit scoring
+##### 2a. Add relevance-weighted subreddit scoring
 
 - [x] Replace pure frequency count with a weighted score:
   ```python
@@ -145,7 +145,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
       return [sub for sub, _ in scores.most_common(max_subs)]
   ```
 
-#### 2b. Define utility/meta subreddit blocklist
+##### 2b. Define utility/meta subreddit blocklist
 
 - [x] Add a small set of subs that are "find X for me" or "identify X" rather than discussion:
   ```python
@@ -157,14 +157,14 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
   ```
 - [x] Keep this small and focused — don't over-filter. Only penalty (0.3x), not ban.
 
-#### 2c. Try secondary query for subreddit discovery
+##### 2c. Try secondary query for subreddit discovery
 
 - [x] If the first global search returns <3 unique subreddits above threshold, run a second global search with just `{core subject}` (stripped even further) to cast a wider net for subreddit frequencies
 - [x] This helps niche topics where the full query is too specific
 
 ---
 
-### Task 3: Make ScrapeCreators the Default Reddit Method
+#### Task 3: Make ScrapeCreators the Default Reddit Method
 
 **Goal:** New users should be guided to ScrapeCreators first, not OpenAI.
 
@@ -173,13 +173,13 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 - `scripts/lib/env.py` — error messages and missing key guidance
 - `scripts/lib/render.py` — web-only mode banner
 
-#### 3a. Update SKILL.md metadata
+##### 3a. Update SKILL.md metadata
 
 - [x] Change `primaryEnv: OPENAI_API_KEY` → `primaryEnv: SCRAPECREATORS_API_KEY`
 - [x] Change `requires.env: [OPENAI_API_KEY]` → `requires.env: [SCRAPECREATORS_API_KEY]`
 - [x] Keep OPENAI_API_KEY mentioned but as optional/legacy
 
-#### 3b. Update web-only mode banner (`scripts/lib/render.py`)
+##### 3b. Update web-only mode banner (`scripts/lib/render.py`)
 
 - [x] Change the current banner:
   ```
@@ -191,7 +191,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
   - `OPENAI_API_KEY` (legacy) → Reddit threads (slower, higher cost)
   ```
 
-#### 3c. Update env.py messaging
+##### 3c. Update env.py messaging
 
 - [x] In `get_missing_keys()`, when Reddit is missing, suggest ScrapeCreators first:
   - Current: returns `'reddit'` which triggers "Add OPENAI_API_KEY or run codex login" in SKILL.md
@@ -200,7 +200,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
     - For 'x': `"Add XAI_API_KEY for X posts"`
     - For 'all': `"Add SCRAPECREATORS_API_KEY (Reddit+TikTok+Instagram) and XAI_API_KEY (X)"`
 
-#### 3d. Update Security & Permissions section in SKILL.md
+##### 3d. Update Security & Permissions section in SKILL.md
 
 - [x] Add ScrapeCreators Reddit to the security section:
   ```
@@ -209,7 +209,7 @@ Three focused improvements to the Reddit ScrapeCreators integration based on 5 f
 - [x] Move "Sends search queries to OpenAI's Responses API for Reddit discovery" to a "Legacy:" subsection
 - [x] Update "Reddit" description in `allowed-tools` or tags if needed
 
-#### 3e. Update render.py coverage note
+##### 3e. Update render.py coverage note
 
 - [x] In `render_compact()`, the coverage note for `reddit-only` currently says "Add an xAI key"
 - [x] When ScrapeCreators is the active Reddit source, no need to mention OpenAI at all

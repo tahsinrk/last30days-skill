@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R2** (score:79) r/singularity (2026-02-25)
   Official: Seedance 2.0 now live in CapCut desktop and API access available, details below
@@ -82,7 +82,7 @@
   https://www.reddit.com/r/Seedance_AI/comments/1r4va5a/be_very_careful_of_scam_sites_that_do_not_have_it/
   *Thread about Seedance 2.0 access claims and scam warnings; relevant to where to generate videos.*
 
-### X Posts
+#### X Posts
 
 **X9** (score:86) @HBCoop_ (2026-02-25) [9likes]
   First Seedance 2.0 Test! 
@@ -169,7 +169,7 @@ This is not real. We don't have a Seedance account, and the links are not offi..
   https://x.com/TferThomas/status/2026749218224746609
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **F1kWxdfiBNE** (score:73) AI Filmmaking Academy (2026-02-22) [40,982 views, 1,088 likes]
   Seedance 2.0 Claims the AI Video Throne!
@@ -224,7 +224,7 @@ This is not real. We don't have a Seedance account, and the links are not offi..
   https://www.youtube.com/watch?v=61ThJGqwHsI
   *YouTube video about seedance ai video generation*
 
-### Hacker News Stories
+#### Hacker News Stories
 
 **HN8** (score:75) hn/Alisaqqt (2026-02-09) [7pts, 7cmt]
   Seedance 2.0 preview: The best video model of 2026, outperforming Sora 2

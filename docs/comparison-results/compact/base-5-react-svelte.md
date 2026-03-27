@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R2** (score:67) r/eact (2026-02-10)
   What do you guys think about comparison between React vs Svelte?
@@ -27,7 +27,7 @@
   https://www.reddit.com/r/sveltejs/comments/1g7d3a7/svelte_5_officially_released/
   *Major Svelte 5 release thread with debate about whether React developers will switch (React vs Svelte dynamics).*
 
-### X Posts
+#### X Posts
 
 **X4** (score:76) @FabianHiller (2026-02-13) [61likes, 2rt]
   TypeScript is the baseline in 2026. But most forms still fight type drift between API, schema & UI.  
@@ -98,7 +98,7 @@ Meanwhile React: *still powering 80...
   https://x.com/Chubbi_Stephen/status/2020087839648800853
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **yl0YWA2K2B0** (score:61) Fireship (2025-10-17) [699,597 views, 22,894 likes]
   React wants to win you back…

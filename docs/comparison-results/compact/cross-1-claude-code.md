@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R1** (score:78) r/ClaudeCode (2026-02-23)
   ClaudeInOne — a full framework for Claude Code, installed in one command
@@ -57,7 +57,7 @@
   https://www.reddit.com/r/ClaudeCode/comments/1o8t6xe/difference_between_skills_and_these_subagents/
   *Conceptual thread clarifying what Skills are versus subagents/CLAUDE.md/slash commands (relevant to skills usage).*
 
-### X Posts
+#### X Posts
 
 **X5** (score:86) @zeeg (2026-02-25) [5likes, 1rt]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -140,7 +140,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **X8afcX2s2Mo** (score:69) Grace Leung (2026-02-21) [47,512 views, 1,900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)
@@ -195,7 +195,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.youtube.com/watch?v=qthyl0GCpDo
   *YouTube: Claude Skills vs MCP: What’s the Difference and When to Use *
 
-### Hacker News Stories
+#### Hacker News Stories
 
 **HN1** (score:90) hn/cosmoblk (2026-02-21) [10pts, 2cmt]
   Show HN: I built a 55K-word email marketing knowledge base and Claude Code skill

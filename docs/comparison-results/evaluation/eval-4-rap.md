@@ -7,31 +7,31 @@
 
 Score each version 1-5 on these dimensions:
 
-### 1. GROUNDEDNESS (30%)
+#### 1. GROUNDEDNESS (30%)
 Does the narrative cite specific sources from the research data?
 - 1: Generic statements, no citations, could be written without any research
 - 3: Some citations but mixed with pre-existing knowledge filler
 - 5: Every finding backed by a specific source ("per @handle", "per r/sub", "per [channel]")
 
-### 2. SPECIFICITY (25%)
+#### 2. SPECIFICITY (25%)
 Are findings specific (named entities, exact numbers) or vague?
 - 1: Vague generalities ("AI video tools are improving", "developers are debating frameworks")
 - 3: Some specifics mixed with generic padding
 - 5: Named products, exact numbers, version names ("Seedance 2.0 added lip sync", "698 likes")
 
-### 3. COVERAGE (20%)
+#### 3. COVERAGE (20%)
 Does the synthesis represent findings from all available data sources?
 - 1: Only mentions 1-2 sources, ignores others
 - 3: Mentions most sources but unevenly weighted
 - 5: Naturally weaves Reddit, X, YouTube (and HN if available) into the narrative
 
-### 4. ACTIONABILITY (15%)
+#### 4. ACTIONABILITY (15%)
 Does the invitation give specific, research-derived next steps?
 - 1: Generic "let me know if you want more info"
 - 3: Somewhat specific but not clearly grounded in research findings
 - 5: Each suggestion references a specific thing from the research ("I can compare Seedance 2.0 vs Kling")
 
-### 5. FORMAT COMPLIANCE (10%)
+#### 5. FORMAT COMPLIANCE (10%)
 Does it follow the expected output format?
 - 1: Missing stats block, no invitation, wrong structure
 - 3: Partial stats block, generic invitation
@@ -137,7 +137,7 @@ Want me to pull the full Grammy rap category winners from the r/hiphopheads Pre-
 ---
 ## SCORES
 
-### Version A
+#### Version A
 - Groundedness: 4/5
 - Specificity: 5/5
 - Coverage: 4/5
@@ -146,7 +146,7 @@ Want me to pull the full Grammy rap category winners from the r/hiphopheads Pre-
 - **Weighted Total**: 4.25/5.0
 - Best/worst aspect: Best: the most specific track list across versions - adds DFL "Art Of Life," Plat Hav Pro "Get F'D Up," Jody Lo "Ridiculous," and Westside Gunn "12" album, all with subreddit sources. Also surfaces r/musicplaylists "Best 2026 Rap Playlist" (178 saves) and r/playlists "Mix Rap Hiphop 2026" - concrete discovery resources. Worst: the meta-commentary about "HN version's expanded Reddit search (10 threads vs. 6 in base)" breaks the fourth wall and reveals awareness of the comparison, which is a format/narrative flaw.
 
-### Version B
+#### Version B
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5
@@ -155,7 +155,7 @@ Want me to pull the full Grammy rap category winners from the r/hiphopheads Pre-
 - **Weighted Total**: 3.65/5.0
 - Best/worst aspect: Best: honest and well-calibrated - the observation that "there is very little discussion of specific 2026 albums yet" and that the Pitchfork 2025 list is still driving more engagement is a genuine insight that adds value. Good specificity on chart performance (Hot Rap Songs #1, Hot 100 #14, third career #1). Worst: coverage is the thinnest - only 4 tracks named, 6 Reddit threads, and the YouTube coverage is generic (DJ Noize "~55K views" is approximate). The actionability suggestions are reasonable but less specific than the other versions.
 
-### Version C
+#### Version C
 - Groundedness: 5/5
 - Specificity: 5/5
 - Coverage: 5/5

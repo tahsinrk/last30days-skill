@@ -15,7 +15,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 ## Issues Found and Fixed
 
-### CRITICAL: Browser Cookie/Keychain Extraction via sweet-cookie
+#### CRITICAL: Browser Cookie/Keychain Extraction via sweet-cookie
 
 **Location:** `scripts/lib/vendor/bird-search/lib/cookies.js` and `scripts/lib/vendor/bird-search/node_modules/@steipete/sweet-cookie/`
 
@@ -28,7 +28,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 - `resolveCredentials()` now only reads CLI args and env vars. If credentials are missing, it warns and does not touch a browser.
 - `cookies.js` went from 173 lines to 65.
 
-### HIGH: yt-dlp Keychain/Cookie Access
+#### HIGH: yt-dlp Keychain/Cookie Access
 
 **Location:** `scripts/lib/youtube_yt.py` — two yt-dlp subprocess calls (search and transcript fetch)
 
@@ -39,7 +39,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 - Added `--ignore-config` to both invocations (prevents user's yt-dlp config file from overriding our flags — defense-in-depth, contributed by upstream)
 - Added `--` separator before positional arguments to prevent topic strings starting with `-` from being interpreted as yt-dlp flags
 
-### MEDIUM: Full Parent Environment Leaked to Subprocesses
+#### MEDIUM: Full Parent Environment Leaked to Subprocesses
 
 **Location:** `scripts/lib/bird_x.py` — `_subprocess_env()` function
 
@@ -47,7 +47,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 **Fix:** Replaced `os.environ.copy()` with an allowlist: `{"PATH", "HOME", "NODE_PATH", "TERM", "LANG"}` plus the injected `AUTH_TOKEN`/`CT0`.
 
-### MEDIUM: search_handles() Missing Credential Injection
+#### MEDIUM: search_handles() Missing Credential Injection
 
 **Location:** `scripts/lib/bird_x.py` — `search_handles()` function
 
@@ -55,7 +55,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 **Fix:** Added `env=_subprocess_env()` to the Popen call.
 
-### MEDIUM: Raw API Responses Written to Disk
+#### MEDIUM: Raw API Responses Written to Disk
 
 **Location:** `scripts/lib/render.py` — `write_outputs()` function
 
@@ -63,7 +63,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 **Fix:** Removed all raw response file writes. The function signature still accepts the parameters for backward compatibility but ignores them.
 
-### MEDIUM: Cache Files with Permissive Permissions
+#### MEDIUM: Cache Files with Permissive Permissions
 
 **Location:** `scripts/lib/cache.py`
 
@@ -74,7 +74,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 - All cache files set to `0o600` after writing
 - `/tmp` fallback replaced with `tempfile.mkdtemp()` which creates owner-only directories
 
-### LOW: preexec_fn Deadlock Risk with Threads
+#### LOW: preexec_fn Deadlock Risk with Threads
 
 **Location:** `scripts/lib/bird_x.py`, `scripts/lib/youtube_yt.py`
 
@@ -82,7 +82,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 **Fix:** Added `_PY311_PLUS = sys.version_info >= (3, 11)` check. Uses `process_group=0` (fork-safe) on Python 3.11+, falls back to `preexec_fn` on older versions.
 
-### LOW: Bare except Clauses
+#### LOW: Bare except Clauses
 
 **Location:** `scripts/lib/http.py`, `scripts/lib/reddit_enrich.py`
 
@@ -94,7 +94,7 @@ Neither behavior was disclosed to the user. The macOS Keychain prompt (which onl
 
 The fork monitor config (`fork-monitor-config.json` in `tahsinrk/claude-config`) includes these rules for AI analysis. But here they are in plain language for manual review:
 
-### Hard Rejections (merge will reintroduce vulnerabilities)
+#### Hard Rejections (merge will reintroduce vulnerabilities)
 
 1. **Any re-addition of `@steipete/sweet-cookie`** or similar browser cookie extraction libraries in `node_modules/`. Check `package.json` and any new dependencies.
 
@@ -108,7 +108,7 @@ The fork monitor config (`fork-monitor-config.json` in `tahsinrk/claude-config`)
 
 6. **Raw API response writes to disk**. Any code that dumps API responses to files could leak auth headers.
 
-### Yellow Flags (review carefully before merging)
+#### Yellow Flags (review carefully before merging)
 
 - New npm dependencies in the vendor directory (audit for what they access)
 - New subprocess calls of any kind (check for `shell=True`, missing env, cookie access)

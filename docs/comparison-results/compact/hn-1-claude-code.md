@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R1** (score:0) r/ClaudeAI (2025-06-17) [date:low]
   Claude code and mcp servers
@@ -22,7 +22,7 @@
   https://www.reddit.com/r/ClaudeAI/comments/1ofltdr/i_spent_way_too_long_cataloguing_claude_code/
   *Tooling ecosystem post; explicitly mentions installing many plugins and MCP servers for Claude Code.*
 
-### X Posts
+#### X Posts
 
 **X5** (score:86) @zeeg (2026-02-25) [4likes, 1rt]
   @adamwathan Codex has been crushing it for me with implicit skill usage to the point I was shocked 
@@ -105,7 +105,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://x.com/hamen/status/2026734075243790396
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **X8afcX2s2Mo** (score:74) Grace Leung (2026-02-21) [47,474 views, 1,900 likes]
   Claude Skills: Build Your First AI Marketing Team in 16 Minutes (Claude Code)
@@ -160,7 +160,7 @@ Developers with 15+ years experience are either embracing AI to expand their rea
   https://www.youtube.com/watch?v=jzf7DQa2CAc
   *YouTube video about claude code skills and mcp servers*
 
-### Hacker News Stories
+#### Hacker News Stories
 
 **HN1** (score:90) hn/cosmoblk (2026-02-21) [10pts, 2cmt]
   Show HN: I built a 55K-word email marketing knowledge base and Claude Code skill

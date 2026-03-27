@@ -42,7 +42,7 @@ last30days is one-shot: ask, get a briefing, done. But the most valuable researc
 
 ## Proposed Solution
 
-### The Composable Pattern
+#### The Composable Pattern
 
 Instead of building scheduling into last30days, make last30days composable with Claude Code's existing tools:
 
@@ -62,7 +62,7 @@ Instead of building scheduling into last30days, make last30days composable with 
 
 The user's watchlist lives in SQLite forever. The scheduling is ephemeral by design - you opt into it each session. This matches how people actually use Claude Code: sessions, not servers.
 
-### Phase 1: Watchlist + Briefing via SKILL.md (MVP)
+#### Phase 1: Watchlist + Briefing via SKILL.md (MVP)
 
 Wire up the existing `watchlist.py` and `briefing.py` infrastructure through the skill interface.
 
@@ -94,7 +94,7 @@ Wire up the existing `watchlist.py` and `briefing.py` infrastructure through the
 - [ ] Watchlist survives across Claude Code sessions (SQLite)
 - [ ] Budget cap enforced (default $5/day)
 
-### Phase 2: Delta Intelligence
+#### Phase 2: Delta Intelligence
 
 Make briefings show what *changed*, not just what exists.
 
@@ -122,7 +122,7 @@ Make briefings show what *changed*, not just what exists.
 - [ ] Engagement spikes flagged with specific metric ("upvotes 2.3x since yesterday")
 - [ ] Redundant API calls avoided via smart skip logic
 
-### Phase 3: Delivery + `/loop` Integration
+#### Phase 3: Delivery + `/loop` Integration
 
 Make the monitoring truly hands-off during a session.
 
@@ -173,16 +173,16 @@ The Claude Code-native approach is better because:
 
 ## Alternative Approaches Considered
 
-### 1. Build custom scheduler.py with system cron/launchd
+#### 1. Build custom scheduler.py with system cron/launchd
 **Rejected.** Doesn't work in Claude Code's model. Platform-specific. Requires root/sudo for some configs. Users of a Claude Code skill shouldn't need to manage system daemons.
 
-### 2. OpenClaw's persistent cron service
+#### 2. OpenClaw's persistent cron service
 **Not applicable.** OpenClaw has its own cron system with database-backed scheduling, but last30days is an open-source skill that should work without OpenClaw. Could be an optional integration later.
 
-### 3. Long-running Python daemon
+#### 3. Long-running Python daemon
 **Rejected.** Fragile, wastes resources, doesn't benefit from LLM synthesis on each run.
 
-### 4. Web dashboard with its own backend
+#### 4. Web dashboard with its own backend
 **Deferred to Phase 4.** Dramatically increases scope. The briefing-to-Slack pattern delivers 80% of the value with 10% of the effort.
 
 ## Technical Considerations

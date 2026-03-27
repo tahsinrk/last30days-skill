@@ -5,7 +5,7 @@
 **OpenAI Model:** gpt-5.2
 **xAI Model:** grok-4-1-fast
 
-### Reddit Threads
+#### Reddit Threads
 
 **R6** (score:71) r/playlists (2026-02-19)
   Mix Rap Hiphop 2026
@@ -57,7 +57,7 @@
   https://www.reddit.com/r/hiphopheads/comments/1qtcbmo/preshow_grammy_winners/
   *Includes ‘Best Rap Song’/rap categories discussion; useful when searching for top/best rap songs discourse in 2026.*
 
-### X Posts
+#### X Posts
 
 **X5** (score:86) @Zika_gfx (2026-02-25) [12likes, 5rt]
   Talking about meaningful rap songs...
@@ -136,7 +136,7 @@ https://t.co/Nxzkb005lP
   https://x.com/fo_sho52268/status/2026335353364201566
   **
 
-### YouTube Videos
+#### YouTube Videos
 
 **ZUExyc50ZVU** (score:63) West Coast Finest (2026-01-29) [407,260 views, 4,229 likes]
   Lit Hip Hop Mix 2026🔥🔥🔥Tyga, Quavo, Iggy Azalea, Wiz Khalifa, Juicy J, 50 Cent

@@ -16,17 +16,17 @@ Consolidated review and action plan for all 6 open items (2 issues, 4 PRs) as of
 **Author:** 04cb | **Size:** +0/-1 | **Fixes:** #46
 **File changed:** `.clawhubignore` (removes `*.json` glob)
 
-### What it does
+#### What it does
 
 The `*.json` pattern in `.clawhubignore` was excluding `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` - the metadata files required for ClawHub skill upload. This caused the "Zip file contains path with invalid characters" error reported in #46.
 
-### Risk analysis
+#### Risk analysis
 
 - Removing `*.json` also includes test fixtures (`fixtures/*.json`) and vendored `package.json` in the bundle. None are sensitive or harmful.
 - No `package-lock.json`, `skills-lock.json`, or credential files exist as `.json` in the repo.
 - One-line change with zero production code impact.
 
-### Recommendation: MERGE IMMEDIATELY
+#### Recommendation: MERGE IMMEDIATELY
 
 - [x] Merge PR #52
 - [x] Close issue #46 (auto-closes via "Fixes #46")
@@ -38,7 +38,7 @@ The `*.json` pattern in `.clawhubignore` was excluding `.claude-plugin/marketpla
 
 **Author:** johnuppard | **Error:** "Zip file contains path with invalid characters"
 
-### Recommendation: CLOSES WITH PR #52
+#### Recommendation: CLOSES WITH PR #52
 
 No standalone action needed. PR #52 is the fix. After merge, comment on #46 confirming resolution and ask reporter to verify.
 
@@ -48,7 +48,7 @@ No standalone action needed. PR #52 is the fix. After merge, comment on #46 conf
 
 **Author:** mark-c4r | **Size:** +167/-0 (tests only)
 
-### What it does
+#### What it does
 
 Adds `tests/test_entity_extract.py` with 23 test cases covering all 4 public/private functions in `scripts/lib/entity_extract.py`:
 
@@ -59,7 +59,7 @@ Adds `tests/test_entity_extract.py` with 23 test cases covering all 4 public/pri
 | `_extract_subreddits` | 6 | field extraction, cross-refs in comments, frequency ranking, r/ stripping |
 | `extract_entities` | 4 | integration, max limits, empty inputs, return key validation |
 
-### Code quality assessment
+#### Code quality assessment
 
 - All function signatures match the actual module implementation exactly
 - All 23 tests validated against the real module - they pass
@@ -68,7 +68,7 @@ Adds `tests/test_entity_extract.py` with 23 test cases covering all 4 public/pri
 - No external dependencies, no API calls, no mocking needed (pure functions)
 - Test data uses inline dicts matching real Reddit/X response structure
 
-### Recommendation: MERGE AFTER LOCAL VERIFICATION
+#### Recommendation: MERGE AFTER LOCAL VERIFICATION
 
 - [x] Pull branch and run `python3 -m pytest tests/test_entity_extract.py -v` (23/23 passed)
 - [x] Run full suite `python3 -m pytest tests/` (317/320 passed - 3 pre-existing failures in test_models.py, unrelated)
@@ -82,7 +82,7 @@ This is a clean, well-structured community contribution that adds coverage to a 
 
 **Author:** YJLi-new | **Size:** +523/-75 | **Files:** 5 modified
 
-### What it does
+#### What it does
 
 Two features bundled in one PR:
 
@@ -100,7 +100,7 @@ Two features bundled in one PR:
 - Engagement-based relevance heuristic (60% score, 40% comments)
 - Supplemental retries correctly gated - only fire when OpenAI auth is present
 
-### Architecture compliance
+#### Architecture compliance
 
 | Pattern | Status |
 |---------|--------|
@@ -111,7 +111,7 @@ Two features bundled in one PR:
 | ThreadPoolExecutor dispatch | Correctly wired with +1 worker |
 | Render/UI integration | Consistent with existing sources |
 
-### Issues found
+#### Issues found
 
 1. **Health check duplication** - `is_xiaohongshu_available()` in env.py AND `search_feeds()` both probe login status. Redundant but harmless.
 2. **`from_date`/`to_date` accepted but unused** for Xiaohongshu - relies on API-side time bucketing. Acceptable given API limitation.
@@ -120,14 +120,14 @@ Two features bundled in one PR:
 5. **`get_available_sources()` docstring** not updated to reflect Reddit always being available now.
 6. **No tests included** for new Xiaohongshu module or Reddit public fallback.
 
-### Security
+#### Security
 
 - No hardcoded credentials
 - xsec_token comes from API response (not user input)
 - Docker `host.docker.internal` default is safe for containerized environments
 - All URLs use `https://` for public Xiaohongshu
 
-### Recommendation: MERGE WITH CONDITIONS
+#### Recommendation: MERGE WITH CONDITIONS
 
 The Reddit public fallback alone makes this worth merging - it makes Reddit work with zero API keys. Xiaohongshu adds value for Chinese-market research.
 
@@ -150,7 +150,7 @@ The Reddit public fallback alone makes this worth merging - it makes Reddit work
 
 **Author:** lapolazzati | **Size:** +1484/-73 | **Files:** 6 new + orchestrator changes
 
-### What it does
+#### What it does
 
 Adds Apify as a single-token alternative (`APIFY_API_TOKEN`) covering Reddit, X, TikTok, and Instagram. Existing per-source keys take priority; Apify is a transparent fallback.
 
@@ -169,7 +169,7 @@ TikTok:    ScrapeCreators -> Apify -> None
 Instagram: ScrapeCreators -> Apify -> None
 ```
 
-### Critical issues
+#### Critical issues
 
 1. **Actor ID mismatch (BLOCKER):** Code uses different Apify actors than documented in README and plan.md.
 
@@ -195,7 +195,7 @@ Instagram: ScrapeCreators -> Apify -> None
 
 5. **plan.md included in commit** - implementation planning doc shouldn't be in the final merge.
 
-### What's good
+#### What's good
 
 - Source routing logic in env.py is clean and backward-compatible
 - Orchestrator dispatch uses consistent `_source` parameter pattern
@@ -203,7 +203,7 @@ Instagram: ScrapeCreators -> Apify -> None
 - Timeout scaling is appropriate (90s quick, 150s default, 240s deep)
 - Token handling follows security best practices (parameter passing, Bearer auth)
 
-### Recommendation: REQUEST CHANGES
+#### Recommendation: REQUEST CHANGES
 
 This PR is too large and has too many issues for a clean merge. Request the contributor to:
 
@@ -236,7 +236,7 @@ This PR is too large and has too many issues for a clean merge. Request the cont
 
 **Author:** alexferrari88 | **Request:** "Would it be possible to add support for Gemini CLI?"
 
-### Assessment
+#### Assessment
 
 This is a feature request to support Gemini CLI as a runtime alongside Claude Code and Codex. Key considerations:
 
@@ -245,7 +245,7 @@ This is a feature request to support Gemini CLI as a runtime alongside Claude Co
 - **Priority:** Low - Claude Code and Codex are the primary targets and where the user base is.
 - **Community:** If the requester wants to contribute, they'd be best positioned to understand Gemini CLI's requirements.
 
-### Recommendation: ACKNOWLEDGE AND BACKLOG
+#### Recommendation: ACKNOWLEDGE AND BACKLOG
 
 - [x] Respond with comment acknowledging and inviting contribution
 - [x] Add a `help wanted` label

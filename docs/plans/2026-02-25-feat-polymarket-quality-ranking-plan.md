@@ -52,7 +52,7 @@ Issues:
 
 ## Proposed Solution
 
-### 1. Replace position-based relevance with quality-signal relevance
+#### 1. Replace position-based relevance with quality-signal relevance
 
 New formula in `parse_polymarket_response()`:
 
@@ -96,7 +96,7 @@ relevance = (
 )
 ```
 
-### 2. Fix DEPTH_CONFIG to use pagination
+#### 2. Fix DEPTH_CONFIG to use pagination
 
 ```python
 # Pages to fetch per query (API returns 5 events per page)
@@ -107,11 +107,11 @@ DEPTH_CONFIG = {
 }
 ```
 
-### 3. Use event-level volume fields
+#### 3. Use event-level volume fields
 
 Extract `volume1mo`, `volume1wk`, `liquidity`, and `competitive` from the event object (not just the top market). These are more stable signals than market-level `volume24hr`.
 
-### 4. Cap results after re-ranking
+#### 4. Cap results after re-ranking
 
 After pagination, merge, dedup, and re-ranking, cap at a reasonable number before sending to the scoring pipeline:
 
@@ -125,9 +125,9 @@ RESULT_CAP = {
 
 ## Technical Approach
 
-### Implementation Plan
+#### Implementation Plan
 
-#### Phase 1: Fix pagination and DEPTH_CONFIG
+##### Phase 1: Fix pagination and DEPTH_CONFIG
 
 - [x] `scripts/lib/polymarket.py` - Change `DEPTH_CONFIG` to page counts: `{"quick": 1, "default": 2, "deep": 3}`
 - [x] `scripts/lib/polymarket.py` - Add `RESULT_CAP` dict: `{"quick": 5, "default": 10, "deep": 20}`
@@ -136,26 +136,26 @@ RESULT_CAP = {
 - [x] `scripts/lib/polymarket.py` - Apply `RESULT_CAP` after merge + dedup, before returning events
 - [x] `tests/test_polymarket.py` - Update `TestDepthConfig` tests for new page-count values
 
-#### Phase 2: Extract event-level quality signals
+##### Phase 2: Extract event-level quality signals
 
 - [x] `scripts/lib/polymarket.py` - In `parse_polymarket_response()`, extract event-level fields: `volume1mo`, `volume1wk`, `liquidity`, `competitive`, `commentCount`
 - [x] `scripts/lib/polymarket.py` - Pass `topic` to `parse_polymarket_response()` (already has the parameter, just need to use it)
 - [x] `fixtures/polymarket_sample.json` - Add event-level fields: `volume1mo`, `volume1wk`, `competitive`, `commentCount`, `volume24hr`, `liquidity`
 
-#### Phase 3: Replace relevance formula
+##### Phase 3: Replace relevance formula
 
 - [x] `scripts/lib/polymarket.py` - Replace position-based relevance formula with quality-signal formula (text similarity + volume + liquidity + price movement + competitive)
 - [x] `scripts/lib/polymarket.py` - Add `_compute_text_similarity(topic, title)` helper
 - [x] `tests/test_polymarket.py` - Add `TestTextSimilarity` test class
 - [x] `tests/test_polymarket.py` - Add `TestQualityRanking` test: given events with varying volume/liquidity/text-match, verify high-volume title-matching events rank above low-volume tangential ones
 
-#### Phase 4: Update engagement scoring
+##### Phase 4: Update engagement scoring
 
 - [x] `scripts/lib/schema.py` - No changes needed (Engagement already has `volume` and `liquidity`)
 - [x] `scripts/lib/polymarket.py` - Use event-level `volume1mo` instead of market-level `volume24hr` for the `volume24hr` field passed to normalization (or add a new field)
 - [x] `scripts/lib/normalize.py` - Update `normalize_polymarket_items()` to use `volume1mo` for engagement volume if available, fallback to `volume24hr`
 
-#### Phase 5: Tests and verification
+##### Phase 5: Tests and verification
 
 - [x] Run full test suite
 - [ ] Manual test: `/last30days "OpenAI" --emit=compact` - verify top markets are the most actively traded

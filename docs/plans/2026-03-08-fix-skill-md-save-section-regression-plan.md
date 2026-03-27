@@ -24,7 +24,7 @@ PR merges on March 7 regressed SKILL.md by re-introducing the "Save Research to 
 
 All in `SKILL.md`:
 
-### 1. Fix agent mode line (line 142)
+#### 1. Fix agent mode line (line 142)
 
 **Current (broken):**
 ```
@@ -36,7 +36,7 @@ Agent mode still saves the research briefing to `~/Documents/Last30Days/` using 
 Agent mode saves raw research data to `~/Documents/Last30Days/` automatically via `--save-dir` (handled by the script, no extra tool calls).
 ```
 
-### 2. Add `--save-dir` back to bash command (line 186)
+#### 2. Add `--save-dir` back to bash command (line 186)
 
 **Current (broken):**
 ```bash
@@ -48,11 +48,11 @@ python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact --no-n
 python3 "${SKILL_ROOT}/scripts/last30days.py" "$ARGUMENTS" --emit=compact --no-native-web --save-dir=~/Documents/Last30Days
 ```
 
-### 3. Delete the entire "Save Research to Documents" section (lines 517-563)
+#### 3. Delete the entire "Save Research to Documents" section (lines 517-563)
 
 Remove from `## Save Research to Documents` through the `---` separator before `## WAIT FOR USER'S RESPONSE`. This is ~47 lines.
 
-### 4. Update "STOP and wait" line (line 567)
+#### 4. Update "STOP and wait" line (line 567)
 
 **Current:**
 ```

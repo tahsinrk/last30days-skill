@@ -15,7 +15,7 @@ The outcome-aware scoring (from the prior plan) works perfectly on fixture data 
 
 ## Problem Statement
 
-### Root Cause: Gamma API is title/slug search only
+#### Root Cause: Gamma API is title/slug search only
 
 `gamma-api.polymarket.com/public-search?q=X` only matches against event titles and slugs. It does NOT search outcome names, market descriptions, or tags.
 
@@ -31,21 +31,21 @@ The outcome-aware scoring (from the prior plan) works perfectly on fixture data 
 
 The championship and seeding markets that the user wants (`NCAA Tournament Winner`, `#1 Seed`) are only findable by searching "NCAA Tournament" or "NCAA" - terms that don't appear in "Arizona Basketball".
 
-### Contributing Factor 1: Query expansion too narrow
+#### Contributing Factor 1: Query expansion too narrow
 
 `_expand_queries("Arizona Basketball")` generates only `["Arizona Basketball", "Arizona"]`.
 
 It only tries the **first word** as a standalone query. The second word "Basketball" is never searched independently. This means conference-adjacent and tournament markets are invisible.
 
-### Contributing Factor 2: No domain bridging
+#### Contributing Factor 2: No domain bridging
 
 Even searching "Basketball" (all individual words) only returns conference champions. The leap from "Basketball" to "NCAA Tournament" requires discovering the domain context from initial results. Currently there is no second-pass expansion.
 
-### Contributing Factor 3: Shallow default depth
+#### Contributing Factor 3: Shallow default depth
 
 `DEPTH_CONFIG["default"] = 2` pages (10 events per query). With 3 queries that's 30 raw events, but heavy dedup and closed-event filtering reduces this to 2-5 usable results.
 
-### What works (don't break it)
+#### What works (don't break it)
 
 - "Iran War" returned 9 perfect markets because "Iran" and "War" appear directly in event titles
 - Outcome-aware scoring correctly ranks Arizona-outcome markets when they reach the scoring layer
@@ -55,7 +55,7 @@ Even searching "Basketball" (all individual words) only returns conference champ
 
 Three changes, all generic (no hardcoded domain knowledge):
 
-### 1. Search ALL individual words, not just the first
+#### 1. Search ALL individual words, not just the first
 
 Currently `_expand_queries()` only adds `words[0]` as a standalone query. Change to add **every word** as a standalone query, then dedupe.
 
@@ -93,7 +93,7 @@ def _expand_queries(topic: str) -> List[str]:
 
 Note: "AI" is only 2 chars but is meaningful. Lower the threshold to `len(word) > 1` to catch it. Single-char words (rare) get filtered.
 
-### 2. Second-pass context expansion from first-pass results
+#### 2. Second-pass context expansion from first-pass results
 
 After the first-pass search, extract domain-indicator terms from event titles and run a focused second-pass search.
 
@@ -146,7 +146,7 @@ def _extract_domain_queries(topic: str, events: List[Dict]) -> List[str]:
     return domain_queries[:2]
 ```
 
-### 3. Increase depth and result caps
+#### 3. Increase depth and result caps
 
 ```python
 DEPTH_CONFIG = {
@@ -166,16 +166,16 @@ This gives default searches 3 queries x 3 pages = 45 raw events (up from 2 queri
 
 ## Technical Approach
 
-### Implementation Plan
+#### Implementation Plan
 
-#### Phase 1: Expand query generation
+##### Phase 1: Expand query generation
 
 - [x] `scripts/lib/polymarket.py` - Update `_expand_queries()` to add ALL individual words (len > 1), raise cap from 4 to 6
 - [x] `tests/test_polymarket.py` - Test: `_expand_queries("Arizona Basketball")` returns `["Arizona Basketball", "Arizona", "Basketball"]`
 - [x] `tests/test_polymarket.py` - Test: `_expand_queries("Iran War")` returns `["Iran War", "Iran", "War"]`
 - [x] `tests/test_polymarket.py` - Test: short words excluded, cap at 6
 
-#### Phase 2: Second-pass context expansion (evolved: tags instead of bigrams)
+##### Phase 2: Second-pass context expansion (evolved: tags instead of bigrams)
 
 - [x] `scripts/lib/polymarket.py` - Add `_extract_domain_queries()` using event TAGS (not bigrams - tags are more reliable, contain "NCAA CBB" etc.)
 - [x] `scripts/lib/polymarket.py` - Update `search_polymarket()` with `_run_queries_parallel()` helper for two-pass search
@@ -185,12 +185,12 @@ This gives default searches 3 queries x 3 pages = 45 raw events (up from 2 queri
 - [x] `scripts/lib/polymarket.py` - Also pass market questions to `_compute_text_similarity()` for neg-risk events
 - [x] `tests/test_polymarket.py` - Tests for tag-based domain extraction: frequent tags, generic tag filtering, topic word filtering, min frequency, cap, empty events
 
-#### Phase 3: Increase depth and caps
+##### Phase 3: Increase depth and caps
 
 - [x] `scripts/lib/polymarket.py` - Update `DEPTH_CONFIG`: default 2 -> 3, deep 3 -> 4
 - [x] `scripts/lib/polymarket.py` - Update `RESULT_CAP`: default 10 -> 15, deep 20 -> 25
 
-#### Phase 4: Tests and verification
+##### Phase 4: Tests and verification
 
 - [x] Run full test suite (238 passed, 5 pre-existing failures unrelated)
 - [x] `bash scripts/sync.sh` to deploy to CROSS

@@ -11,7 +11,7 @@ date: 2026-03-04
 
 Two regressions in the `/last30days` skill output:
 
-### Regression 1: Full URLs on the Web stats line
+#### Regression 1: Full URLs on the Web stats line
 
 The `🌐 Web:` stats line is showing full URLs instead of plain source names:
 
@@ -29,7 +29,7 @@ https://napoleoncat.com/blog/instagram-reels-trends/
 ├─ 🌐 Web: 10+ pages — Later, SocialBee, Buffer, Metricool, NapoleonCat
 ```
 
-### Regression 2: Trailing Sources: block with full URLs
+#### Regression 2: Trailing Sources: block with full URLs
 
 A separate `Sources:` section appears at the bottom of the response with full URLs:
 
@@ -62,7 +62,7 @@ But the model ignores these because:
 
 **SKILL.md edits only. No Python changes.**
 
-### Fix 1: Add explicit URL-to-name examples in the stats template (line 404 area)
+#### Fix 1: Add explicit URL-to-name examples in the stats template (line 404 area)
 
 After the stats template block, add concrete examples showing the transformation:
 
@@ -81,7 +81,7 @@ After the stats template block, add concrete examples showing the transformation
 - Separate names with commas: "Later, SocialBee, Buffer, CNN, Medium"
 ```
 
-### Fix 2: Strengthen the anti-Sources instruction (line 409 area)
+#### Fix 2: Strengthen the anti-Sources instruction (line 409 area)
 
 Replace the current single-paragraph note with a louder, more explicit instruction:
 
@@ -93,7 +93,7 @@ by the source names on the 🌐 Web: line above. Do NOT append a separate
 your output. The 🌐 Web: line IS your citation. You're done.
 ```
 
-### Fix 3: Add a negative example in the URL FORMATTING section (line 356 area)
+#### Fix 3: Add a negative example in the URL FORMATTING section (line 356 area)
 
 Extend the existing BAD/GOOD examples to cover the stats line specifically:
 
@@ -105,7 +105,7 @@ URL FORMATTING: NEVER paste raw URLs anywhere in the output.
 - GOOD stats line: "🌐 Web: 10 pages — Later, Buffer, CNN, SocialBee"
 ```
 
-### Fix 4: Update Security section (line 588, 600)
+#### Fix 4: Update Security section (line 588, 600)
 
 While we're in SKILL.md, update the stale Apify references to ScrapeCreators:
 - Line 588: Change Apify reference to ScrapeCreators for TikTok

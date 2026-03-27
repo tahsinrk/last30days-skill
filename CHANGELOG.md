@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.4] - 2026-03-06
 
-### Changed
+#### Changed
 
 - Move save into Python script via `--save-dir` flag - raw research data saved during the existing script Bash call, zero extra tool calls after invitation
 - Remove entire "Save Research to Documents" section from SKILL.md (~45 lines removed)
@@ -15,14 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.3] - 2026-03-06
 
-### Fixed
+#### Fixed
 
 - **Critical:** Switch save from `run_in_background` to foreground Bash - background callbacks caused model to re-engage, hallucinate fake user messages, and generate unsolicited multi-paragraph responses
 - Save uses foreground `cat >` heredoc (executes sub-second, no callback, no delayed notification)
 
 ## [2.9.2] - 2026-03-06
 
-### Fixed
+#### Fixed
 
 - Save research silently using background Bash heredoc instead of Write tool (eliminates "Wrote N lines..." clutter)
 - Suppress follow-up text after background save completes (no more "Research briefing saved..." noise)
@@ -30,11 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.1] - 2026-03-05
 
-### Highlights
+#### Highlights
 
 Auto-save research briefings to `~/Documents/Last30Days/` as topic-named .md files. Every run now builds a personal research library automatically - no more manual copy-paste.
 
-### Added
+#### Added
 
 - Auto-save complete research briefings (synthesis, stats, follow-up suggestions) to `~/Documents/Last30Days/{topic-slug}.md` after every run
 - Kebab-case filename generation from topic (e.g., "Claude Code skills" -> `claude-code-skills.md`)
@@ -42,17 +42,17 @@ Auto-save research briefings to `~/Documents/Last30Days/` as topic-named .md fil
 - Agent mode (`--agent`) also saves research files
 - Brief confirmation after save: "Saved to ~/Documents/Last30Days/{slug}.md"
 
-### Credits
+#### Credits
 
 - [@devin_explores](https://x.com/devin_explores) -- Inspired this feature by sharing their workflow of saving every last30days run into organized .md files ([PR #51](https://github.com/mvanhorn/last30days-skill/pull/51))
 
 ## [2.9.0] - 2026-03-05
 
-### Highlights
+#### Highlights
 
 ScrapeCreators Reddit as the default backend (one `SCRAPECREATORS_API_KEY` covers Reddit + TikTok + Instagram), smart subreddit discovery with relevance-weighted scoring, and top comments elevated with 10% scoring weight and prominent display.
 
-### Added
+#### Added
 
 - ScrapeCreators Reddit backend (`scripts/lib/reddit.py`) — keyword search, subreddit discovery, comment enrichment, all via `api.scrapecreators.com`
 - Smart subreddit discovery with relevance-weighted scoring: frequency × recency × topic-word match, replacing pure frequency count
@@ -61,24 +61,24 @@ ScrapeCreators Reddit as the default backend (one `SCRAPECREATORS_API_KEY` cover
 - Top comment rendering: `💬 Top comment` lines with upvote counts in compact and full report output
 - Comment excerpt length increased from 300 → 400 chars; `comment_insights` limit raised from 7 → 10
 
-### Changed
+#### Changed
 
 - `primaryEnv` switched from `OPENAI_API_KEY` to `SCRAPECREATORS_API_KEY` — one key now powers Reddit, TikTok, and Instagram
 - Reddit engagement scoring formula: `0.55/0.40/0.05` (score/comments/ratio) → `0.50/0.35/0.05/0.10` (score/comments/ratio/top-comment)
 - SKILL.md synthesis instructions updated to emphasize quoting top comments
 
-### Fixed
+#### Fixed
 
 - Utility subreddit noise in discovery (e.g., r/tipofmytongue appearing for unrelated topics)
 - Reddit search no longer requires `OPENAI_API_KEY` — ScrapeCreators API handles search directly
 
 ## [2.8.0] - 2026-03-04
 
-### Highlights
+#### Highlights
 
 Instagram Reels as the 8th signal source, TikTok migrated from Apify to ScrapeCreators API, and SKILL.md quality improvements. One API key (`SCRAPECREATORS_API_KEY`) now covers both TikTok and Instagram.
 
-### Added
+#### Added
 
 - Instagram Reels as 8th research source via ScrapeCreators API — keyword search, engagement metrics (views, likes, comments), spoken-word transcript extraction (`scripts/lib/instagram.py`)
 - `InstagramItem` dataclass, normalization, scoring (45% relevance / 25% recency / 30% engagement), deduplication, cross-source linking, and rendering
@@ -86,7 +86,7 @@ Instagram Reels as the 8th signal source, TikTok migrated from Apify to ScrapeCr
 - URL-to-name extraction examples in SKILL.md for cleaner web source display
 - `--search=instagram` flag support
 
-### Changed
+#### Changed
 
 - TikTok backend migrated from Apify to ScrapeCreators API (`api.scrapecreators.com`)
 - `APIFY_API_TOKEN` replaced by `SCRAPECREATORS_API_KEY` in config
@@ -94,7 +94,7 @@ Instagram Reels as the 8th signal source, TikTok migrated from Apify to ScrapeCr
 - WebSearch citation instruction strengthened to prevent trailing Sources: blocks
 - Security section updated: Apify → ScrapeCreators references
 
-### Fixed
+#### Fixed
 
 - Web stats line showing full URLs instead of plain domain names
 - Trailing "Sources:" block appearing after skill invitation (WebSearch tool mandate conflict)
@@ -103,11 +103,11 @@ Instagram Reels as the 8th signal source, TikTok migrated from Apify to ScrapeCr
 
 ## [2.1.0] - 2026-02-15
 
-### Highlights
+#### Highlights
 
 Three headline features: watchlists for always-on bots, YouTube transcripts as a 4th source, and Codex CLI compatibility. Plus bundled X search with no external CLI needed.
 
-### Added
+#### Added
 
 - Open-class skill with watchlists, briefings, and history modes (SQLite-backed, FTS5 full-text search, WAL mode) (`feat(open)`)
 - YouTube as a 4th research source via yt-dlp -- search, view counts, and auto-generated transcript extraction (`feat: Add YouTube`)
@@ -118,7 +118,7 @@ Three headline features: watchlists for always-on bots, YouTube transcripts as a
 - `--store` flag for SQLite accumulation (open variant)
 - Conversational first-run experience (NUX) with dynamic source status (`feat(nux)`)
 
-### Changed
+#### Changed
 
 - Smarter query construction -- strips noise words, auto-retries with shorter queries when X returns 0 results
 - Two-phase search architecture -- Phase 1 discovers entities (@handles, r/subreddits), Phase 2 drills into them
@@ -129,7 +129,7 @@ Three headline features: watchlists for always-on bots, YouTube transcripts as a
 - Model fallback for unverified orgs (thanks @levineam, [#16](https://github.com/mvanhorn/last30days-skill/pull/16))
 - Marketplace plugin support via `.claude-plugin/plugin.json` (inspired by @galligan, [#1](https://github.com/mvanhorn/last30days-skill/pull/1))
 
-### Fixed
+#### Fixed
 
 - YouTube timeout increased to 90s, Reddit 429 rate limit fail-fast
 - YouTube soft date filter -- keeps evergreen content instead of filtering to 0 results
@@ -139,13 +139,13 @@ Three headline features: watchlists for always-on bots, YouTube transcripts as a
 - Windows Unicode fix for cp1252 emoji crash (thanks @JosephOIbrahim, [#17](https://github.com/mvanhorn/last30days-skill/pull/17))
 - X search returning 0 results on popular topics due to over-specific queries
 
-### New Contributors
+#### New Contributors
 
 - @JosephOIbrahim -- Windows Unicode fix ([#17](https://github.com/mvanhorn/last30days-skill/pull/17))
 - @levineam -- Model fallback for unverified orgs ([#16](https://github.com/mvanhorn/last30days-skill/pull/16))
 - @jonthebeef -- `--days=N` configurable lookback ([#18](https://github.com/mvanhorn/last30days-skill/pull/18))
 
-### Credits
+#### Credits
 
 - @steipete -- Bird CLI (vendored X search) and yt-dlp/summarize inspiration for YouTube transcripts
 - @galligan -- Marketplace plugin inspiration

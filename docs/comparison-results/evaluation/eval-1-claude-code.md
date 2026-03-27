@@ -7,31 +7,31 @@
 
 Score each version 1-5 on these dimensions:
 
-### 1. GROUNDEDNESS (30%)
+#### 1. GROUNDEDNESS (30%)
 Does the narrative cite specific sources from the research data?
 - 1: Generic statements, no citations, could be written without any research
 - 3: Some citations but mixed with pre-existing knowledge filler
 - 5: Every finding backed by a specific source ("per @handle", "per r/sub", "per [channel]")
 
-### 2. SPECIFICITY (25%)
+#### 2. SPECIFICITY (25%)
 Are findings specific (named entities, exact numbers) or vague?
 - 1: Vague generalities ("AI video tools are improving", "developers are debating frameworks")
 - 3: Some specifics mixed with generic padding
 - 5: Named products, exact numbers, version names ("Seedance 2.0 added lip sync", "698 likes")
 
-### 3. COVERAGE (20%)
+#### 3. COVERAGE (20%)
 Does the synthesis represent findings from all available data sources?
 - 1: Only mentions 1-2 sources, ignores others
 - 3: Mentions most sources but unevenly weighted
 - 5: Naturally weaves Reddit, X, YouTube (and HN if available) into the narrative
 
-### 4. ACTIONABILITY (15%)
+#### 4. ACTIONABILITY (15%)
 Does the invitation give specific, research-derived next steps?
 - 1: Generic "let me know if you want more info"
 - 3: Somewhat specific but not clearly grounded in research findings
 - 5: Each suggestion references a specific thing from the research ("I can compare Seedance 2.0 vs Kling")
 
-### 5. FORMAT COMPLIANCE (10%)
+#### 5. FORMAT COMPLIANCE (10%)
 Does it follow the expected output format?
 - 1: Missing stats block, no invitation, wrong structure
 - 3: Partial stats block, generic invitation
@@ -161,7 +161,7 @@ I'm now an expert on Claude Code skills and MCP servers. Some things I can help 
 ---
 ## SCORES
 
-### Version A
+#### Version A
 - Groundedness: 4/5
 - Specificity: 5/5
 - Coverage: 3/5
@@ -170,7 +170,7 @@ I'm now an expert on Claude Code skills and MCP servers. Some things I can help 
 - **Weighted Total**: 4.05/5.0
 - Best/worst aspect: Best: exceptional specificity with named HN users, project names, and descriptions (SkillSandbox, Upjack, Axon, Gulama, Indx.sh, ClawsMarket). Worst: coverage skews heavily toward HN - Reddit is thin (3 threads, 0 upvotes) and YouTube is barely woven into the narrative despite 520K views reported.
 
-### Version B
+#### Version B
 - Groundedness: 4/5
 - Specificity: 4/5
 - Coverage: 3/5
@@ -179,7 +179,7 @@ I'm now an expert on Claude Code skills and MCP servers. Some things I can help 
 - **Weighted Total**: 3.80/5.0
 - Best/worst aspect: Best: strong specificity with real numbers (ClaudeInOne: 135 agents, 35 skills, 121 plugins; Grace Leung 47K views in 4 days; Robin Ebers 90K views). Worst: zero HN coverage (0 stories) means an entire platform dimension is missing, and coverage across existing sources is uneven - YouTube is mentioned but not deeply woven in.
 
-### Version C
+#### Version C
 - Groundedness: 5/5
 - Specificity: 5/5
 - Coverage: 5/5
