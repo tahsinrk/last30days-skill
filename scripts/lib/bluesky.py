@@ -7,6 +7,7 @@ Requires BSKY_HANDLE and BSKY_APP_PASSWORD env vars.
 import math
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -23,7 +24,9 @@ DEPTH_CONFIG = {
 
 # Module-level token cache (valid for the lifetime of a single research run)
 _cached_token: Optional[str] = None
+_token_created_at: float = 0.0
 _session_error: Optional[str] = None
+_TOKEN_MAX_AGE_SECONDS = 5400  # 90 minutes (conservative, AT Protocol tokens last ~2 hours)
 
 
 def _log(msg: str):
@@ -43,9 +46,13 @@ def _create_session(handle: str, app_password: str) -> Optional[str]:
     Returns:
         Access JWT string, or None on failure. Sets _session_error on failure.
     """
-    global _cached_token, _session_error
-    if _cached_token:
+    global _cached_token, _token_created_at, _session_error
+    if _cached_token and (time.monotonic() - _token_created_at < _TOKEN_MAX_AGE_SECONDS):
         return _cached_token
+    if _cached_token:
+        _log("Session token expired, re-authenticating")
+        _cached_token = None
+        _token_created_at = 0.0
 
     try:
         response = http.request(
@@ -57,6 +64,7 @@ def _create_session(handle: str, app_password: str) -> Optional[str]:
         token = response.get("accessJwt")
         if token:
             _cached_token = token
+            _token_created_at = time.monotonic()
             _session_error = None
             _log("Session created successfully")
             return token
@@ -76,6 +84,18 @@ def _create_session(handle: str, app_password: str) -> Optional[str]:
         _session_error = f"Session request failed: {type(e).__name__}: {e}"
         _log(f"Session creation failed: {_session_error}")
         return None
+
+
+def _reset_session_cache() -> None:
+    """Clear the cached token so the next request re-authenticates.
+
+    Call this if a request returns 401 and you want to refresh the session
+    mid-run instead of waiting for the 90-minute expiry.
+    """
+    global _cached_token, _token_created_at, _session_error
+    _cached_token = None
+    _token_created_at = 0.0
+    _session_error = None
 
 
 def _extract_core_subject(topic: str) -> str:
