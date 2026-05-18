@@ -14,7 +14,7 @@ import argparse
 import json
 import sqlite3
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -494,7 +494,7 @@ def get_daily_cost(date: Optional[str] = None) -> float:
     conn = _connect()
     try:
         if not date:
-            date = datetime.now().strftime("%Y-%m-%d")
+            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         row = conn.execute(
             """SELECT COALESCE(SUM(token_cost), 0) as total
                FROM research_runs
@@ -550,7 +550,7 @@ def get_stats() -> Dict[str, Any]:
         topic_count = conn.execute("SELECT COUNT(*) FROM topics WHERE enabled = 1").fetchone()[0]
         finding_count = conn.execute("SELECT COUNT(*) FROM findings").fetchone()[0]
 
-        week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         runs_7d = conn.execute(
             "SELECT COUNT(*) FROM research_runs WHERE run_date >= ?", (week_ago,)
         ).fetchone()[0]
@@ -596,7 +596,7 @@ def get_trending(days: int = 7) -> List[Dict[str, Any]]:
     """Get topics ranked by recent finding activity."""
     conn = _connect()
     try:
-        since = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
         rows = conn.execute(
             """SELECT t.name, t.id,
                       COUNT(f.id) as new_findings,
@@ -627,7 +627,7 @@ def _cli_query(args):
     if args.since:
         # Parse duration like "7d", "30d"
         days = int(args.since.rstrip("d"))
-        since = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
 
     findings = get_new_findings(topic["id"], since)
     print(json.dumps({"topic": topic["name"], "findings": findings, "count": len(findings)}, default=str))
