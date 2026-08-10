@@ -309,8 +309,9 @@ def _shorten_question(question: str) -> str:
     m = re.match(r"^Will\s+(.+?)\s+", q, re.IGNORECASE)
     if m and len(m.group(1).split()) <= 4:
         return m.group(1).strip()
-    # Fallback: truncate
-    return question[:40] if len(question) > 40 else question
+    # Fallback: truncate the cleaned string, not the raw question. Using
+    # `question` here re-introduced the trailing "?" that `q` already stripped.
+    return q[:40] if len(q) > 40 else q
 
 
 def _compute_text_similarity(topic: str, title: str, outcomes: List[str] = None) -> float:

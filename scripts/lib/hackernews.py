@@ -100,6 +100,16 @@ def search_hackernews(
         "hitsPerPage": str(count),
     }
 
+    # Algolia ANDs every query token by default, so a themed 4-5 word topic
+    # ("AI coding agents adoption") only matches stories carrying all of those
+    # words — which is essentially none, and the source silently returns almost
+    # nothing. Marking all-but-the-first token optional makes Algolia rank by
+    # how many tokens match instead of requiring every one. Measured against the
+    # live index: 4 -> 30 hits for that topic, 1 -> 11 for "ts bun node".
+    tokens = core.split()
+    if len(tokens) > 1:
+        params["optionalWords"] = " ".join(tokens[1:])
+
     from urllib.parse import urlencode
     url = f"{ALGOLIA_SEARCH_URL}?{urlencode(params)}"
 

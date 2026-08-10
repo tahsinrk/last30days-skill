@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -38,7 +39,104 @@ TRANSCRIPT_LIMITS = {
 # Max words to keep from each transcript
 TRANSCRIPT_MAX_WORDS = 5000
 
+# Subtitle languages to request, in preference order. English-only silently
+# dropped every non-English video even when it had perfectly good captions.
+# Override with LAST30DAYS_YT_SUB_LANGS="en,de" etc.
+_DEFAULT_SUB_LANGS = "en,es,pt"
+
+# Transcript-fetch resilience. yt-dlp exits 0 with no file when a video
+# genuinely has no captions, so a NON-zero exit means an actual fetch error
+# (rate limit, bot gate, network) and is worth retrying. Without this the
+# common 429 looked identical to "no captions" and the transcript was dropped.
+_TRANSCRIPT_MAX_RETRIES = 2
+_TRANSCRIPT_BACKOFF_BASE = 2.0  # seconds, multiplied by (attempt + 1)
+_TRANSIENT_RE = re.compile(
+    r"429|too many requests|sign in to confirm|not a bot|rate.?limit"
+    r"|temporarily|try again|timed out|timeout|connection"
+    r"|unable to (extract|download)|failed to (extract|download)|read error",
+    re.IGNORECASE,
+)
+
+# How many extra videos to try transcripts for, as a multiple of the target.
+# Music videos and short clips often lack captions, so attempting exactly the
+# target number reliably returns fewer transcripts than asked for.
+_TRANSCRIPT_OVERFETCH = 3
+
+from . import dates
 from .relevance import token_overlap_relevance as _compute_relevance
+
+
+def _ytdlp_sub_langs() -> str:
+    """Comma-separated subtitle languages to request from yt-dlp."""
+    return os.environ.get("LAST30DAYS_YT_SUB_LANGS", "").strip() or _DEFAULT_SUB_LANGS
+
+
+def _sub_lang_attempts() -> List[str]:
+    """Subtitle language sets to try, in order, as separate yt-dlp runs.
+
+    Passing "en,es,pt" in one call is tempting but costs an extra download per
+    video: YouTube auto-translates, so an English video returns both en.vtt and
+    es.vtt. Measured on 2026-08-10 — 2 files instead of 1. Every extra request
+    feeds the rate limiting that makes transcripts fail in the first place.
+
+    So ask for the primary language alone, and only reach for the fallbacks on
+    videos where the primary genuinely produced nothing.
+    """
+    langs = [lang.strip() for lang in _ytdlp_sub_langs().split(",") if lang.strip()]
+    if not langs:
+        return ["en"]
+    if len(langs) == 1:
+        return langs
+    return [langs[0], ",".join(langs[1:])]
+
+
+def _transcript_backoff(video_id: str, attempt: int) -> float:
+    """Seconds to wait before a transcript retry.
+
+    Staggered by a sub-second offset derived from the video id so parallel
+    workers don't all retry on the same tick and re-trip YouTube's limiter.
+    """
+    offset = (sum(ord(c) for c in video_id) % 1000) / 1000.0
+    return _TRANSCRIPT_BACKOFF_BASE * (attempt + 1) + offset
+
+
+def _read_vtt(video_id: str, temp_dir: str) -> Optional[str]:
+    """Return whatever VTT yt-dlp wrote for this video, or None if there is none."""
+    # yt-dlp may save as .en.vtt, .en-orig.vtt, .es.vtt, ...
+    vtt_path = Path(temp_dir) / f"{video_id}.en.vtt"
+    if not vtt_path.exists():
+        for p in sorted(Path(temp_dir).glob(f"{video_id}*.vtt")):
+            vtt_path = p
+            break
+        else:
+            return None
+    try:
+        return vtt_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+
+
+def _select_transcript_candidates(items: List[Dict[str, Any]], transcript_limit: int) -> List[str]:
+    """Pick which videos to attempt transcripts for.
+
+    Two problems with taking the first N in search order. Videos without
+    captions burn the budget and leave you short, so overfetch. And an old
+    high-view video beats a recent one on views alone, then gets pruned
+    downstream for being outside the date window, wasting the slot. Rank on
+    views and recency together.
+    """
+    if transcript_limit <= 0 or not items:
+        return []
+
+    def sort_key(item: Dict[str, Any]) -> tuple:
+        engagement = item.get("engagement") or {}
+        views = engagement.get("views") or 0
+        recency = dates.recency_score(item.get("date") or "")
+        return (recency, views)
+
+    ranked = sorted(items, key=sort_key, reverse=True)
+    attempt_count = min(len(ranked), transcript_limit * _TRANSCRIPT_OVERFETCH)
+    return [item["video_id"] for item in ranked[:attempt_count]]
 
 
 def extract_transcript_highlights(transcript: str, topic: str, limit: int = 5) -> List[str]:
@@ -277,27 +375,27 @@ def fetch_transcript(video_id: str, temp_dir: str) -> Optional[str]:
     Returns:
         Plaintext transcript string, or None if no captions available.
     """
-    cmd = [
-        "yt-dlp",
-        "--ignore-config",
-        "--no-cookies-from-browser",
-        "--write-auto-subs",
-        "--sub-lang", "en",
-        "--sub-format", "vtt",
-        "--skip-download",
-        "--no-warnings",
-        "-o", f"{temp_dir}/%(id)s",
-        "--",
-        f"https://www.youtube.com/watch?v={video_id}",
-    ]
-
     pg_kwargs: Dict[str, Any] = {}
     if _PY311_PLUS:
         pg_kwargs["process_group"] = 0
     elif hasattr(os, "setsid"):
         pg_kwargs["preexec_fn"] = os.setsid
 
-    try:
+    def run_once(sub_lang: str) -> Tuple[Optional[int], str]:
+        """Run yt-dlp for one language set. Returns (returncode, stderr)."""
+        cmd = [
+            "yt-dlp",
+            "--ignore-config",
+            "--no-cookies-from-browser",
+            "--write-auto-subs",
+            "--sub-lang", sub_lang,
+            "--sub-format", "vtt",
+            "--skip-download",
+            "--no-warnings",
+            "-o", f"{temp_dir}/%(id)s",
+            "--",
+            f"https://www.youtube.com/watch?v={video_id}",
+        ]
         proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
@@ -306,30 +404,60 @@ def fetch_transcript(video_id: str, temp_dir: str) -> Optional[str]:
             **pg_kwargs,
         )
         try:
-            proc.communicate(timeout=30)
+            _, stderr = proc.communicate(timeout=30)
+            return proc.returncode, stderr or ""
         except subprocess.TimeoutExpired:
             try:
                 os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             except (ProcessLookupError, PermissionError, OSError):
                 proc.kill()
             proc.wait(timeout=5)
-            return None
-    except FileNotFoundError:
-        return None
+            return 1, "timed out"
 
-    # yt-dlp may save as .en.vtt or .en-orig.vtt
-    vtt_path = Path(temp_dir) / f"{video_id}.en.vtt"
-    if not vtt_path.exists():
-        # Try alternate naming
-        for p in Path(temp_dir).glob(f"{video_id}*.vtt"):
-            vtt_path = p
+    raw = None
+    for sub_lang in _sub_lang_attempts():
+        for attempt in range(_TRANSCRIPT_MAX_RETRIES + 1):
+            try:
+                returncode, stderr = run_once(sub_lang)
+            except FileNotFoundError:
+                # yt-dlp isn't installed; retrying cannot help.
+                return None
+
+            # Check for output before judging the exit code. yt-dlp can write a
+            # complete track and still exit non-zero (a later language 429s, or
+            # a benign teardown error). A partial success is a real transcript.
+            raw = _read_vtt(video_id, temp_dir)
+            if raw is not None:
+                break
+
+            # Exit 0 with no file means there are no captions in this language
+            # set. Retrying the same request is pointless; fall through to the
+            # next language set instead.
+            if returncode == 0:
+                break
+
+            stderr = stderr.strip()
+            if not _TRANSIENT_RE.search(stderr):
+                last_line = stderr.splitlines()[-1][:200] if stderr else f"exit {returncode}"
+                _log(f"Transcript fetch failed for {video_id}: {last_line}")
+                return None
+
+            if attempt < _TRANSCRIPT_MAX_RETRIES:
+                delay = _transcript_backoff(video_id, attempt)
+                _log(f"Transcript fetch for {video_id} hit a transient error; "
+                     f"retrying in {delay:.1f}s")
+                time.sleep(delay)
+            else:
+                # Rate limited even after backoff. Another language set would
+                # hit the same limiter, so stop here rather than pile on.
+                _log(f"Transcript fetch for {video_id} gave up after "
+                     f"{_TRANSCRIPT_MAX_RETRIES + 1} attempts")
+                return None
+
+        if raw is not None:
             break
-        else:
-            return None
 
-    try:
-        raw = vtt_path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
+    if raw is None:
         return None
 
     transcript = _clean_vtt(raw)
@@ -403,10 +531,24 @@ def search_and_transcribe(
     if not items:
         return search_result
 
-    # Step 2: Fetch transcripts for top N by views
+    # Step 2: Fetch transcripts, ranked by recency and views.
+    #
+    # Videos without captions used to burn the budget: asking for exactly N
+    # candidates returned fewer than N transcripts. Fetching 3N up front fixes
+    # that but triples the yt-dlp calls, and YouTube rate-limiting is the main
+    # reason transcripts fail in the first place. So top up in waves instead:
+    # request the budget, and only reach for more candidates if some came back
+    # empty. Happy path costs exactly N calls; a captionless-heavy result set
+    # spends more only where it actually needs to.
     transcript_limit = TRANSCRIPT_LIMITS.get(depth, TRANSCRIPT_LIMITS["default"])
-    top_ids = [item["video_id"] for item in items[:transcript_limit]]
-    transcripts = fetch_transcripts_parallel(top_ids)
+    candidate_ids = _select_transcript_candidates(items, transcript_limit)
+
+    transcripts: Dict[str, Optional[str]] = {}
+    pending = list(candidate_ids)
+    while pending and sum(1 for v in transcripts.values() if v) < transcript_limit:
+        needed = transcript_limit - sum(1 for v in transcripts.values() if v)
+        wave, pending = pending[:needed], pending[needed:]
+        transcripts.update(fetch_transcripts_parallel(wave))
 
     # Step 3: Attach transcripts and extract highlights
     core_topic = _extract_core_subject(topic)

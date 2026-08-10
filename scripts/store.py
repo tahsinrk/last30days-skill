@@ -167,6 +167,10 @@ def _connect(db_path: Optional[Path] = None) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.execute("PRAGMA foreign_keys=ON")
+    # WAL lets readers run alongside a writer, but two writers still contend for
+    # the write lock. SQLite's default busy_timeout is 0, so the loser raises
+    # "database is locked" immediately instead of waiting out a short write.
+    conn.execute("PRAGMA busy_timeout=5000")
     return conn
 
 
@@ -359,8 +363,14 @@ def store_findings(
             ).fetchone()
 
             if existing:
-                # Update engagement and re-sighting info
-                new_engagement = f.get("engagement_score", 0)
+                # Update engagement and re-sighting info.
+                # `or 0` rather than a dict default: several callers build
+                # findings as `item.engagement.score if item.engagement else 0`,
+                # and Engagement.score is Optional[int]. When engagement exists
+                # but the metric is absent the key is present and None, so
+                # `.get(key, 0)` returns None and the max() below raises
+                # TypeError — crashing on the second sighting of any URL.
+                new_engagement = f.get("engagement_score") or 0
                 conn.execute(
                     """UPDATE findings SET
                            last_seen = datetime('now'),

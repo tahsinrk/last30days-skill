@@ -6,8 +6,13 @@ from typing import Literal
 QueryType = Literal["product", "concept", "opinion", "how_to", "comparison", "breaking_news", "prediction"]
 
 # Pattern-based classification (no LLM, no external deps)
+# NOTE: prompt/prompts/prompting deliberately live in _HOWTO_PATTERNS only.
+# They used to appear here too, but how_to is evaluated first, so these tokens
+# were unreachable and the duplication just made the two rules look like they
+# disagreed. A "<thing> prompting" query wants tutorials, which is what how_to's
+# YouTube-first tiering delivers.
 _PRODUCT_PATTERNS = re.compile(
-    r"\b(price|pricing|cost|buy|purchase|deal|discount|subscription|plan|tier|free tier|alternative|prompt|prompts|prompting|template|templates)\b", re.I
+    r"\b(price|pricing|cost|buy|purchase|deal|discount|subscription|plan|tier|free tier|alternative|template|templates)\b", re.I
 )
 _CONCEPT_PATTERNS = re.compile(
     r"\b(what is|what are|explain|definition|how does|how do|overview|introduction|guide to|primer)\b", re.I

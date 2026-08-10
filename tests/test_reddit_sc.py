@@ -3,6 +3,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 # Add lib to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -175,6 +176,82 @@ class TestPostRelevance(unittest.TestCase):
             "",
         )
         self.assertGreater(score, 0.7)
+
+
+class TestWindowToTimeFilter(unittest.TestCase):
+    """Reddit's `t=` buckets are rolling windows ending *now*, not calendar spans.
+
+    Two things have to be covered: the span of the request, and how far back
+    from_date sits relative to today. A 1-day window from two weeks ago needs a
+    bucket that still reaches it, so the bucket tracks max(span, age).
+    """
+
+    @staticmethod
+    def _days_ago(n):
+        from datetime import datetime, timedelta, timezone
+        return (datetime.now(timezone.utc).date() - timedelta(days=n)).isoformat()
+
+    def test_recent_one_day_window_rounds_up_to_week(self):
+        # Rolling t=day is the last 24h; a yesterday->today calendar window
+        # falls partly outside it, so it must round up.
+        self.assertEqual(
+            reddit._window_to_time_filter(self._days_ago(1), self._days_ago(0)),
+            "week",
+        )
+
+    def test_thirty_day_window_uses_month(self):
+        self.assertEqual(
+            reddit._window_to_time_filter(self._days_ago(30), self._days_ago(0)),
+            "month",
+        )
+
+    def test_old_narrow_window_reaches_back_far_enough(self):
+        # 1-day span, but it ended 20 days ago. Span alone would say "week" and
+        # the API would return nothing from the requested range.
+        self.assertEqual(
+            reddit._window_to_time_filter(self._days_ago(20), self._days_ago(19)),
+            "month",
+        )
+
+    def test_unparseable_dates_fall_back_to_month(self):
+        self.assertEqual(reddit._window_to_time_filter("not-a-date", "also-bad"), "month")
+
+
+class TestSearchRedditTimeframe(unittest.TestCase):
+    """search_reddit must narrow the fetch window to the requested range."""
+
+    def _timeframe_for(self, from_date, to_date, depth="default"):
+        seen = {}
+
+        def fake_global(query, token, sort="relevance", timeframe="month"):
+            seen["timeframe"] = timeframe
+            return []
+
+        with mock.patch.object(reddit, "_global_search", side_effect=fake_global), \
+             mock.patch.object(reddit, "_subreddit_search", return_value=[]):
+            reddit.search_reddit("test topic", from_date, to_date,
+                                 depth=depth, token="fake-token")
+        return seen.get("timeframe")
+
+    @staticmethod
+    def _days_ago(n):
+        from datetime import datetime, timedelta, timezone
+        return (datetime.now(timezone.utc).date() - timedelta(days=n)).isoformat()
+
+    def test_short_window_narrows_below_depth_default(self):
+        # Depth default is "month". A 2-day request should not pull a month of
+        # relevance-sorted posts and then discard nearly all of them.
+        self.assertEqual(self._timeframe_for(self._days_ago(2), self._days_ago(0)), "week")
+
+    def test_full_window_keeps_depth_default(self):
+        self.assertEqual(self._timeframe_for(self._days_ago(30), self._days_ago(0)), "month")
+
+    def test_depth_default_still_caps_the_window(self):
+        # quick depth intentionally fetches less; the window must not widen it.
+        self.assertEqual(
+            self._timeframe_for(self._days_ago(30), self._days_ago(0), depth="quick"),
+            "week",
+        )
 
 
 if __name__ == "__main__":

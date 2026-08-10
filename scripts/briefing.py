@@ -212,7 +212,9 @@ def show_briefing(date: str = None) -> dict:
     if not path.exists():
         return {"status": "not_found", "message": f"No briefing found for {date}."}
 
-    with open(path) as f:
+    # Explicit UTF-8: briefings carry scraped titles and quotes, so relying on
+    # the platform's default encoding garbles any non-ASCII content.
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -221,7 +223,7 @@ def _save_briefing(data: dict, suffix: str = ""):
     BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
     date = datetime.now().strftime("%Y-%m-%d")
     path = BRIEFS_DIR / f"{date}{suffix}.json"
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
 
 

@@ -3,6 +3,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 # Add lib to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -213,6 +214,46 @@ class TestSortItemsWithHN(unittest.TestCase):
         self.assertIsInstance(sorted_items[0], schema.XItem)
         self.assertIsInstance(sorted_items[1], schema.YouTubeItem)
         self.assertIsInstance(sorted_items[2], schema.HackerNewsItem)
+
+
+class TestSearchQueryParams(unittest.TestCase):
+    """Algolia query construction.
+
+    Algolia ANDs every query token by default, so a 4-word topic only matches a
+    story containing all four words — which is almost none. `optionalWords` tells
+    Algolia to rank by how many tokens match instead of requiring all of them.
+    Measured against the live API: "AI coding agents adoption" went 4 -> 30 hits.
+    """
+
+    def _capture_params(self, topic):
+        captured = {}
+
+        def fake_request(method, url, **kwargs):
+            from urllib.parse import urlparse, parse_qs
+            captured.update({k: v[0] for k, v in parse_qs(urlparse(url).query).items()})
+            return {"hits": []}
+
+        with mock.patch.object(hackernews.http, "request", side_effect=fake_request):
+            hackernews.search_hackernews(topic, "2026-07-10", "2026-08-09")
+        return captured
+
+    def test_multi_token_query_marks_trailing_tokens_optional(self):
+        params = self._capture_params("AI coding agents adoption")
+        self.assertIn("optionalWords", params)
+        tokens = params["query"].split()
+        self.assertGreater(len(tokens), 1)
+        # Every token after the first is optional; the first stays required.
+        self.assertEqual(params["optionalWords"], " ".join(tokens[1:]))
+
+    def test_single_token_query_sets_no_optional_words(self):
+        params = self._capture_params("seedance")
+        self.assertNotIn("optionalWords", params)
+
+    def test_engagement_floor_is_preserved(self):
+        # points>2 is verified working against the live Algolia index (HTTP 200).
+        # Upstream removed it on a false premise; keep the server-side floor.
+        params = self._capture_params("claude code")
+        self.assertIn("points>2", params["numericFilters"])
 
 
 if __name__ == "__main__":

@@ -20,7 +20,15 @@ class TestDetectQueryType(unittest.TestCase):
         self.assertEqual(detect_query_type("cursor IDE pricing"), "product")
         self.assertEqual(detect_query_type("is Claude Pro worth the cost"), "product")
         self.assertEqual(detect_query_type("best free tier LLM API"), "product")
-        self.assertEqual(detect_query_type("nano banana pro prompting"), "product")
+
+    def test_prompting_queries_are_how_to_not_product(self):
+        # how_to is evaluated before product, so a "prompting" query has always
+        # classified as how_to. This previously asserted "product", which the
+        # classifier could never return, and the suite failed permanently.
+        # how_to is also the better answer: its tiering leads with YouTube and
+        # Reddit, which is where prompting technique actually gets discussed.
+        self.assertEqual(detect_query_type("nano banana pro prompting"), "how_to")
+        self.assertEqual(detect_query_type("claude code prompting"), "how_to")
 
     def test_concept_queries(self):
         self.assertEqual(detect_query_type("what is WebTransport"), "concept")

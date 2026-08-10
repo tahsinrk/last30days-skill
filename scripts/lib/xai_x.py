@@ -163,17 +163,29 @@ def parse_x_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
                 output_text = choice["message"].get("content", "")
                 break
 
+    # A malformed or empty xAI payload is a failure, not "zero results". Returning
+    # [] here made a broken X source render as a clean "no posts found", so a
+    # silently dead backend looked identical to a quiet week. Raise instead and
+    # let the caller record it as an error the report can surface.
     if not output_text:
-        return items
+        preview = str(response)[:200] if response else "(empty)"
+        raise http.HTTPError(
+            f"xAI API returned no output text (response preview: {preview})"
+        )
 
     # Extract JSON from the response
     json_match = re.search(r'\{[\s\S]*"items"[\s\S]*\}', output_text)
-    if json_match:
-        try:
-            data = json.loads(json_match.group())
-            items = data.get("items", [])
-        except json.JSONDecodeError:
-            pass
+    if not json_match:
+        raise http.HTTPError(
+            f"xAI API output contained no JSON items structure (output: {output_text[:200]})"
+        )
+    try:
+        data = json.loads(json_match.group())
+        items = data.get("items", [])
+    except json.JSONDecodeError as e:
+        raise http.HTTPError(
+            f"xAI API returned malformed JSON (output: {output_text[:200]})"
+        ) from e
 
     # Validate and clean items
     clean_items = []

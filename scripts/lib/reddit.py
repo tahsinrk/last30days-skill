@@ -403,6 +403,48 @@ def _dedupe_posts(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return unique
 
 
+_TIMEFRAME_ORDER = {"hour": 0, "day": 1, "week": 2, "month": 3, "year": 4, "all": 5}
+
+
+def _days_to_reddit_bucket(days: float) -> str:
+    """Smallest Reddit rolling bucket that covers a span of ``days``.
+
+    One day of slack is added because Reddit's buckets end at "now", not at
+    midnight — a yesterday-to-today calendar window does not fit inside a
+    rolling 24-hour ``t=day``.
+    """
+    covered = days + 1
+    if covered <= 1:
+        return "day"
+    if covered <= 7:
+        return "week"
+    if covered <= 31:
+        return "month"
+    if covered <= 366:
+        return "year"
+    return "all"
+
+
+def _window_to_time_filter(from_date: str, to_date: str) -> str:
+    """Map a requested YYYY-MM-DD window onto Reddit's coarse ``t`` param.
+
+    Reddit only filters server-side at hour/day/week/month/year granularity,
+    and those buckets are rolling windows anchored to *now*. Coverage therefore
+    depends on two things: how wide the request is, and how far back it starts.
+    A 1-day window that ended three weeks ago still needs a bucket reaching back
+    three weeks, so we take the wider of span and age. Falls back to ``month``
+    (the previous unconditional behaviour) when the dates don't parse.
+    """
+    try:
+        start = datetime.strptime(from_date, "%Y-%m-%d").date()
+        end = datetime.strptime(to_date, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return "month"
+    span_days = max(0, (end - start).days)
+    age_days = max(0, (datetime.now(timezone.utc).date() - start).days)
+    return _days_to_reddit_bucket(max(span_days, age_days))
+
+
 def search_reddit(
     topic: str,
     from_date: str,
@@ -428,7 +470,18 @@ def search_reddit(
         return {"items": [], "error": "No SCRAPECREATORS_API_KEY configured"}
 
     config = DEPTH_CONFIG.get(depth, DEPTH_CONFIG["default"])
-    timeframe = config["timeframe"]
+    # The fetch window has to track the requested date range, not just the depth
+    # default. Without this a `--days 2` request pulls a whole month of
+    # relevance-sorted posts and then throws away everything outside the two
+    # days, which on a quiet topic leaves nothing. Take the tighter of
+    # {window-derived, depth default} so depth still caps how much we fetch.
+    _depth_tf = config["timeframe"]
+    _window_tf = _window_to_time_filter(from_date, to_date)
+    timeframe = (
+        _window_tf
+        if _TIMEFRAME_ORDER.get(_window_tf, 3) <= _TIMEFRAME_ORDER.get(_depth_tf, 3)
+        else _depth_tf
+    )
 
     # === Phase 1: Query Expansion ===
     queries = expand_reddit_queries(topic, depth)

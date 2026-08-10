@@ -337,7 +337,13 @@ def _search_x(
 
     if mock:
         raw_response = load_fixture("xai_sample.json")
-        x_items = xai_x.parse_x_response(raw_response or {})
+        # parse_x_response raises on a malformed payload so a dead backend can't
+        # masquerade as zero results. Catch it here so one bad source degrades
+        # the report instead of killing the whole run.
+        try:
+            x_items = xai_x.parse_x_response(raw_response or {})
+        except http.HTTPError as e:
+            x_items, x_error = [], f"X (xAI) parse error: {e}"
         return x_items, raw_response, x_error
 
     # Use Bird if specified
@@ -397,7 +403,16 @@ def _search_x(
         raw_response = {"error": str(e)}
         x_error = f"{type(e).__name__}: {e}"
 
-    x_items = xai_x.parse_x_response(raw_response or {})
+    # Only parse when the request itself succeeded. On an existing transport
+    # error the payload is our own {"error": ...} stub, and parsing it would
+    # raise a second, less informative error over the top of the real one.
+    if x_error:
+        return [], raw_response, x_error
+
+    try:
+        x_items = xai_x.parse_x_response(raw_response or {})
+    except http.HTTPError as e:
+        return [], raw_response, f"X (xAI) parse error: {e}"
 
     return x_items, raw_response, x_error
 
@@ -1922,12 +1937,31 @@ def main():
         save_dir = Path(args.save_dir).expanduser()
         save_dir.mkdir(parents=True, exist_ok=True)
         slug = re.sub(r'[^a-z0-9]+', '-', args.topic.lower()).strip('-')[:60]
-        save_path = save_dir / f"{slug}-raw.md"
-        if save_path.exists():
-            save_path = save_dir / f"{slug}-raw-{datetime.now().strftime('%Y-%m-%d')}.md"
         content = render.render_compact(report, missing_keys=missing_keys)
         content += "\n" + render.render_source_status(report, source_info)
-        save_path.write_text(content, encoding="utf-8")
+        # Previously a same-day rerun of the same topic silently overwrote the
+        # earlier date-stamped file, destroying the first run's output with no
+        # warning. Walk a numbered sequence and create with O_EXCL so an
+        # existing file is never clobbered, even by a concurrent run.
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        candidates = [save_dir / f"{slug}-raw.md",
+                      save_dir / f"{slug}-raw-{date_str}.md"]
+        candidates += [save_dir / f"{slug}-raw-{date_str}-{i}.md" for i in range(1, 100)]
+        encoded = content.encode("utf-8")
+        save_path = None
+        for candidate in candidates:
+            try:
+                fd = os.open(candidate, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            except FileExistsError:
+                continue
+            with os.fdopen(fd, "wb") as f:
+                f.write(encoded)
+            save_path = candidate
+            break
+        if save_path is None:
+            raise RuntimeError(
+                f"--save-dir: no free filename for '{slug}' in {save_dir} after 101 attempts"
+            )
         print(f"📎 {save_path}", file=sys.stderr)
 
     # Persist findings to SQLite if requested

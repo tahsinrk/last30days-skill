@@ -56,6 +56,12 @@ def _subprocess_env() -> Dict[str, str]:
     _ALLOWED_KEYS = {"PATH", "HOME", "NODE_PATH", "TERM", "LANG"}
     env = {k: v for k, v in os.environ.items() if k in _ALLOWED_KEYS}
     env.update(_credentials)  # AUTH_TOKEN, CT0
+    # Belt and braces. This fork deleted browser cookie extraction from the
+    # vendored cookies.js outright, so nothing reads this flag today. Upstream
+    # kept the extraction and gates it on exactly this variable, so setting it
+    # means a future vendor resync can't silently restore Keychain/cookie reads
+    # while nobody is looking. See SECURITY-AUDIT.md.
+    env["BIRD_DISABLE_BROWSER_COOKIES"] = "1"
     return env
 
 
@@ -221,7 +227,13 @@ def _run_bird_search(query: str, count: int, timeout: int) -> Dict[str, Any]:
         if not output:
             return {"items": []}
 
-        return json.loads(output)
+        # Bird's CLI returns a bare JSON array on success but a dict on error.
+        # Callers all expect a dict, so a successful search used to hand back a
+        # list and every downstream .get() blew up.
+        parsed = json.loads(output)
+        if isinstance(parsed, list):
+            return {"items": parsed}
+        return parsed
 
     except json.JSONDecodeError as e:
         return {"error": f"Invalid JSON response: {e}", "items": []}
