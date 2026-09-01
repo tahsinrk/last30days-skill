@@ -124,3 +124,19 @@ The fork monitor config (`fork-monitor-config.json` in `tahsinrk/claude-config`)
 - Subprocess environment: Allowlisted to 5 system vars + 2 credential vars.
 - Cache/output files: Owner-only permissions (0o600/0o700).
 - No `shell=True`, no bare `except:`.
+
+## Upstream Review History
+
+### 2026-08-31: reviewed through `fcebe321` (v3.22.0)
+
+- Reviewed the 24 upstream commits after the prior review endpoint `1004324`.
+- No commits were ported. The changes either target upstream's divergent v3
+  architecture, add optional sources and backends that this fork does not use,
+  or are release, CI, and documentation maintenance.
+- The GitHub authenticated-search fix does not apply because this fork has no
+  GitHub source module. The Reddit changes target upstream's separate keyless
+  listing pipeline; this fork uses ScrapeCreators first, then its existing
+  OpenAI and public JSON fallbacks.
+- No new browser-cookie or Keychain extraction entered this review range. The
+  older rejected cookie commits remain excluded. The fork's subprocess,
+  yt-dlp, cache-permission, and raw-response-write protections remain intact.
