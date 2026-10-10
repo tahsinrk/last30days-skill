@@ -345,42 +345,64 @@ def _subreddit_search(
 def fetch_post_comments(
     url: str,
     token: str,
+    max_pages: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """Fetch comments for a Reddit post via ScrapeCreators.
+
+    ScrapeCreators returns one page of top-level comments per call (one
+    credit each) and a `more` object; passing `more.cursor` back as
+    `cursor` returns the next page. The default of one page keeps the
+    research engine's credit cost unchanged; pass `max_pages=None` to read
+    a whole thread. Paging stops when `more.has_more` is false, a cursor
+    repeats, or a page fails (earlier pages are kept).
 
     Args:
         url: Reddit post URL or permalink
         token: ScrapeCreators API key
+        max_pages: pages to fetch at most; None for no limit
 
     Returns:
         List of comment dicts with score, author, body, etc.
     """
-    if not _requests:
+    comments: List[Dict[str, Any]] = []
+    cursor: Optional[str] = None
+    seen: set = set()
+    pages = 0
+    while max_pages is None or pages < max_pages:
+        params = {"url": url}
+        if cursor:
+            params["cursor"] = cursor
         try:
-            from urllib.parse import urlencode
-            params = urlencode({"url": url})
-            api_url = f"{SCRAPECREATORS_BASE}/post/comments?{params}"
-            headers = _sc_headers(token)
-            headers["User-Agent"] = http.USER_AGENT
-            data = http.get(api_url, headers=headers, timeout=30, retries=2)
-            return data.get("comments", data.get("data", []))
+            data = _fetch_comments_page(params, token)
         except Exception as e:
-            _log(f"Comment fetch error (urllib): {e}")
-            return []
+            _log(f"Comment fetch error: {e}")
+            break
+        pages += 1
+        comments.extend(data.get("comments", data.get("data", [])) or [])
+        more = data.get("more") or {}
+        cursor = more.get("cursor") or more.get("next_cursor")
+        if not more.get("has_more") or not cursor or cursor in seen:
+            break
+        seen.add(cursor)
+    return comments
 
-    try:
-        resp = _requests.get(
-            f"{SCRAPECREATORS_BASE}/post/comments",
-            params={"url": url},
-            headers=_sc_headers(token),
-            timeout=30,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("comments", data.get("data", []))
-    except Exception as e:
-        _log(f"Comment fetch error: {e}")
-        return []
+
+def _fetch_comments_page(params: Dict[str, str], token: str) -> Dict[str, Any]:
+    """One ScrapeCreators /post/comments call; raises on failure."""
+    if not _requests:
+        from urllib.parse import urlencode
+        headers = _sc_headers(token)
+        headers["User-Agent"] = http.USER_AGENT
+        return http.get(f"{SCRAPECREATORS_BASE}/post/comments?{urlencode(params)}",
+                        headers=headers, timeout=30, retries=2)
+    resp = _requests.get(
+        f"{SCRAPECREATORS_BASE}/post/comments",
+        params=params,
+        headers=_sc_headers(token),
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 
 def _dedupe_posts(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

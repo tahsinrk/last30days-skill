@@ -254,5 +254,57 @@ class TestSearchRedditTimeframe(unittest.TestCase):
         )
 
 
+class TestFetchPostCommentsPaging(unittest.TestCase):
+    """Comment threads past the first page are reached by passing the
+    response's `more.cursor` back. Default stays one page so existing
+    callers keep their credit cost."""
+
+    def _resp(self, comments, has_more=False, cursor=None):
+        r = mock.Mock()
+        r.raise_for_status = mock.Mock()
+        r.json.return_value = {"comments": comments,
+                               "more": {"has_more": has_more, "cursor": cursor}}
+        return r
+
+    def test_default_fetches_one_page(self):
+        with mock.patch.object(reddit, "_requests") as rq:
+            rq.get.return_value = self._resp([{"id": "a"}], True, "c1")
+            out = reddit.fetch_post_comments("https://reddit.com/r/x/comments/1/t/", "tok")
+        self.assertEqual([c["id"] for c in out], ["a"])
+        self.assertEqual(rq.get.call_count, 1)
+
+    def test_follows_cursor_until_has_more_false(self):
+        with mock.patch.object(reddit, "_requests") as rq:
+            rq.get.side_effect = [self._resp([{"id": "a"}], True, "c1"),
+                                  self._resp([{"id": "b"}], True, "c2"),
+                                  self._resp([{"id": "c"}], False, None)]
+            out = reddit.fetch_post_comments("u", "tok", max_pages=None)
+        self.assertEqual([c["id"] for c in out], ["a", "b", "c"])
+        cursors = [call.kwargs["params"].get("cursor") for call in rq.get.call_args_list]
+        self.assertEqual(cursors, [None, "c1", "c2"])
+
+    def test_stops_at_max_pages(self):
+        with mock.patch.object(reddit, "_requests") as rq:
+            rq.get.side_effect = [self._resp([{"id": "a"}], True, "c1"),
+                                  self._resp([{"id": "b"}], True, "c2")]
+            out = reddit.fetch_post_comments("u", "tok", max_pages=2)
+        self.assertEqual([c["id"] for c in out], ["a", "b"])
+        self.assertEqual(rq.get.call_count, 2)
+
+    def test_stops_on_repeated_cursor(self):
+        with mock.patch.object(reddit, "_requests") as rq:
+            rq.get.side_effect = [self._resp([{"id": "a"}], True, "c1"),
+                                  self._resp([{"id": "b"}], True, "c1")]
+            out = reddit.fetch_post_comments("u", "tok", max_pages=None)
+        self.assertEqual([c["id"] for c in out], ["a", "b"])
+        self.assertEqual(rq.get.call_count, 2)
+
+    def test_failed_later_page_keeps_earlier_pages(self):
+        with mock.patch.object(reddit, "_requests") as rq:
+            rq.get.side_effect = [self._resp([{"id": "a"}], True, "c1"), RuntimeError("boom")]
+            out = reddit.fetch_post_comments("u", "tok", max_pages=None)
+        self.assertEqual([c["id"] for c in out], ["a"])
+
+
 if __name__ == "__main__":
     unittest.main()
